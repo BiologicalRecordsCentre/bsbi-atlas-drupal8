@@ -1,0 +1,9 @@
+name: BSBI Atlas Drupal module
+description: Implements BSBI 2020 Atlas.
+package: Custom
+
+type: module
+core: 8.x
+configure: bsbi_atlas.config
+dependencies:
+  - brc_atlas:brc_atlas

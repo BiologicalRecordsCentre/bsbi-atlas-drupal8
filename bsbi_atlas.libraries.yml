@@ -1,0 +1,15 @@
+bsbiatlas:
+  version: 1.x
+  css:
+    layout:
+      css/bsbi-atlas-gui.css: {}
+      css/bootstrap-select.min.css: {}
+  js:
+    js/bsbi-atlas-gui.js: {}
+    js/bootstrap-select.min.js: {}
+  dependencies:
+    - core/jquery
+    - core/drupal
+    - core/drupalSettings
+    - brc_atlas/atlas
+    - brc_atlas/access

@@ -1,0 +1,6 @@
+bsbi_atlas.admin:
+  title: 'BSBI Atlas module'
+  description: 'Settings for BSBI Atlas module'
+  parent: system.admin_config_development
+  route_name: bsbi_atlas.config
+  weight: 100

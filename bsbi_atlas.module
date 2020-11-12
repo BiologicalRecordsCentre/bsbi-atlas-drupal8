@@ -1,0 +1,25 @@
+<?php
+
+use Drupal\Core\Routing\RouteMatchInterface;
+
+/**
+ * Implements hook_help().
+ */
+function bsbi_atlas_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    case 'help.page.bsbi_atlas':
+      return t('
+        <h2>BSBI Atlas module</h2>
+        <p>ToDo...</p>
+      ');
+  }
+}
+
+/**
+ * Implements hook_preprocess_node().
+ */
+function bsbi_atlas_preprocess_node(&$variables) {
+  //$node = $variables['node'];
+
+  //dpm("test");
+}

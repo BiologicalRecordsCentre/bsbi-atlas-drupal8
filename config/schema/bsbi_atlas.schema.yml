@@ -1,0 +1,10 @@
+# Initialising with values from bsbi_atlas.settings.yml
+bsbi_atlas.settings:
+  type: config_object
+  label: 'Atlas GUI settings'
+  mapping:
+    gui:
+      type: mapping
+      mapping:
+        tabs: 
+          type: integer

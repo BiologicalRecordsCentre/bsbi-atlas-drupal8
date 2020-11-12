@@ -1,0 +1,25 @@
+bsbi-atlas.content:
+  path: '/atlas'
+  defaults:
+    _controller: '\Drupal\bsbi_atlas\Controller\BsbiAtlasController::content'
+  requirements:
+    _permission: 'access content'
+
+bsbi-atlas.content.distribution:
+  path: '/atlas/{identifier}'
+  defaults:
+    _controller: '\Drupal\bsbi_atlas\Controller\BsbiAtlasController::content'
+  requirements:
+    _permission: 'access content'
+  options:
+    parameters:
+      identifier:
+        type: text
+
+bsbi_atlas.config:
+  path: '/admin/config/development/bsbi_atlas'
+  defaults:
+    _form: '\Drupal\bsbi_atlas\Form\BsbiAtlasConfig'
+    _title: 'BSBI Atlas configuration'
+  requirements:
+    _permission: 'administer site configuration'
