@@ -37,6 +37,7 @@ class BsbiAtlasController extends ControllerBase {
         'drupalSettings' => array(
           'bsbi_atlas' => array(
             'useTabs' => $guiTabs,
+            'dataRoot' => $config->get('data.root'),
             'identifier' => $identifier,
           ),
         ),

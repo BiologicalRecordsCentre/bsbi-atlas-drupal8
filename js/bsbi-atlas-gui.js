@@ -1,10 +1,7 @@
 (function ($, Drupal, drupalSettings) {
 
-  // Make the following a setting in the module
-  bsbiatlas.setDataRoot('http://localhost/atlas-data/bsbi/atlas_taxa_2020_08_25/hectad-dateclass-status/')
-  // Make the following a setting in the module
-  var taxaCsv = 'http://localhost/atlas-data/bsbi/taxon_list.csv'
-
+  bsbiatlas.setDataRoot(drupalSettings.bsbi_atlas.dataRoot + 'atlas_taxa_2020_08_25/hectad-dateclass-status/')
+  var taxaCsv = drupalSettings.bsbi_atlas.dataRoot + 'taxon_list.csv'
 
   var currentTaxon = {
     identifier: null,

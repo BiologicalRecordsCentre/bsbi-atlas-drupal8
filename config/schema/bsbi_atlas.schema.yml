@@ -8,3 +8,8 @@ bsbi_atlas.settings:
       mapping:
         tabs: 
           type: integer
+    data:
+      type: mapping
+      mapping:
+        root:
+          type: text
