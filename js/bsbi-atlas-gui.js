@@ -1,13 +1,17 @@
+ 
+var bsbiDataRoot
 (function ($, Drupal, drupalSettings) {
 
-  bsbiatlas.setDataRoot(drupalSettings.bsbi_atlas.dataRoot + 'atlas_taxa_2020_08_25/hectad-dateclass-status/')
-  var taxaCsv = drupalSettings.bsbi_atlas.dataRoot + 'taxon_list.csv'
+  //bsbiatlas.setDataRoot(drupalSettings.bsbi_atlas.dataRoot + 'atlas_taxa_2020_08_25/hectad-dateclass-status/')
 
+  bsbiDataRoot = drupalSettings.bsbi_atlas.dataRoot + 'atlas_taxa_2020_08_25/hectad-dateclass-status/'
+  var taxaCsv = drupalSettings.bsbi_atlas.dataRoot + 'taxon_list.csv'
   var currentTaxon = {
     identifier: null,
     name: null,
   }
   var slippyMap, staticMap
+  var displayedMapType = 'static'
   var sections = [
     {
       group: null,
@@ -67,9 +71,68 @@
     },
   ]
 
+  var periods = [
+    {
+      min: '',
+      max: 1929,
+      access: 'status_29',
+      caption: '1929 and before'
+    },
+    {
+      min: 1930,
+      max: 1949,
+      access: 'status_30_49',
+      caption: '1930 - 1949'
+    },
+    {
+      min: 1950,
+      max: 1969,
+      access: 'status_50_69',
+      caption: '1950 - 1969'
+    },
+    {
+      min: 1970,
+      max: 1986,
+      access: 'status_70_86',
+      caption: '1970 - 1986'
+    },
+    {
+      min: 1987,
+      max: 1999,
+      access: 'status_87_99',
+      caption: '1987 - 1999'
+    },
+    {
+      min: 2000,
+      max: 2009,
+      access: 'status_00_09',
+      caption: '2000 - 2009'
+    },
+    {
+      min: 2010,
+      max: 2019,
+      access: 'status_10_19',
+      caption: '2010 - 2019'
+    }
+  ]
+
+  var trends = [
+    {
+      lower: '1930-69',
+      upper: '2000-19',
+      access: 'change_1930_1969_vs_2000_2019',
+      caption: '1930-69 vs 2000-19'
+    },
+    {
+      lower: '1987-99',
+      upper: '2000-19',
+      access: 'change_1987_1999_vs_2000_2019',
+      caption: '1987-99 vs 2000-19'
+    }
+  ]
+
   $(document).ready(function () {
-    console.log("BSBI GUI library loaded")
-    console.log(drupalSettings)
+    //console.log(drupalSettings)
 
     // Page title - reflects selected taxon
     var $title = $('<div id="bsbi-taxon-title"></div>').appendTo($('#bsbi-atlas-gui'))
@@ -184,20 +247,34 @@
     sectionEnd($sect, tabs)
   }
 
-  function createMapControls(selector) {
+  function mapControlRow(selector) {
+    var $div =  $('<div>').appendTo($(selector))
+    $div.addClass('atlas-map-control-row')
+    return $div
+  }
 
-    var $bgrp = $('<div class="btn-group" data-toggle="buttons">').appendTo($(selector))
+  function createMapControls(selector) {
+    mapInterfaceToggle(mapControlRow(selector))
+    mapTypeSelector(mapControlRow(selector))
+    statusControl(mapControlRow(selector))
+    trendControl(mapControlRow(selector))
+  }
+
+  function mapInterfaceToggle($parent) {
+    var $bgrp = $('<div class="btn-group" data-toggle="buttons">').appendTo($parent)
 
     var $staticLabel = $('<label class="btn btn-primary active">').appendTo($bgrp)
     var $staticButton = $('<input type="radio" name="mapType" value="static" checked>').appendTo($staticLabel)
-    $staticLabel.append("Static map")
+    $staticLabel.append("Overview")
 
     var $slippyLabel = $('<label class="btn btn-primary">').appendTo($bgrp)
     var $slippyButton = $('<input type="radio" name="mapType" value="slippy">').appendTo($slippyLabel)
-    $slippyLabel.append("Slippy map")
+    $slippyLabel.append("Zoomable")
 
     $('input[type=radio][name="mapType"]').change(function() {
-      if ($(this).val() === "static") {
+      displayedMapType = $(this).val()
+
+      if (displayedMapType === "static") {
         $('#slippyAtlasMain').hide()
         $('#staticAtlasMain').show()
       } else {
@@ -208,13 +285,172 @@
         $('#slippyAtlasMain').show()
         slippyMap.setSize(w, h)
       }
-    });
+      changeMap()
+    })
+  }
+
+  function mapTypeSelector($parent) {
+
+    // Main type selector
+    var $sel = $('<select>').appendTo($parent)
+    $sel.addClass('selectpicker')
+    $sel.attr('id', 'altas-map-type-selector')
+    $sel.attr('data-width', '100%')
+    $sel.on('changed.bs.select', function (e, clickedIndex, isSelected, previousValue) {
+
+      if ($(this).val() === 'status') {
+        $('#atlas-period-slider-control').show()
+      } else {
+        $('#atlas-period-slider-control').hide()
+      }
+
+      if ($(this).val() === 'trends') {
+        $('#atlas-trend-slider-control').show()
+      } else {
+        $('#atlas-trend-slider-control').hide()
+      }
+
+      changeMap()
+    })
+    var types = [
+      {
+        caption: 'Distribution by atlas period',
+        val: 'status'
+      },
+      {
+        caption: 'Trend maps',
+        val: 'trends'
+      },
+      {
+        caption: 'Tetrad density',
+        val: 'tetrad'
+      },
+    ]
+    types.forEach(function(t){
+      var $opt = $('<option>')
+      $opt.attr('value', t.val)
+      $opt.html(t.caption).appendTo($sel)
+    })
+  }
+
+  function statusControl($parent) {
+    
+    // Overall control container
+    var $container = $('<div>').appendTo($parent)
+    $container.attr('id', 'atlas-period-slider-control')
+
+    // Period display
+    var $indicator = $('<div>').appendTo($container)
+    $indicator.css('font-size', '1.5em')
+    $indicator.css('margin-bottom', '0.2em')
+    $indicator.text(periods[periods.length - 1].caption)
+
+    // Slider
+    var $sliderContainer = $('<div>').appendTo($container)
+    $sliderContainer.addClass('slidecontainer')
+    var $slider = $('<input>').appendTo($sliderContainer)
+    $slider.addClass('slider')
+    $slider.attr('type', 'range').attr('min', '1').attr('max', periods.length).attr('id', 'atlas-range-select')
+    $slider.change(function() {
+      $indicator.text(periods[$('#atlas-range-select').val()-1].caption)
+      changeMap()
+    })
+
+    var $scaleContainer = $('<div>').appendTo($sliderContainer)
+    $scaleContainer.addClass('atlas-range-tick-container')
+    periods.forEach(function(p, i){
+      var $tick = $('<span>').appendTo($scaleContainer)
+      $tick.addClass('atlas-range-tick')
+      var percent = i/(periods.length - 1)*100
+      $tick.css('left',  percent.toString() + '%')
+      $tick.text('|')
+      $tick.append('<br>')
+      var $tickText = $('<span>').appendTo($tick)
+      $tickText.addClass('atlas-range-tick-text')
+      $tickText.html(p.min + '<br>' + p.max)
+    })
+
+    // Status on/off toggle
+    var $checDiv = $('<div>').appendTo($container)
+    $checDiv.css('margin-top', '4.3em')
+
+    var $check = $('<input>').appendTo($checDiv)
+    $check.addClass('form-check-input')
+    $check.attr('type', 'checkbox')
+    $check.attr('checked', 'checked')
+    $check.attr('id', 'atlas-status-checkbox')
+    var $label = $('<label>').appendTo($checDiv)
+    $label.addClass('form-check-label')
+    $label.attr('for', 'atlas-status-checkbox')
+    $label.css('margin-left', '0.5em')
+    $label.text('Show status')
+
+    $check.change(function() {
+      bsbiDataAccess.showStatus = $(this).is(':checked')
+      changeMap()
+    })
+  }
+
+  function trendControl($parent) {
+    // Overall control container
+    var $container = $('<div>').appendTo($parent)
+    $container.attr('id', 'atlas-trend-slider-control')
+    $container.hide()
+
+    // Trend display
+    var $indicator = $('<div>').appendTo($container)
+    $indicator.css('font-size', '1.5em')
+    $indicator.css('margin-bottom', '0.2em')
+    $indicator.text(trends[trends.length - 1].caption)
+
+    // Slider
+    var $sliderContainer = $('<div>').appendTo($container)
+    $sliderContainer.addClass('slidecontainer')
+    $sliderContainer.attr('id', 'atlas-trend-select-container')
+    var $slider = $('<input>').appendTo($sliderContainer)
+    $slider.addClass('slider')
+    $slider.attr('type', 'range').attr('min', '1').attr('max', trends.length).attr('id', 'atlas-trend-select')
+    $slider.change(function() {
+      $indicator.text(trends[$('#atlas-trend-select').val()-1].caption)
+      changeMap()
+    })
+
+    var $scaleContainer = $('<div>').appendTo($sliderContainer)
+    $scaleContainer.addClass('atlas-trend-tick-container')
+    trends.forEach(function(p, i){
+      var $tick = $('<span>').appendTo($scaleContainer)
+      $tick.addClass('atlas-trend-tick')
+      var percent = i/(trends.length - 1)*100
+      $tick.css('left',  percent.toString() + '%')
+      $tick.text('|')
+      $tick.append('<br>')
+      var $tickText = $('<span>').appendTo($tick)
+      $tickText.addClass('atlas-trend-tick-text')
+      $tickText.attr('id', 'atlas-trend-tick-text-' + i)
+      $tickText.html(p.lower + '<br>' + p.upper)
+    })
+
   }
 
   function createMaps(selector) {
+
     // Modify standard UK opts to remove any without CI
-    const transOptsSel =  JSON.parse(JSON.stringify(brcatlas.namedTransOpts))
+    var transOptsSel =  JSON.parse(JSON.stringify(brcatlas.namedTransOpts))
     delete transOptsSel.BI3 // Remove the options without CI
+
+    // Data access 
+    var mapTypesSel = {
+      'status_29': bsbiDataAccess.status_29,
+      'status_30_49': bsbiDataAccess.status_30_49,
+      'status_50_69': bsbiDataAccess.status_50_69,
+      'status_70_86': bsbiDataAccess.status_70_86,
+      'status_87_99': bsbiDataAccess.status_87_99,
+      'status_00_09': bsbiDataAccess.status_00_09,
+      'status_10_19': bsbiDataAccess.status_10_19,
+      'Tetrad frequency': bsbiDataAccess.bsbiHectadDateTetFreq,
+      'change_1987_1999_vs_2000_2019': bsbiDataAccess.change_1987_1999_vs_2000_2019,
+      'change_1930_1969_vs_2000_2019': bsbiDataAccess.change_1930_1969_vs_2000_2019
+    }
 
     // Map height
     const height = 650
@@ -236,16 +472,8 @@
       },
       transOptsKey: 'BI2',
       transOptsSel: transOptsSel,
-      mapTypesKey: 'Tetrad frequency',
-      mapTypesSel: {
-        'No hectad map': brcatlas.noData,
-        'Date classes (newest on top)': bsbiatlas.bsbiHectadDateClassesNewest,
-        'Date classes (oldest on top)': bsbiatlas.bsbiHectadDateClassesOldest,
-        'Tetrad frequency': bsbiatlas.bsbiHectadDateTetFreq,
-        'Native species status': bsbiatlas.nativeSpeciesStatus,
-        'Change from 1987-1999 to 2000-2019': bsbiatlas.change_1987_1999_vs_2000_2019,
-        'Change from 1930-1969 vs 2000-2019': bsbiatlas.change_1930_1969_vs_2000_2019
-      },
+      mapTypesKey: 'status_10_19',
+      mapTypesSel: mapTypesSel,
       mapTypesControl: false,
     })
 
@@ -256,16 +484,8 @@
       height: height,
       width: staticMap.getMapWidth(),
       captionId: "dotCaption",
-      mapTypesKey: 'Tetrad frequency',
-      mapTypesSel: {
-        'No hectad map': brcatlas.noData,
-        'Date classes (newest on top)': bsbiatlas.bsbiHectadDateClassesNewest,
-        'Date classes (oldest on top)': bsbiatlas.bsbiHectadDateClassesOldest,
-        'Tetrad frequency': bsbiatlas.bsbiHectadDateTetFreq,
-        'Native species status': bsbiatlas.nativeSpeciesStatus,
-        'Change from 1987-1999 to 2000-2019': bsbiatlas.change_1987_1999_vs_2000_2019,
-        'Change from 1930-1969 vs 2000-2019': bsbiatlas.change_1930_1969_vs_2000_2019
-      },
+      mapTypesKey: 'status_10_19',
+      mapTypesSel: mapTypesSel,
       legend: true,
       legendScale: 1,
       legendOpts: {
@@ -287,7 +507,7 @@
     $sel.on('changed.bs.select', function (e, clickedIndex, isSelected, previousValue) {
       currentTaxon.identifier = $(this).val()
       currentTaxon.name =  $(this).find(":selected").attr("data-content")
-      taxonSelected()
+      changeMap()
     })
 
     d3.csv(taxaCsv).then(function(data) {
@@ -319,13 +539,28 @@
     })
   }
 
-  function taxonSelected() {
+  function changeMap() {
+
+    if (displayedMapType === 'static') {
+      displayedMap = staticMap
+    } else {
+      displayedMap = slippyMap
+    }
+    var mapType = $('#altas-map-type-selector').val()
+    if (mapType === 'status') {
+      var access = periods[$('#atlas-range-select').val()-1].access
+      displayedMap.setMapType(access)
+    } else if (mapType === 'trends') {
+      var access = trends[$('#atlas-trend-select').val()-1].access
+      displayedMap.setMapType(access)
+    } else if (mapType === 'tetrad') {
+      displayedMap.setMapType('Tetrad frequency')
+    }
+
     if (currentTaxon.identifier) {
       $('#bsbi-taxon-title').html(currentTaxon.name)
-      slippyMap.setIdentfier(currentTaxon.identifier) 
-      slippyMap.redrawMap()
-      staticMap.setIdentfier(currentTaxon.identifier)
-      staticMap.redrawMap()
+      displayedMap.setIdentfier(currentTaxon.identifier) 
+      displayedMap.redrawMap()
     }
   }
 
@@ -341,8 +576,10 @@
 
     $('input[type=radio][name="tabsToggle"]').change(function() {
       mainAtlasContent($(this).val() === "on")
-      taxonSelected()
+      changeMap()
     });
+
+    // 
   }
 
   function ecoFlora(identifier) {
@@ -379,4 +616,4 @@
     })
   }
 
-})(jQuery, Drupal, drupalSettings);
+})(jQuery, Drupal, drupalSettings)

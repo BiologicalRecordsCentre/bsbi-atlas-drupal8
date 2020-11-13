@@ -1,7 +1,97 @@
 .bsbi-atlas-taxon-selector {
     margin-bottom: 1em;
 }
-header {
-    position: sticky;
-    top: 0;
+
+.atlas-map-control-row {
+    margin-bottom: 1em;
+}
+
+.slidecontainer {
+    width: 100%; /* Width of the outside container */
+  }
+  
+  /* The slider itself */
+  .slider {
+    -webkit-appearance: none;  /* Override default CSS styles */
+    appearance: none;
+    width: 100%; /* Full-width */
+    height: 25px; /* Specified height */
+    background: #d3d3d3; /* Grey background */
+    outline: none; /* Remove outline */
+    opacity: 0.7; /* Set transparency (for mouse-over effects on hover) */
+    -webkit-transition: .2s; /* 0.2 seconds transition on hover */
+    transition: opacity .2s;
+  }
+  
+  /* Mouse-over effects */
+  .slider:hover {
+    opacity: 1; /* Fully shown on mouse-over */
+  }
+  
+  /* The slider handle (use -webkit- (Chrome, Opera, Safari, Edge) and -moz- (Firefox) to override default look) */
+  .slider::-webkit-slider-thumb {
+    -webkit-appearance: none; /* Override default look */
+    appearance: none;
+    width: 16px; /* Set a specific slider handle width */
+    height: 25px; /* Slider handle height */
+    background: rgb(51,122,183); 
+    border-radius: 3px;
+    cursor: pointer; /* Cursor on hover */
+  }
+  
+  .slider::-moz-range-thumb {
+    width: 16px; /* Set a specific slider handle width */
+    height: 25px; /* Slider handle height */
+    background: rgb(51,122,183); 
+    border-radius: 3px;
+    cursor: pointer; /* Cursor on hover */
+  }
+
+.atlas-range-tick-container {
+    position: relative;
+    margin-left: 8px;
+    margin-right: 8px;
+}
+
+.atlas-range-tick {
+    margin-left: -0.5em;
+    position: absolute;
+    text-align: center;
+    width: 1em;
+}
+
+.atlas-range-tick-text {
+    font-size: 0.8em;
+    margin-left: -1em;
+    position: absolute;
+}
+
+#atlas-trend-select-container {
+  width: 13em;
+}
+.atlas-trend-tick-container {
+  position: relative;
+  margin-left: 8px;
+  margin-right: 8px;
+}
+
+.atlas-trend-tick {
+  margin-left: -0.5em;
+  position: absolute;
+  text-align: center;
+  width: 1em;
+}
+
+.atlas-trend-tick-text {
+  font-size: 0.8em;
+  position: absolute;
+  width: 5em;
+}
+
+#atlas-trend-tick-text-0 {
+  margin-left: -1em;
+}
+
+#atlas-trend-tick-text-1 {
+  margin-left: -4em;
 }
