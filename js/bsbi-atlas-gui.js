@@ -161,7 +161,7 @@ var bsbiDataRoot
     var selected = 'distribution'
 
     // Clear current content
-    $('.brc-atlas-map-opts').remove()
+    //$('.brc-atlas-map-opts').remove()
     $('#main-atlas-content').html(null)
 
     // Generate main content with or without tabs
@@ -294,7 +294,7 @@ var bsbiDataRoot
     // Main type selector
     var $sel = $('<select>').appendTo($parent)
     $sel.addClass('selectpicker')
-    $sel.attr('id', 'altas-map-type-selector')
+    $sel.attr('id', 'atlas-map-type-selector')
     $sel.attr('data-width', '100%')
     $sel.on('changed.bs.select', function (e, clickedIndex, isSelected, previousValue) {
 
@@ -331,6 +331,10 @@ var bsbiDataRoot
       $opt.attr('value', t.val)
       $opt.html(t.caption).appendTo($sel)
     })
+
+    // This seems to be necessary if interface regenerated,
+    // e.g. changing from tabbed to non-tabbed display.
+    $sel.selectpicker()
   }
 
   function statusControl($parent) {
@@ -546,7 +550,7 @@ var bsbiDataRoot
     } else {
       displayedMap = slippyMap
     }
-    var mapType = $('#altas-map-type-selector').val()
+    var mapType = $('#atlas-map-type-selector').val()
     if (mapType === 'status') {
       var access = periods[$('#atlas-range-select').val()-1].access
       displayedMap.setMapType(access)

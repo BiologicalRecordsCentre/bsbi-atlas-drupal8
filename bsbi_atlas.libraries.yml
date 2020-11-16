@@ -5,9 +5,9 @@ bsbiatlas:
       css/bsbi-atlas-gui.css: {}
       css/bootstrap-select.min.css: {}
   js:
-    js/bsbi-atlas-gui.js: {}
-    js/bsbi-atlas-data-access.js: {}
     js/bootstrap-select.min.js: {}
+    js/bsbi-atlas-data-access.js: {}
+    js/bsbi-atlas-gui.js: {}
   dependencies:
     - core/jquery
     - core/drupal
