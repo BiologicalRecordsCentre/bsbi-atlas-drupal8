@@ -538,6 +538,10 @@ var bsbiDataRoot
 
         $opt.html(name).appendTo($sel)
       })
+      //
+      console.log("opts loaded")
+      $sel.selectpicker()
+
     }).catch(function(e){
       console.log('Error reading taxon CSV')
     })
