@@ -14,3 +14,8 @@ bsbiatlas:
     - core/drupalSettings
     - brc_atlas/atlas
     - brc_atlas/access
+
+bsbiatlasgen:
+  css:
+    layout:
+      css/bsbi-atlas-general.css: {}

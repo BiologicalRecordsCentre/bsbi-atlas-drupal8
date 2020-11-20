@@ -23,3 +23,11 @@ function bsbi_atlas_preprocess_node(&$variables) {
 
   //dpm("test");
 }
+
+/**
+ * Implements hook_page_attachments_alter().
+ */
+function bsbi_atlas_page_attachments_alter(array &$page) {
+  // Attach the flot bsbiatlasgen asset on every page.
+  $page['#attached']['library'][] = 'bsbi_atlas/bsbiatlasgen';
+}
