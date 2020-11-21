@@ -11,7 +11,16 @@ var bsbiDataRoot
     name: null,
   }
   var slippyMap, staticMap
+  var showStatus = true
   var displayedMapType = 'static'
+  var slippyLegendOpts = {
+    display: true,
+    scale: 1,
+    x: 10,
+    y: 0,
+    data: null
+  }
+
   var sections = [
     {
       group: null,
@@ -392,7 +401,8 @@ var bsbiDataRoot
     $label.text('Show status')
 
     $check.change(function() {
-      bsbiDataAccess.showStatus = $(this).is(':checked')
+      showStatus = $(this).is(':checked')
+      bsbiDataAccess.showStatus = showStatus
       changeMap()
     })
   }
@@ -481,6 +491,8 @@ var bsbiDataRoot
       mapTypesKey: 'status_10_19',
       mapTypesSel: mapTypesSel,
       mapTypesControl: false,
+      gridLineColour: '#7C7CD3',
+      boundaryColour: '#7C7CD3',
     })
 
     // Create the slippy map
@@ -494,13 +506,7 @@ var bsbiDataRoot
       mapTypesSel: mapTypesSel,
       legend: true,
       legendScale: 1,
-      legendOpts: {
-        display: true,
-        scale: 1,
-        x: 10,
-        y: 0,
-        data: null
-      },
+      legendOpts: slippyLegendOpts,
     })
     $('#slippyAtlasMain').hide()
   }
@@ -540,10 +546,12 @@ var bsbiDataRoot
 
         $opt.html(name).appendTo($sel)
       })
-      //
-      console.log("opts loaded")
-      $sel.selectpicker()
 
+      // Not sure why, but sometimes, selector isn't populated until
+      // browser refreshed. This may help.
+      setTimeout(() => {
+        $sel.selectpicker()
+      }, 1000);
     }).catch(function(e){
       console.log('Error reading taxon CSV')
     })
@@ -556,15 +564,30 @@ var bsbiDataRoot
     } else {
       displayedMap = slippyMap
     }
+
     var mapType = $('#atlas-map-type-selector').val()
     if (mapType === 'status') {
       var access = periods[$('#atlas-range-select').val()-1].access
       displayedMap.setMapType(access)
+      slippyLegendOpts.width=150
     } else if (mapType === 'trends') {
       var access = trends[$('#atlas-trend-select').val()-1].access
       displayedMap.setMapType(access)
+      slippyLegendOpts.width=305
     } else if (mapType === 'tetrad') {
       displayedMap.setMapType('Tetrad frequency')
+      slippyLegendOpts.width=155
+    }
+    slippyMap.setLegendOpts(slippyLegendOpts)
+
+    // Legend display
+    if (displayedMapType !== 'static') {
+      if (mapType === 'status') {
+        slippyLegendOpts.display = showStatus
+      } else {
+        slippyLegendOpts.display = true
+      }
+      slippyMap.setLegendOpts(slippyLegendOpts)
     }
 
     if (currentTaxon.identifier) {

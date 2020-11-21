@@ -130,9 +130,9 @@ bsbiDataAccess.showStatus = true;
           }
         }
       }).then(function (data) {
-
+        var legend
         if (bsbiDataAccess.showStatus) {
-          var legend = {
+          legend = {
             title: 'Native status',
             precision: 10000,
             opacity: 0.8,
@@ -166,7 +166,7 @@ bsbiDataAccess.showStatus = true;
             }]
           }
         } else {
-          legend: {lines:[]}
+          legend = {lines: []}
         }
         resolve({
           records: data,
