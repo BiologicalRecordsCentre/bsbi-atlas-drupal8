@@ -4,8 +4,9 @@ var bsbiDataRoot
 
   //bsbiatlas.setDataRoot(drupalSettings.bsbi_atlas.dataRoot + 'atlas_taxa_2020_08_25/hectad-dateclass-status/')
 
-  bsbiDataRoot = drupalSettings.bsbi_atlas.dataRoot + 'atlas_taxa_2020_08_25/hectad-dateclass-status/'
-  var taxaCsv = drupalSettings.bsbi_atlas.dataRoot + 'taxon_list.csv'
+  bsbiDataRoot = drupalSettings.bsbi_atlas.dataRoot + 'bsbi/atlas_taxa_2020_08_25/hectad-dateclass-status/'
+  var rasterRoot = drupalSettings.bsbi_atlas.dataRoot + 'rasters/'
+  var taxaCsv = drupalSettings.bsbi_atlas.dataRoot + 'bsbi/taxon_list.csv'
   var currentTaxon = {
     identifier: null,
     name: null,
@@ -494,6 +495,7 @@ var bsbiDataRoot
       gridLineColour: '#7C7CD3',
       boundaryColour: '#7C7CD3',
     })
+    staticMap.basemapImage('background', true, rasterRoot + 'grey_elevation_300.png', rasterRoot + 'grey_elevation_300.pgw')
 
     // Create the slippy map
     slippyMap = brcatlas.leafletMap({
@@ -523,6 +525,8 @@ var bsbiDataRoot
     })
 
     d3.csv(taxaCsv).then(function(data) {
+
+      console.log(data)
       data.forEach(function(d) {
 
         var name = ''
@@ -546,10 +550,12 @@ var bsbiDataRoot
 
         $opt.html(name).appendTo($sel)
       })
+      console.log("foreach complete")
 
       // Not sure why, but sometimes, selector isn't populated until
       // browser refreshed. This may help.
       setTimeout(() => {
+        console.log("Refreshing selectpicker")
         $sel.selectpicker()
       }, 1000);
     }).catch(function(e){
