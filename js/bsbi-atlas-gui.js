@@ -469,6 +469,56 @@ var bsbiDataRoot
       'change_1930_1969_vs_2000_2019': bsbiDataAccess.change_1930_1969_vs_2000_2019
     }
 
+    // Basemaps
+    var basemapConfigs = [
+      {
+        name: 'Open Street Map',
+        type: 'tileLayer',
+        selected: true,
+        url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+        opts: {
+          maxZoom: 19,
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }
+      },
+      {
+        name: 'Stamen Black & White',
+        type: 'tileLayer',
+        selected: false,
+        url: 'https://stamen-tiles-{s}.a.ssl.fastly.net/toner-lite/{z}/{x}/{y}{r}.{ext}',
+        opts: {
+          attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+          subdomains: 'abcd',
+          minZoom: 0,
+          maxZoom: 20,
+          ext: 'png'
+        }
+      },
+      {
+        name: 'Open Topo Map',
+        type: 'tileLayer',
+        selected: false,
+        url: 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
+        opts: {
+          maxZoom: 17,
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)'
+        }
+      },
+      {
+        name: 'NLS Historic',
+        type: 'wms',
+        selected: false,
+        url: 'https://nls-{s}.tileserver.com/nls/{z}/{x}/{y}.jpg', 
+        opts: {
+          attribution: '<a href="https://maps.nls.uk/projects/api//">National Library of Scotland Historic Maps</a>',
+          bounds: [[49.6, -12], [61.7, 3]],
+          minZoom: 1,
+          maxZoom: 18,
+          subdomains: '0123'
+        }
+      },
+    ]
+
     // Map height
     const height = 650
     // Create the static map
@@ -509,6 +559,7 @@ var bsbiDataRoot
       legend: true,
       legendScale: 1,
       legendOpts: slippyLegendOpts,
+      basemapConfigs: basemapConfigs,
     })
     $('#slippyAtlasMain').hide()
   }
