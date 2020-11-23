@@ -170,8 +170,8 @@ var bsbiDataRoot
   function mainAtlasContent(tabs) {
     var selected = 'distribution'
 
-    // Clear current content
-    //$('.brc-atlas-map-opts').remove()
+    // Clear current content (including dialog boxes from SVG maps)
+    $('.brc-atlas-map-opts').remove()
     $('#main-atlas-content').html(null)
 
     // Generate main content with or without tabs
