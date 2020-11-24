@@ -565,21 +565,9 @@ var bsbiDataRoot
   }
 
   function taxonSelectors(selector) {
-    var $sel = $('<select class="selectpicker" data-live-search="true" data-size="10">').appendTo($(selector))
-    $sel.attr('data-header', 'Start typing the name of a taxon')
-    $sel.attr('title', 'Select a taxon to display')
-    $sel.attr('data-width', '100%')
-    $sel.on('changed.bs.select', function (e, clickedIndex, isSelected, previousValue) {
-      currentTaxon.identifier = $(this).val()
-      currentTaxon.name =  $(this).find(":selected").attr("data-content")
-      changeMap()
-    })
-
+    var $sel = $('<select>').appendTo($(selector))
     d3.csv(taxaCsv).then(function(data) {
-
-      console.log(data)
       data.forEach(function(d) {
-
         var name = ''
         if (d['vernacular']) {
           name = '<b>' + d['vernacular'] + '</b> '
@@ -601,14 +589,19 @@ var bsbiDataRoot
 
         $opt.html(name).appendTo($sel)
       })
-      console.log("foreach complete")
 
-      // Not sure why, but sometimes, selector isn't populated until
-      // browser refreshed. This may help.
-      setTimeout(() => {
-        console.log("Refreshing selectpicker")
-        $sel.selectpicker()
-      }, 1000);
+      $sel.attr('data-size', '10')
+      $sel.attr('data-live-search', 'true')
+      $sel.attr('data-header', 'Start typing the name of a taxon')
+      $sel.attr('title', 'Select a taxon to display')
+      $sel.attr('data-width', '100%')
+      $sel.selectpicker()
+      $sel.on('changed.bs.select', function (e, clickedIndex, isSelected, previousValue) {
+        currentTaxon.identifier = $(this).val()
+        currentTaxon.name =  $(this).find(":selected").attr("data-content")
+        changeMap()
+      })
+
     }).catch(function(e){
       console.log('Error reading taxon CSV')
     })

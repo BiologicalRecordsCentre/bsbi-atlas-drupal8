@@ -124,7 +124,7 @@ bsbiDataAccess.showStatus = true;
             return {
               gr: r.hectad,
               shape: 'circle',
-              colour: 'green',
+              colour: 'black',
               caption: "Hectad: <b>".concat(r.hectad, "</b>")
             };
           }
