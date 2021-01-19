@@ -12,7 +12,7 @@ var bsbiDataRoot
     name: null,
   }
   var slippyMap, staticMap
-  var showStatus = true
+  //var showStatus
   var displayedMapType = 'static'
   var slippyLegendOpts = {
     display: true,
@@ -82,17 +82,23 @@ var bsbiDataRoot
       access: 'status_29',
       caption: '1929 and before'
     },
+    // {
+    //   min: 1930,
+    //   max: 1949,
+    //   access: 'status_30_49',
+    //   caption: '1930 - 1949'
+    // },
+    // {
+    //   min: 1950,
+    //   max: 1969,
+    //   access: 'status_50_69',
+    //   caption: '1950 - 1969'
+    // },
     {
       min: 1930,
-      max: 1949,
-      access: 'status_30_49',
-      caption: '1930 - 1949'
-    },
-    {
-      min: 1950,
       max: 1969,
-      access: 'status_50_69',
-      caption: '1950 - 1969'
+      access: 'status_30_69',
+      caption: '1930 - 1969'
     },
     {
       min: 1970,
@@ -106,17 +112,23 @@ var bsbiDataRoot
       access: 'status_87_99',
       caption: '1987 - 1999'
     },
+    // {
+    //   min: 2000,
+    //   max: 2009,
+    //   access: 'status_00_09',
+    //   caption: '2000 - 2009'
+    // },
+    // {
+    //   min: 2010,
+    //   max: 2019,
+    //   access: 'status_10_19',
+    //   caption: '2010 - 2019'
+    // },
     {
       min: 2000,
-      max: 2009,
-      access: 'status_00_09',
-      caption: '2000 - 2009'
-    },
-    {
-      min: 2010,
       max: 2019,
-      access: 'status_10_19',
-      caption: '2010 - 2019'
+      access: 'status_00_19',
+      caption: '2000 - 2019'
     }
   ]
 
@@ -300,6 +312,7 @@ var bsbiDataRoot
     mapTypeSelector(mapControlRow(selector))
     statusControl(mapControlRow(selector))
     trendControl(mapControlRow(selector))
+    insetRadios(mapControlRow(selector))
   }
 
   function mapInterfaceToggle($parent) {
@@ -417,21 +430,12 @@ var bsbiDataRoot
     })
 
     // Status on/off toggle
-    var $checDiv = $('<div>').appendTo($container)
+    var $checDiv = $('<div class="checkbox">').appendTo($container)
     $checDiv.css('margin-top', '4.3em')
 
-    var $check = $('<input>').appendTo($checDiv)
-    $check.addClass('form-check-input')
-    $check.attr('type', 'checkbox')
-    $check.attr('checked', 'checked')
-    $check.attr('id', 'atlas-status-checkbox')
-    var $label = $('<label>').appendTo($checDiv)
-    $label.addClass('form-check-label')
-    $label.attr('for', 'atlas-status-checkbox')
-    $label.css('margin-left', '0.5em')
-    $label.text('Show status')
+    $('<label><input type="checkbox" id="atlas-status-checkbox">Show status</label>').appendTo($checDiv)
 
-    $check.change(function() {
+    $('#atlas-status-checkbox').change(function() {
       showStatus = $(this).is(':checked')
       bsbiDataAccess.showStatus = showStatus
       changeMap()
@@ -477,6 +481,28 @@ var bsbiDataRoot
       $tickText.html(p.lower + '<br>' + p.upper)
     })
 
+    $container.css('margin-bottom', '4.3em')
+
+  }
+
+  function insetRadios($parent) { 
+
+    // Overall control container
+    var $container = $('<div>').appendTo($parent)
+    $container.attr('id', 'atlas-inset-control')
+    //$container.hide()
+
+    function makeRadio(label, val, checked) {
+      $('<div class="radio"><label><input type="radio" name="bsbi-inset-type" value="'+ val + '" ' + checked + '>' + label + '</label></div>').appendTo($container)
+    }
+    makeRadio('No insets', 'BI1', '')
+    makeRadio('Channel Isles inset', 'BI2', 'checked')
+    makeRadio('Northern and Channel Isles inset', 'BI4', '')
+    
+    $('input:radio[name=bsbi-inset-type]').change(function () {
+      staticMap.setTransform($(this).val())
+      changeMap()
+    })
   }
 
   function createMaps(selector) {
@@ -485,15 +511,20 @@ var bsbiDataRoot
     var transOptsSel =  JSON.parse(JSON.stringify(brcatlas.namedTransOpts))
     delete transOptsSel.BI3 // Remove the options without CI
 
+    // Init
+    bsbiDataAccess.showStatus = false
+
     // Data access 
     var mapTypesSel = {
       'status_29': bsbiDataAccess.status_29,
-      'status_30_49': bsbiDataAccess.status_30_49,
-      'status_50_69': bsbiDataAccess.status_50_69,
+      // 'status_30_49': bsbiDataAccess.status_30_49,
+      // 'status_50_69': bsbiDataAccess.status_50_69,
+      'status_30_69': bsbiDataAccess.status_30_69,
       'status_70_86': bsbiDataAccess.status_70_86,
       'status_87_99': bsbiDataAccess.status_87_99,
-      'status_00_09': bsbiDataAccess.status_00_09,
-      'status_10_19': bsbiDataAccess.status_10_19,
+      // 'status_00_09': bsbiDataAccess.status_00_09,
+      // 'status_10_19': bsbiDataAccess.status_10_19,
+      'status_00_19': bsbiDataAccess.status_00_19,
       'Tetrad frequency': bsbiDataAccess.bsbiHectadDateTetFreq,
       'change_1987_1999_vs_2000_2019': bsbiDataAccess.change_1987_1999_vs_2000_2019,
       'change_1930_1969_vs_2000_2019': bsbiDataAccess.change_1930_1969_vs_2000_2019
@@ -572,6 +603,8 @@ var bsbiDataRoot
       mapTypesKey: 'status_10_19',
       mapTypesSel: mapTypesSel,
       mapTypesControl: false,
+      transOptsControl: false,
+      seaFill: 'white',
       gridLineColour: '#7C7CD3',
       boundaryColour: '#7C7CD3',
     })
@@ -649,7 +682,7 @@ var bsbiDataRoot
     if (mapType === 'status') {
       var access = periods[$('#atlas-range-select').val()-1].access
       displayedMap.setMapType(access)
-      slippyLegendOpts.width=150
+      slippyLegendOpts.width=160
     } else if (mapType === 'trends') {
       var access = trends[$('#atlas-trend-select').val()-1].access
       displayedMap.setMapType(access)
@@ -662,11 +695,11 @@ var bsbiDataRoot
 
     // Legend display
     if (displayedMapType !== 'static') {
-      if (mapType === 'status') {
-        slippyLegendOpts.display = showStatus
-      } else {
-        slippyLegendOpts.display = true
-      }
+      // if (mapType === 'status') {
+      //   slippyLegendOpts.display = showStatus
+      // } else {
+      //   slippyLegendOpts.display = true
+      // }
       slippyMap.setLegendOpts(slippyLegendOpts)
     }
 
