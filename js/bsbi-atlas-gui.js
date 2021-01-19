@@ -41,17 +41,17 @@ var bsbiDataRoot
       title: 'Gallery',
       fn: sectionEmpty,
     },
-    {
-      group: 'CHARACTERISTICS',
-      id: 'attributes',
-      title: 'Attributes',
-      fn: sectionEmpty,
-    },
+    // {
+    //   group: 'CHARACTERISTICS',
+    //   id: 'attributes',
+    //   title: 'Attributes',
+    //   fn: sectionEmpty,
+    // },
     {
       group: 'CHARACTERISTICS',
       id: 'ecology',
       title: 'Ecology',
-      fn: sectionEmpty,
+      fn: sectionEcology,
     },
     {
       group: 'EXTERNAL LINKS',
@@ -71,12 +71,6 @@ var bsbiDataRoot
       group: 'BIBLIOGRAPHY',
       id: 'references',
       title: 'References',
-      fn: sectionEmpty,
-    },
-    {
-      group: 'BIBLIOGRAPHY',
-      id: 'acknowledgements',
-      title: 'Acknowledgements',
       fn: sectionEmpty,
     },
   ]
@@ -256,6 +250,18 @@ var bsbiDataRoot
 
     createMaps("#bsbiMapDiv")
     createMapControls('#mapControls')
+    sectionEnd($sect, tabs)
+  }
+
+  function sectionEcology(id, tabs) {
+    var $sect, $p, $h
+    $sect = $('#bsbi-atlas-section-' + id)
+    $p = $('<p>').appendTo($sect)
+    $p.text('Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.')
+    $h = $('<h3>').appendTo($sect).text('Attributes')
+    $p = $('<p>').appendTo($sect)
+    $p.text('Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.')
+    
     sectionEnd($sect, tabs)
   }
 
