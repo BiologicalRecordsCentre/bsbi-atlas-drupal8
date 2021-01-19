@@ -608,7 +608,9 @@ var bsbiDataRoot
       gridLineColour: '#7C7CD3',
       boundaryColour: '#7C7CD3',
     })
-    staticMap.basemapImage('background', true, rasterRoot + 'grey_elevation_300.png', rasterRoot + 'grey_elevation_300.pgw')
+    staticMap.basemapImage('greyelev', true, rasterRoot + 'grey_elevation_300.png', rasterRoot + 'grey_elevation_300.pgw')
+    staticMap.basemapImage('colourelev', true, rasterRoot + 'colour_elevation.png', rasterRoot + 'colour_elevation.pgw')
+    staticMap.basemapImage('greyelev', false)
 
     // Create the slippy map
     slippyMap = brcatlas.leafletMap({
@@ -711,21 +713,51 @@ var bsbiDataRoot
   }
 
   function develBlock(selector) {
-    // Tabs on/off
+    // // Tabs on/off
+    // var $bgrp = $('<div class="btn-group" data-toggle="buttons">').appendTo($(selector))
+    // var $onLabel = $('<label class="btn btn-primary active">').appendTo($bgrp)
+    // $('<input type="radio" name="tabsToggle" value="on" checked>').appendTo($onLabel)
+    // $onLabel.append("Show tabs")
+    // var $offLabel = $('<label class="btn btn-primary">').appendTo($bgrp)
+    // $('<input type="radio" name="tabsToggle" value="off">').appendTo($offLabel)
+    // $offLabel.append("No tabs")
+
+    // $('input[type=radio][name="tabsToggle"]').change(function() {
+    //   mainAtlasContent($(this).val() === "on")
+    //   changeMap()
+    // });
+
+    // mainAtlasContent($(this).val() === "on")
+    // changeMap()
+
+    // Backdrop
     var $bgrp = $('<div class="btn-group" data-toggle="buttons">').appendTo($(selector))
-    var $onLabel = $('<label class="btn btn-primary active">').appendTo($bgrp)
-    $('<input type="radio" name="tabsToggle" value="on" checked>').appendTo($onLabel)
-    $onLabel.append("Show tabs")
-    var $offLabel = $('<label class="btn btn-primary">').appendTo($bgrp)
-    $('<input type="radio" name="tabsToggle" value="off">').appendTo($offLabel)
-    $offLabel.append("No tabs")
+    var $greyLabel = $('<label class="btn btn-primary">').appendTo($bgrp)
+    $('<input type="radio" name="mapBackground" value="grey_elevation_300">').appendTo($greyLabel)
+    $greyLabel.append("Grey elev")
+    var $colourLabel = $('<label class="btn btn-primary active">').appendTo($bgrp)
+    $('<input type="radio" name="mapBackground" value="colour_elevation" checked>').appendTo($colourLabel)
+    $colourLabel.append("Colour elev")
+    var $noneLabel = $('<label class="btn btn-primary">').appendTo($bgrp)
+    $('<input type="radio" name="mapBackground" value="">').appendTo($noneLabel)
+    $noneLabel.append("None")
 
-    $('input[type=radio][name="tabsToggle"]').change(function() {
-      mainAtlasContent($(this).val() === "on")
-      changeMap()
+    $('input[type=radio][name="mapBackground"]').change(function() {
+
+      var greyelev = false
+      var colourelev = false
+      var opt = $(this).val()
+      if (opt) {
+        if (opt === 'grey_elevation_300') {
+          greyelev = true
+        }
+        if (opt === 'colour_elevation') {
+          colourelev = true
+        }
+      }
+      staticMap.basemapImage('greyelev', greyelev, rasterRoot + 'grey_elevation_300.png', rasterRoot + 'grey_elevation_300.pgw')
+      staticMap.basemapImage('colourelev', colourelev, rasterRoot + 'colour_elevation.png', rasterRoot + 'colour_elevation.pgw')
     });
-
-    // 
   }
 
   function ecoFlora(identifier) {
