@@ -95,3 +95,14 @@
 #atlas-trend-tick-text-1 {
   margin-left: -4em;
 }
+
+#bsbi-atlas-section-summary .bsbi-atlas-section-header {
+  display: none;
+}
+#bsbi-atlas-section-summary  {
+  margin-top: 1em;
+}
+
+#bsbi-atlas-map-controls {
+  margin-top: 1em;
+}

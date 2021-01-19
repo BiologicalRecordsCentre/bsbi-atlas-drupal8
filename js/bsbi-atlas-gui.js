@@ -25,9 +25,9 @@ var bsbiDataRoot
   var sections = [
     {
       group: null,
-      id: 'distribution',
-      title: 'Distribution',
-      fn: sectionDistribution,
+      id: 'summary',
+      title: 'Summary',
+      fn: sectionSummary,
     },
     {
       group: null,
@@ -152,7 +152,7 @@ var bsbiDataRoot
     mainAtlasContent(tabs)
 
     // Taxon selection control
-    taxonSelectors('.bsbi-atlas-taxon-selector')
+    taxonSelectors('#bsbi-atlas-taxon-selector')
 
     // Navigation block
     navigationBlock('#bsbi-atlas-navigation')
@@ -162,7 +162,7 @@ var bsbiDataRoot
   })
 
   function mainAtlasContent(tabs) {
-    var selected = 'distribution'
+    var selected = 'summary'
 
     // Clear current content (including dialog boxes from SVG maps)
     $('.brc-atlas-map-opts').remove()
@@ -176,6 +176,19 @@ var bsbiDataRoot
           $ul.append(makeTabButton(s.id, s.title, selected))
         }
       })
+
+      // Hide the map controls unless map tab is displayed
+      $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+        var target = $(e.target).attr("href") // activated tab
+        
+        if (target === '#bsbi-atlas-section-summary') {
+          $('#bsbi-atlas-map-controls').show()
+        } else {
+          $('#bsbi-atlas-map-controls').hide()
+        }
+        //console.log(target)
+      })
+
     }
     var $content = $('<div class="tab-content"></div>').appendTo($('#main-atlas-content'))
     sections.forEach(function(s){
@@ -204,7 +217,12 @@ var bsbiDataRoot
         $div.addClass('active')
       }
     }
-    $div.append('<h2>' + title + '</h2>')
+
+    $h = $('<h2>')
+    $h.text(title)
+    $h.addClass('bsbi-atlas-section-header')
+    $div.append($h)
+
     return $div
   }
 
@@ -238,7 +256,7 @@ var bsbiDataRoot
     }
   }
 
-  function sectionDistribution(id, tabs) {
+  function sectionSummary(id, tabs) {
     $sect = $('#bsbi-atlas-section-' + id)
 
     $d = $('<div class=".container-fluid">').appendTo($sect)
@@ -246,10 +264,16 @@ var bsbiDataRoot
     $left = $('<div class="col-sm-8">').appendTo($r)
     $right = $('<div class="col-sm-4">').appendTo($r)
     $left.append('<div id="bsbiMapDiv" width="100%"></div>')
-    $right.append('<div id="mapControls"></div>')
+    //$right.append('<div id="mapControls"></div>')
+    $caption = $right.append('<div id="mapCaption"></div>')
+    $caption.append($('<h3>').text('Caption blah'))
+    $p = $('<p>').appendTo($caption)
+    $p.text('Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.')
+    
 
     createMaps("#bsbiMapDiv")
-    createMapControls('#mapControls')
+    //createMapControls('#<div id="mapControls"></div>')
+    createMapControls('#bsbi-atlas-map-controls')
     sectionEnd($sect, tabs)
   }
 
