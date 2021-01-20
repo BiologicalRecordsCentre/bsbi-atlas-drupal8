@@ -5,6 +5,7 @@ var bsbiDataRoot
   //bsbiatlas.setDataRoot(drupalSettings.bsbi_atlas.dataRoot + 'atlas_taxa_2020_08_25/hectad-dateclass-status/')
 
   bsbiDataRoot = drupalSettings.bsbi_atlas.dataRoot + 'bsbi/atlas_taxa_2020_08_25/hectad-dateclass-status/'
+  var captionRoot = drupalSettings.bsbi_atlas.dataRoot + 'bsbi/captions/'
   var rasterRoot = drupalSettings.bsbi_atlas.dataRoot + 'rasters/'
   var taxaCsv = drupalSettings.bsbi_atlas.dataRoot + 'bsbi/taxon_list.csv'
   var currentTaxon = {
@@ -277,10 +278,11 @@ var bsbiDataRoot
     $right = $('<div class="col-sm-4">').appendTo($r)
     $left.append('<div id="bsbiMapDiv" width="100%"></div>')
     //$right.append('<div id="mapControls"></div>')
-    $caption = $right.append('<div id="mapCaption"></div>')
-    $caption.append($('<h3>').text('Caption blah'))
-    $p = $('<p>').appendTo($caption)
-    $p.text('Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.')
+    $caption = $right.append('<div id="bsbi-caption"></div>')
+
+    //$caption.append($('<h3>').text('Caption blah'))
+    //$p = $('<p>').appendTo($caption)
+    //$p.text('Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.')
     
 
     createMaps("#bsbiMapDiv")
@@ -665,6 +667,7 @@ var bsbiDataRoot
         currentTaxon.identifier = $(this).val()
         currentTaxon.name =  $(this).find(":selected").attr("data-content")
         changeMap()
+        changeCaption()
       })
 
     }).catch(function(e){
@@ -710,6 +713,39 @@ var bsbiDataRoot
       displayedMap.setIdentfier(currentTaxon.identifier) 
       displayedMap.redrawMap()
     }
+  }
+
+  function changeCaption() {
+    console.log('caption', currentTaxon)
+
+    var $caption = $('#bsbi-caption')
+    $caption.html('')
+    d3.csv(captionRoot + currentTaxon.identifier.replace(/\./g, "_") + '.csv')
+      .then(function(d) {
+        if (d[0].description) {
+          $caption.append('<h4>Description</h4>')
+          $caption.append(d[0].description)
+        }
+        if (d[0].biogeography) {
+          $caption.append('<h4>Biogeography</h4>')
+          $caption.append(d[0].biogeography)
+        }
+        if (d[0].trends) {
+          $caption.append('<h4>Trends</h4>')
+          $caption.append(d[0].trends)
+        }
+        if (d[0].authors) {
+          $caption.append('<h4>Authors</h4>')
+          var $ul = $('<ul>').appendTo($caption)
+          d[0].authors.split(';').forEach(function(a) {
+            var $li = $('<li>').appendTo($ul)
+            $li.text(a)
+          })
+        }
+      })
+    //$p = $('<p>').appendTo($caption)
+    //$p.text('Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.')
+    
   }
 
   function develBlock(selector) {
