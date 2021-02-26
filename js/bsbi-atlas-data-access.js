@@ -1,7 +1,41 @@
 var bsbiDataAccess = {};
 bsbiDataAccess.showStatus = true;
+bsbiDataAccess.devel = {
+  changeColours: ['#FAD0C8', '#DD5A2F', '#525252']
+};
 
 (function() {
+
+    // The periodMappsing code added 19/01/2020 to deal with mapping periods required in app
+    // that are different from those expressed in CSV files that I have available at that time.
+    // Was extended to meet the requirement of showing faded symbols for hectads where recorded
+    // in earlier time period.
+    var periodMappings = {
+      "to 1929": {
+          prior:[],
+          csvperiods: ["to 1929"]
+        },
+      "1930 - 1969": {
+          prior: ["to 1929"],
+          csvperiods: ["1930 - 1949", "1950 - 1969"]
+        },
+      "1970 - 1986": {
+          prior: ["to 1929", "1930 - 1949", "1950 - 1969"],
+          csvperiods: ["1970 - 1986"],
+        },
+      "1987 - 1999": {
+          prior: ["to 1929", "1930 - 1949", "1950 - 1969", "1970 - 1986"],
+          csvperiods: ["1987 - 1999"]
+        },
+      "2000 - 2019": {
+          prior: ["to 1929", "1930 - 1949", "1950 - 1969", "1970 - 1986", "1987 - 1999"],
+          csvperiods: ["2000 - 2009", "2010 - 2019"]
+      }
+    }
+
+  bsbiDataAccess.distAllClasses = function(identifier) {
+    return distAllClasses(identifier)
+  }
 
   bsbiDataAccess.status_29 = function(identifier) {
     return nativeSpeciesStatus(identifier, 'to 1929')
@@ -36,34 +70,166 @@ bsbiDataAccess.showStatus = true;
     return file;
   }
 
-  function nativeSpeciesStatus(identifier, period) {
+  function distAllClasses(identifier) {
 
-    // The periodMappsing code added 19/01/2020 to deal with mapping periods required in app
-    // that are different from those expressed in CSV files that I have available at that time.
-    // Was extended to meet the requirement of showing faded symbols for hectads where recorded
-    // in earlier time period.
-    var periodMappings = {
-      "to 1929": {
-          prior:[],
-          csvperiods: ["to 1929"]
-        },
-      "1930 - 1969": {
-          prior: ["to 1929"],
-          csvperiods: ["1930 - 1949", "1950 - 1969"]
-        },
-      "1970 - 1986": {
-          prior: ["to 1929", "1930 - 1949", "1950 - 1969"],
-          csvperiods: ["1970 - 1986"],
-        },
-      "1987 - 1999": {
-          prior: ["to 1929", "1930 - 1949", "1950 - 1969", "1970 - 1986"],
-          csvperiods: ["1987 - 1999"]
-        },
-      "2000 - 2019": {
-          prior: ["to 1929", "1930 - 1949", "1950 - 1969", "1970 - 1986", "1987 - 1999"],
-          csvperiods: ["2000 - 2009", "2010 - 2019"]
-      }
+    var shapes = {
+      n: 'circle', //native
+      a: 'diamond', //non-native (alien),
+      bullseye: 'square',
+      missing: 'circle', //no value yet
+    };
+
+    var statusText = {
+      n: 'Native', //inative
+      a: 'Non-native (alien)', //non-native (alien),
+      bullseye: 'Introduced',
+      missing: 'missing', //no value yet
+    };
+
+    var opacities = {
+      "to 1929": 0.3,
+      "1930 - 1969": 0.4,
+      "1970 - 1986": 0.5,
+      "1987 - 1999": 0.6,
+      "2000 - 2019": 0.8
     }
+
+    var periods = Object.keys(periodMappings).reverse();
+    
+    return new Promise(function (resolve, reject) {
+
+      var counts = {};
+      periods.forEach(function (p) {
+        counts[p] = {
+          ire: {
+            n: 0,
+            a: 0,
+            bullseye: 0,
+            missing: 0,
+            total: 0
+          },
+          uk: {
+            n: 0,
+            a: 0,
+            reint: 0,
+            missing: 0,
+            total: 0
+          }
+        }
+      });
+      Object.keys(statusText).forEach(function (s) {
+        counts[s] = 0
+      });
+
+      d3.csv(getCSV(identifier), function (r) {
+        if (r.hectad ) {
+          // UK or Irish?
+          var country;
+          if (r.hectad.length === 3) {
+            country='ire';
+          } else {
+            country='uk';
+          }
+
+          // Status (can be n for native, a for alien, or bullseye for reintroduced)
+          var atlasstatus = r.atlasstatus ? r.atlasstatus : 'missing';
+
+          // See which period it was *last* recorded in and
+          // count it in the relevant category
+          var occurs = false
+          var period
+          for (iPeriod = 0; iPeriod < periods.length; iPeriod++) {
+            period = periods[iPeriod];
+            var csvperiods = periodMappings[period].csvperiods;
+            for (iCsvperiod = 0; iCsvperiod < csvperiods.length; iCsvperiod++) {
+              var csvperiod = csvperiods[iCsvperiod];
+              if (r[csvperiod] === '1') {
+                occurs = true
+                counts[period][country][atlasstatus]++
+                counts[period][country]['total']++
+                counts[atlasstatus]++
+                break
+              }
+            }
+            if (occurs) break
+          }
+
+          if (occurs) {
+            if (bsbiDataAccess.showStatus) {
+              var capText = statusText[atlasstatus]
+              return {
+                gr: r.hectad,
+                //period: period,
+                shape: shapes[atlasstatus],
+                colour: 'black',
+                size: atlasstatus === 'missing' ? 0.5 : 1,
+                opacity: opacities[period],
+                caption: "Hectad: <b>".concat(r.hectad, "</b></br>Status: <b>").concat(capText, "</b>")
+              };
+            } else {
+              return {
+                gr: r.hectad,
+                //period: period,
+                shape: 'circle',
+                colour: 'black',
+                opacity: opacities[period],
+                caption: "Hectad: <b>".concat(r.hectad, "</b>")
+              };
+            }
+          }
+        }
+      }).then(function (data) {
+        var legend
+        var lines = periods.map(function(p) {
+          return {
+            colour: 'black',
+            opacity: opacities[p],
+            text: p.replace(" - ", "-") + ' (uk: ' + counts[p].uk.total + ', ire: ' + counts[p].ire.total + ')',
+            shape: 'circle',
+            size: 1
+          }
+        })
+        if (bsbiDataAccess.showStatus) {
+          Object.keys(shapes).forEach(function(s){
+            if (counts[s]){
+              lines.push({
+                colour: 'black',
+                opacity: 1,
+                text: s === 'missing' ? 'No status info' : statusText[s],
+                size: s === 'missing' ? 0.5 : 1,
+                shape: shapes[s]
+              })
+            }
+          })
+          legend = {
+            //title: 'Native status',
+            precision: 10000,
+            //size: 1,
+            lines: lines
+          }
+        } else {
+          legend = {
+            //title: '',
+            precision: 10000,
+            size: 1.0,
+            lines: lines
+          }
+        }
+        resolve({
+          records: data,
+          //records: [],
+          precision: 10000,
+          opacity: 0.8,
+          size: 1.0,
+          legend: legend
+        });
+      })["catch"](function (e) {
+        reject(e);
+      });
+    });
+  }
+
+  function nativeSpeciesStatus(identifier, period) {
 
     //Native (n)
     //Alien (a)
@@ -83,20 +249,9 @@ bsbiDataAccess.showStatus = true;
     };
     return new Promise(function (resolve, reject) {
 
-      console.log("show status", bsbiDataAccess.showStatus)
-      var nNativeGB = 0
-      var nNativeIre = 0
-      var nAlienGB = 0
-      var nAlienIre = 0
-      var nPresentGB = 0
-      var nPresentIre = 0
-      var nReintGB = 0
-      var nReintIre = 0
-      var nMissingGB = 0
-      var nMissingIre = 0
+      var nReint = 0
 
       d3.csv(getCSV(identifier), function (r) {
-        //if (r.hectad && r[period] === '1') {
         if (r.hectad ) {
           var occurs = false
           periodMappings[period].csvperiods.forEach(function(csvPeriod) {
@@ -117,52 +272,27 @@ bsbiDataAccess.showStatus = true;
               switch (atlasstatus) {
                 case 'missing':
                   capText = 'missing';
-                  // if (r.hectad.length === 3) {
-                  //   nMissingIre++
-                  // } else {
-                  //   nMissingGB++
-                  // }
                   break;
 
                 case 'n':
                   capText = 'native';
-                  // if (r.hectad.length === 3) {
-                  //   nNativeIre++
-                  // } else {
-                  //   nNativeGB++
-                  // }
                   break;
 
                 case 'a':
                   capText = 'alien (non-native)';
-                  // if (r.hectad.length === 3) {
-                  //   nAlienIre++
-                  // } else {
-                  //   nAlienGB++
-                  // }
                   break;
 
                 case 'y':
                   capText = 'present';
-                  // if (r.hectad.length === 3) {
-                  //   nPresentIre++
-                  // } else {
-                  //   nPresentGB++
-                  // }
                   break;
 
                 case 'bullseye':
                   capText = 'reintroduced';
-                  // if (r.hectad.length === 3) {
-                  //   nReintIre++
-                  // } else {
-                  //   nReintGB++
-                  // }
+                  nReint = nReint + 1;
                   break;
               }
               return {
                 gr: r.hectad,
-                //status: atlasstatus,
                 shape: atlasstatus === "w" ? 'bullseye' : 'circle',
                 colour: colours[atlasstatus],
                 colour2: colours.bullseye,
@@ -186,58 +316,72 @@ bsbiDataAccess.showStatus = true;
           legend = {
             title: 'Native status',
             precision: 10000,
-            opacity: 0.8,
             size: 1,
             lines: [{
               colour: 'blue',
-              //text: 'Native (GB: ' + nNativeGB + ', Ire: ' + nNativeIre + ')',
-              text: 'Native',
+              opacity: 0.8,
+              text: 'Native (' + period.replace(" - ", "-") + ')',
               shape: 'circle'
-            }, {
+            },
+            {
+              colour: 'blue',
+              opacity: 0.4,
+              text: 'Native (earlier)',
+              shape: 'circle'
+            },
+            {
               colour: 'red',
-              //text: 'Alien (GB: ' + nAlienGB + ', Ire: ' + nAlienIre + ')',
-              text: 'Alien',
+              opacity: 0.8,
+              text: 'Alien (' + period.replace(" - ", "-") + ')',
               shape: 'circle'
-            // }, {
-            //   colour: 'grey',
-            //   //text: 'Present (GB: ' + nPresentGB + ', Ire: ' + nPresentIre + ')',
-            //   text: 'Present',
-            //   shape: 'circle'
-            }, {
+            }, 
+            {
+              colour: 'red',
+              opacity: 0.4,
+              text: 'Alien (earlier)',
+              shape: 'circle'
+            }, 
+            {
               colour: 'blue',
               colour2: 'red',
-              //text: 'Reintroduced (GB: ' + nReintGB + ', Ire: ' + nReintIre + ')',
-              text: 'Reintroduced',
+              opacity: 0.8,
+              text: 'Reintroduced (' + period.replace(" - ", "-") + ')',
               shape: 'bullseye'
-            // }, {
-            //   colour: '#F2CC35',
-            //   //text: 'data missing (GB: ' + nMissingGB + ', Ire: ' + nMissingIre + ')',
-            //   text: 'data missing',
-            //   shape: 'circle'
-            }, {
-              colour: 'white',
-              //text: 'Native (GB: ' + nNativeGB + ', Ire: ' + nNativeIre + ')',
-              text: '(faded = earlier)',
-              shape: 'circle'
+            },
+            {
+              colour: 'blue',
+              colour2: 'red',
+              opacity: 0.4,
+              text: 'Reintroduced (earlier)',
+              shape: 'bullseye'
             }]
+          }
+          // If no reintroductions, remove legend item
+          if (!nReint) {
+            legend.lines.pop()
+            legend.lines.pop()
           }
         } else {
           //legend = {lines: []}
           legend = {
-            title: 'Presence',
+            //title: '',
             precision: 10000,
             size: 1,
             lines: [{
               colour: 'black',
               opacity: 0.8,
-              text: 'This period',
+              text: period.replace(" - ", "-"),
               shape: 'circle'
             }, {
               colour: 'black',
               opacity: 0.4,
-              text: 'Earlier period',
+              text: 'Earlier',
               shape: 'circle'
             }]
+          }
+          // If period is 'to 1929' remove the 'earlier' line
+          if (period == 'to 1929') {
+            legend.lines.pop()
           }
         }
         resolve({
@@ -262,7 +406,8 @@ bsbiDataAccess.showStatus = true;
 
   function change(identifier, early, late, legendTitle) {
     var shapes = ['square', 'triangle-up', 'triangle-down'];
-    var colours = ['#FAD0C8', '#DD5A2F', '#525252'];
+    //var colours = ['#FAD0C8', '#DD5A2F', '#525252'];
+    var colours = bsbiDataAccess.devel.changeColours;
     return new Promise(function (resolve, reject) {
       d3.csv(getCSV(identifier), function (r) {
         var presentEarly = early.some(function (f) {
@@ -309,15 +454,15 @@ bsbiDataAccess.showStatus = true;
             precision: 10000,
             opacity: 0.9,
             lines: [{
-              colour: '#DD5A2F',
+              colour: colours[1],
               text: 'Gain',
               shape: 'triangle-up'
             }, {
-              colour: '#FAD0C8',
+              colour: colours[0],
               text: 'No change',
               shape: 'square'
             }, {
-              colour: '#525252',
+              colour: colours[2],
               text: 'Loss',
               shape: 'triangle-down'
             }]
@@ -331,7 +476,8 @@ bsbiDataAccess.showStatus = true;
 
   bsbiDataAccess.bsbiHectadDateTetFreq = function(identifier) {
     var fields = ["to 1929", "1930 - 1949", "1950 - 1969", "1970 - 1986", "1987 - 1999", "2000 - 2009", "2010 - 2019"];
-    var colour = d3.scaleLinear().domain([1, 13, 25]).range(['#edf8b1', '#7fcdbb', '#2c7fb8']);
+    var legendSizeFact = 0.5;
+    //var colour = d3.scaleLinear().domain([1, 13, 25]).range(['#edf8b1', '#7fcdbb', '#2c7fb8']);
     return new Promise(function (resolve, reject) {
       d3.csv(getCSV(identifier), function (r) {
         var fake = fields.reduce(function (t, f) {
@@ -342,14 +488,16 @@ bsbiDataAccess.showStatus = true;
         if (r.hectad) {
           return {
             gr: r.hectad,
-            colour: colour(fake),
+            size: Math.sqrt(fake)/5,
+            //colour: colour(fake),
             caption: "Hectad: <b>".concat(r.hectad, "</b></br>Tetrads where present: <b>").concat(Math.floor(fake), "</b>")
           };
         }
       }).then(function (data) {
         resolve({
           records: data,
-          size: 1,
+          //size: 1,
+          colour: 'black',
           shape: 'circle',
           precision: 10000,
           opacity: 0.9,
@@ -357,17 +505,24 @@ bsbiDataAccess.showStatus = true;
             title: 'Tetrad frequency',
             size: 1,
             shape: 'circle',
+            colour: 'black',
             precision: 10000,
             opacity: 0.9,
             lines: [{
-              colour: '#edf8b1',
-              text: '1 tetrad'
+              text: '5 tetrad',
+              size: Math.sqrt(5)/5 * legendSizeFact,
             }, {
-              colour: '#7fcdbb',
-              text: '13 tetrads'
+              text: '10 tetrads',
+              size: Math.sqrt(10)/5 * legendSizeFact,
+            },{
+              text: '15 tetrad',
+              size: Math.sqrt(15)/5 * legendSizeFact,
             }, {
-              colour: '#2c7fb8',
-              text: '25 tetrads'
+              text: '20 tetrads',
+              size: Math.sqrt(20)/5 * legendSizeFact,
+            }, {
+              text: '25 tetrads',
+              size: Math.sqrt(25)/5 * legendSizeFact,
             }]
           }
         });

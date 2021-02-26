@@ -22,6 +22,13 @@ var bsbiDataRoot
     y: 0,
     data: null
   }
+  var svgLegendOpts = {
+    display: true,
+    scale: 1,
+    x: 10,
+    y: 5,
+    data: null
+  }
 
   var sections = [
     {
@@ -150,14 +157,14 @@ var bsbiDataRoot
 
   $(document).ready(function () {
     //console.log(drupalSettings)
+    //console.log('inset cookie', getCookie('inset'))
 
     // Page title - reflects selected taxon
-    var $title = $('<div id="bsbi-taxon-title"></div>').appendTo($('#bsbi-atlas-gui'))
-    $title.append('<a href="#top">')
-
-    $title.css('font-size', '2.3em')
-    $title.text("No taxon selected")
-    $('#bsbi-atlas-gui').append('<hr>')
+    // var $title = $('<div id="bsbi-taxon-title"></div>').appendTo($('#bsbi-atlas-gui'))
+    // $title.append('<a href="#top">')
+    // $title.css('font-size', '2.3em')
+    // $title.text("No taxon selected")
+    // $('#bsbi-atlas-gui').append('<hr>')
 
     // Initialise main content
     $('#bsbi-atlas-gui').append('<div id="main-atlas-content"></div>')
@@ -230,9 +237,12 @@ var bsbiDataRoot
         $div.addClass('active')
       }
     }
+    //$h = $('<h2>')
+    //$h.text(title)
 
-    $h = $('<h2>')
-    $h.text(title)
+    var $h = $('<p class="bsbi-selected-taxon-name"></p>')
+    $h.css('font-size', '1.3em')
+    $h.css('margin-top', '0.5em')
     $h.addClass('bsbi-atlas-section-header')
     $div.append($h)
 
@@ -270,23 +280,20 @@ var bsbiDataRoot
   }
 
   function sectionSummary(id, tabs) {
-    $sect = $('#bsbi-atlas-section-' + id)
+    var $sect = $('#bsbi-atlas-section-' + id)
 
-    $d = $('<div class=".container-fluid">').appendTo($sect)
-    $r = $('<div class="row">').appendTo($d)
-    $left = $('<div class="col-sm-8">').appendTo($r)
-    $right = $('<div class="col-sm-4">').appendTo($r)
+    var $d = $('<div class=".container-fluid">').appendTo($sect)
+    var $r = $('<div class="row">').appendTo($d)
+    var $left = $('<div class="col-sm-8">').appendTo($r)
+    var $right = $('<div class="col-sm-4">').appendTo($r)
     $left.append('<div id="bsbiMapDiv" width="100%"></div>')
-    //$right.append('<div id="mapControls"></div>')
-    $caption = $right.append('<div id="bsbi-caption"></div>')
 
-    //$caption.append($('<h3>').text('Caption blah'))
-    //$p = $('<p>').appendTo($caption)
-    //$p.text('Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.')
+    var $taxon = $('<div class="bsbi-selected-taxon-name"></div>').appendTo($right)
+    $taxon.css('font-size', '1.3em')
+    $right.append('<hr/>')
+    $right.append('<div id="bsbi-caption"></div>')
     
-
     createMaps("#bsbiMapDiv")
-    //createMapControls('#<div id="mapControls"></div>')
     createMapControls('#bsbi-atlas-map-controls')
     sectionEnd($sect, tabs)
   }
@@ -313,6 +320,7 @@ var bsbiDataRoot
     mapInterfaceToggle(mapControlRow(selector))
     mapTypeSelector(mapControlRow(selector))
     statusControl(mapControlRow(selector))
+    statusCheckbox(mapControlRow(selector))
     trendControl(mapControlRow(selector))
     insetRadios(mapControlRow(selector))
   }
@@ -361,6 +369,12 @@ var bsbiDataRoot
         $('#atlas-period-slider-control').hide()
       }
 
+      if ($(this).val() === 'allclass' || $(this).val() === 'status') {
+        $('#atlas-status-checkbox-control').show()
+      } else {
+        $('#atlas-status-checkbox-control').hide()
+      }
+
       if ($(this).val() === 'trends') {
         $('#atlas-trend-slider-control').show()
       } else {
@@ -371,11 +385,15 @@ var bsbiDataRoot
     })
     var types = [
       {
-        caption: 'Distribution by atlas period',
+        caption: 'Distribution by year range',
         val: 'status'
       },
       {
-        caption: 'Trend maps',
+        caption: 'Distribution overview',
+        val: 'allclass'
+      },
+      {
+        caption: 'Change maps',
         val: 'trends'
       },
       {
@@ -394,6 +412,24 @@ var bsbiDataRoot
     $sel.selectpicker()
   }
 
+  function statusCheckbox($parent) {
+    // Overall control container
+    var $container = $('<div>').appendTo($parent)
+    $container.attr('id', 'atlas-status-checkbox-control')
+
+    // Status on/off toggle
+    var $checDiv = $('<div class="checkbox">').appendTo($container)
+    //$checDiv.css('margin-top', '4.3em')
+
+    $('<label><input type="checkbox" id="atlas-status-checkbox">Show status</label>').appendTo($checDiv)
+
+    $('#atlas-status-checkbox').change(function() {
+      showStatus = $(this).is(':checked')
+      bsbiDataAccess.showStatus = showStatus
+      changeMap()
+    })
+  }
+
   function statusControl($parent) {
     
     // Overall control container
@@ -401,10 +437,10 @@ var bsbiDataRoot
     $container.attr('id', 'atlas-period-slider-control')
 
     // Period display
-    var $indicator = $('<div>').appendTo($container)
-    $indicator.css('font-size', '1.5em')
-    $indicator.css('margin-bottom', '0.2em')
-    $indicator.text(periods[periods.length - 1].caption)
+    // var $indicator = $('<div>').appendTo($container)
+    // $indicator.css('font-size', '1.5em')
+    // $indicator.css('margin-bottom', '0.2em')
+    // $indicator.text(periods[periods.length - 1].caption)
 
     // Slider
     var $sliderContainer = $('<div>').appendTo($container)
@@ -413,12 +449,13 @@ var bsbiDataRoot
     $slider.addClass('slider')
     $slider.attr('type', 'range').attr('min', '1').attr('max', periods.length).attr('id', 'atlas-range-select')
     $slider.change(function() {
-      $indicator.text(periods[$('#atlas-range-select').val()-1].caption)
+      //$indicator.text(periods[$('#atlas-range-select').val()-1].caption)
       changeMap()
     })
 
     var $scaleContainer = $('<div>').appendTo($sliderContainer)
     $scaleContainer.addClass('atlas-range-tick-container')
+    $scaleContainer.css('margin-bottom', '4.3em')
     periods.forEach(function(p, i){
       var $tick = $('<span>').appendTo($scaleContainer)
       $tick.addClass('atlas-range-tick')
@@ -431,17 +468,17 @@ var bsbiDataRoot
       $tickText.html(p.min + '<br>' + p.max)
     })
 
-    // Status on/off toggle
-    var $checDiv = $('<div class="checkbox">').appendTo($container)
-    $checDiv.css('margin-top', '4.3em')
+    // // Status on/off toggle
+    // var $checDiv = $('<div class="checkbox">').appendTo($container)
+    // $checDiv.css('margin-top', '4.3em')
 
-    $('<label><input type="checkbox" id="atlas-status-checkbox">Show status</label>').appendTo($checDiv)
+    // $('<label><input type="checkbox" id="atlas-status-checkbox">Show status</label>').appendTo($checDiv)
 
-    $('#atlas-status-checkbox').change(function() {
-      showStatus = $(this).is(':checked')
-      bsbiDataAccess.showStatus = showStatus
-      changeMap()
-    })
+    // $('#atlas-status-checkbox').change(function() {
+    //   showStatus = $(this).is(':checked')
+    //   bsbiDataAccess.showStatus = showStatus
+    //   changeMap()
+    // })
   }
 
   function trendControl($parent) {
@@ -451,10 +488,10 @@ var bsbiDataRoot
     $container.hide()
 
     // Trend display
-    var $indicator = $('<div>').appendTo($container)
-    $indicator.css('font-size', '1.5em')
-    $indicator.css('margin-bottom', '0.2em')
-    $indicator.text(trends[trends.length - 1].caption)
+    // var $indicator = $('<div>').appendTo($container)
+    // $indicator.css('font-size', '1.5em')
+    // $indicator.css('margin-bottom', '0.2em')
+    // $indicator.text(trends[trends.length - 1].caption)
 
     // Slider
     var $sliderContainer = $('<div>').appendTo($container)
@@ -464,7 +501,7 @@ var bsbiDataRoot
     $slider.addClass('slider')
     $slider.attr('type', 'range').attr('min', '1').attr('max', trends.length).attr('id', 'atlas-trend-select')
     $slider.change(function() {
-      $indicator.text(trends[$('#atlas-trend-select').val()-1].caption)
+      //$indicator.text(trends[$('#atlas-trend-select').val()-1].caption)
       changeMap()
     })
 
@@ -497,12 +534,14 @@ var bsbiDataRoot
     function makeRadio(label, val, checked) {
       $('<div class="radio"><label><input type="radio" name="bsbi-inset-type" value="'+ val + '" ' + checked + '>' + label + '</label></div>').appendTo($container)
     }
-    makeRadio('No insets', 'BI1', '')
-    makeRadio('Channel Isles inset', 'BI2', 'checked')
-    makeRadio('Northern and Channel Isles inset', 'BI4', '')
+    var selectedInset = getCookie('inset') ? getCookie('inset') : 'BI4'
+    makeRadio('No insets', 'BI1', selectedInset === 'BI1' ? 'checked' : '')
+    makeRadio('Channel Isles inset', 'BI2', selectedInset === 'BI2' ? 'checked' : '')
+    makeRadio('Northern and Channel Isles inset', 'BI4', selectedInset === 'BI4' ? 'checked' : '')
     
     $('input:radio[name=bsbi-inset-type]').change(function () {
       staticMap.setTransform($(this).val())
+      setCookie('inset', $(this).val(), 30)
       changeMap()
     })
   }
@@ -529,7 +568,8 @@ var bsbiDataRoot
       'status_00_19': bsbiDataAccess.status_00_19,
       'Tetrad frequency': bsbiDataAccess.bsbiHectadDateTetFreq,
       'change_1987_1999_vs_2000_2019': bsbiDataAccess.change_1987_1999_vs_2000_2019,
-      'change_1930_1969_vs_2000_2019': bsbiDataAccess.change_1930_1969_vs_2000_2019
+      'change_1930_1969_vs_2000_2019': bsbiDataAccess.change_1930_1969_vs_2000_2019,
+      'distAllClasses': bsbiDataAccess.distAllClasses
     }
 
     // Basemaps
@@ -568,18 +608,41 @@ var bsbiDataRoot
         }
       },
       {
-        name: 'NLS Historic',
+        name: 'GEBCO 2020 Elevation',
         type: 'wms',
         selected: false,
-        url: 'https://nls-{s}.tileserver.com/nls/{z}/{x}/{y}.jpg', 
+        url: 'https://www.gebco.net/data_and_products/gebco_web_services/2020/mapserv?',
         opts: {
-          attribution: '<a href="https://maps.nls.uk/projects/api//">National Library of Scotland Historic Maps</a>',
-          bounds: [[49.6, -12], [61.7, 3]],
-          minZoom: 1,
-          maxZoom: 18,
-          subdomains: '0123'
+          layers: 'GEBCO_2020_Grid_2',
+          maxZoom: 17,
+          attribution: 'Imagery reproduced from the GEBCO_2020 Grid, GEBCO Compilation Group (2020) GEBCO 2020 Grid (doi:10.5285/a29c5465-b138-234d-e053-6c86abc040b9)'
         }
       },
+      {
+        name: 'Copernicus elevation aspect',
+        type: 'wms',
+        selected: false,
+        url: 'https://copernicus.discomap.eea.europa.eu/arcgis/services/Elevation/Aspect/MapServer/WMSServer?',
+        opts: {
+          layers: 'image',
+          maxZoom: 17,
+          attribution: '&copy; European Commission'
+        }
+      },
+      // Removed NLS historic because Ireland not included (as per instruction from January 2021)
+      // {
+      //   name: 'NLS Historic',
+      //   type: 'wms',
+      //   selected: false,
+      //   url: 'https://nls-{s}.tileserver.com/nls/{z}/{x}/{y}.jpg', 
+      //   opts: {
+      //     attribution: '<a href="https://maps.nls.uk/projects/api//">National Library of Scotland Historic Maps</a>',
+      //     bounds: [[49.6, -12], [61.7, 3]],
+      //     minZoom: 1,
+      //     maxZoom: 18,
+      //     subdomains: '0123'
+      //   }
+      // },
     ]
 
     // Map height
@@ -593,14 +656,8 @@ var bsbiDataRoot
       expand: true,
       legend: true,
       legendScale: 1,
-      legendOpts: {
-        display: true,
-        scale: 1,
-        x: 10,
-        y: 5,
-        data: null
-      },
-      transOptsKey: 'BI2',
+      legendOpts: svgLegendOpts,
+      transOptsKey: getCookie('inset') ? getCookie('inset') : 'BI4',
       transOptsSel: transOptsSel,
       mapTypesKey: 'status_10_19',
       mapTypesSel: mapTypesSel,
@@ -666,6 +723,7 @@ var bsbiDataRoot
       $sel.on('changed.bs.select', function (e, clickedIndex, isSelected, previousValue) {
         currentTaxon.identifier = $(this).val()
         currentTaxon.name =  $(this).find(":selected").attr("data-content")
+        $('.bsbi-selected-taxon-name').html(currentTaxon.name)
         changeMap()
         changeCaption()
       })
@@ -683,56 +741,82 @@ var bsbiDataRoot
       displayedMap = slippyMap
     }
 
+    var statusChecked = $('#atlas-status-checkbox').is(':checked')
+    svgLegendOpts.scale=0.9
     var mapType = $('#atlas-map-type-selector').val()
     if (mapType === 'status') {
       var access = periods[$('#atlas-range-select').val()-1].access
       displayedMap.setMapType(access)
-      slippyLegendOpts.width=160
+      slippyLegendOpts.width = statusChecked ? 180 : 125
+      staticMap.basemapImage('colourelev', true)
+    } else if (mapType === 'allclass') {
+      displayedMap.setMapType('distAllClasses')
+      slippyLegendOpts.width=250
+      staticMap.basemapImage('colourelev', true)
     } else if (mapType === 'trends') {
       var access = trends[$('#atlas-trend-select').val()-1].access
       displayedMap.setMapType(access)
       slippyLegendOpts.width=305
+      staticMap.basemapImage('colourelev', false)
     } else if (mapType === 'tetrad') {
       displayedMap.setMapType('Tetrad frequency')
       slippyLegendOpts.width=155
+      staticMap.basemapImage('colourelev', true)
     }
+
+    // To try to keep the legend around the same apparent size when
+    // actual map size changes due to inset change, we set a scale
+    // factor to apply to the legend depending on what inset value
+    // is specified.
+    var inset = $('input:radio[name=bsbi-inset-type]:checked').val()
+    if (inset == 'BI1') {
+      svgLegendOpts.scale = svgLegendOpts.scale * 0.77
+    }
+    if (inset == 'BI2') {
+      svgLegendOpts.scale = svgLegendOpts.scale * 0.85
+    }
+    
+    staticMap.setLegendOpts(svgLegendOpts)
     slippyMap.setLegendOpts(slippyLegendOpts)
 
-    // Legend display
-    if (displayedMapType !== 'static') {
-      // if (mapType === 'status') {
-      //   slippyLegendOpts.display = showStatus
-      // } else {
-      //   slippyLegendOpts.display = true
-      // }
-      slippyMap.setLegendOpts(slippyLegendOpts)
-    }
-
     if (currentTaxon.identifier) {
-      $('#bsbi-taxon-title').html(currentTaxon.name)
+      //$('#bsbi-taxon-title').html(currentTaxon.name)
       displayedMap.setIdentfier(currentTaxon.identifier) 
       displayedMap.redrawMap()
     }
+    // // Legend display
+    // if (displayedMapType !== 'static') {
+    //   // if (mapType === 'status') {
+    //   //   slippyLegendOpts.display = showStatus
+    //   // } else {
+    //   //   slippyLegendOpts.display = true
+    //   // }
+    //   slippyMap.setLegendOpts(slippyLegendOpts)
+    // }
   }
 
   function changeCaption() {
-    console.log('caption', currentTaxon)
+    //console.log('caption', currentTaxon)
 
+    var $p
     var $caption = $('#bsbi-caption')
     $caption.html('')
     d3.csv(captionRoot + currentTaxon.identifier.replace(/\./g, "_") + '.csv')
       .then(function(d) {
         if (d[0].description) {
           $caption.append('<h4>Description</h4>')
-          $caption.append(d[0].description)
+          $p = $('<p>').appendTo($caption)
+          $p.append(d[0].description)
         }
         if (d[0].biogeography) {
           $caption.append('<h4>Biogeography</h4>')
-          $caption.append(d[0].biogeography)
+          $p = $('<p>').appendTo($caption)
+          $p.append(d[0].biogeography)
         }
         if (d[0].trends) {
           $caption.append('<h4>Trends</h4>')
-          $caption.append(d[0].trends)
+          $p = $('<p>').appendTo($caption)
+          $p.append(d[0].trends)
         }
         if (d[0].authors) {
           $caption.append('<h4>Authors</h4>')
@@ -765,9 +849,53 @@ var bsbiDataRoot
 
     // mainAtlasContent($(this).val() === "on")
     // changeMap()
+    
+    // Colours
+    var $colours = $('<div style="margin-top: 1em">').appendTo($(selector))
 
+    // No change colour
+    var $divNoChange = $('<div>').appendTo($colours)
+    $('<input type="text" style="width: 120px" id="noChangeColour">').appendTo($divNoChange)
+    $('<label for="noChangeColour" style="margin-left: 1em">Change map - no change colour</label>').appendTo($divNoChange)
+    const noChangeColour = new JSColor('#noChangeColour', {onChange: colourChange})
+    noChangeColour.fromString(bsbiDataAccess.devel.changeColours[0])
+
+    // Gain colour
+    var $divGain = $('<div>').appendTo($colours)
+    $('<input type="text" style="width: 120px" id="gainColour">').appendTo($divGain)
+    $('<label for="gainColour" style="margin-left: 1em">Change map - gain colour</label>').appendTo($divGain)
+    const gainColour = new JSColor('#gainColour', {onChange: colourChange})
+    gainColour.fromString(bsbiDataAccess.devel.changeColours[1])
+
+    // Loss colour
+    var $divLoss = $('<div>').appendTo($colours)
+    $('<input type="text" style="width: 120px" id="lossColour">').appendTo($divLoss)
+    $('<label for="lossColour" style="margin-left: 1em">Change map - loss colour</label>').appendTo($divLoss)
+    const lossColour = new JSColor('#lossColour', {onChange: colourChange})
+    lossColour.fromString(bsbiDataAccess.devel.changeColours[2])
+
+    function colourChange() {
+      bsbiDataAccess.devel.changeColours[0]=noChangeColour.toHEXString()
+      bsbiDataAccess.devel.changeColours[1]=gainColour.toHEXString()
+      bsbiDataAccess.devel.changeColours[2]=lossColour.toHEXString()
+      changeMap()
+    }
+
+    // Dashed grid
+    var $dashGrid = $('<div style="margin-top: 1em">').appendTo($(selector))
+    var $gridBtn = $('<button type="button" class="btn btn-primary">Toggle dashed grid</button>').appendTo($dashGrid)
+    var gridDashed = false;
+    $gridBtn.click(function() {
+      gridDashed = !gridDashed;
+      if (gridDashed) {
+        $('#bsbiMapDiv g#grid path').css('stroke-dasharray', '3,2');
+      } else {
+        $('#bsbiMapDiv g#grid path').css('stroke-dasharray', '');
+      }
+      
+    })
     // Backdrop
-    var $bgrp = $('<div class="btn-group" data-toggle="buttons">').appendTo($(selector))
+    var $bgrp = $('<div class="btn-group" data-toggle="buttons" style="margin-top: 1em">').appendTo($(selector))
     var $greyLabel = $('<label class="btn btn-primary">').appendTo($bgrp)
     $('<input type="radio" name="mapBackground" value="grey_elevation_300">').appendTo($greyLabel)
     $greyLabel.append("Grey elev")
@@ -828,6 +956,29 @@ var bsbiDataRoot
         }
       })
     })
+  }
+
+  function setCookie(cname, cvalue, exdays) {
+    var d = new Date()
+    d.setTime(d.getTime() + (exdays*24*60*60*1000))
+    var expires = "expires="+ d.toUTCString()
+    document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/"
+  }
+
+  function getCookie(cname) {
+    var name = cname + "="
+    var decodedCookie = decodeURIComponent(document.cookie)
+    var ca = decodedCookie.split(';')
+    for(var i = 0; i <ca.length; i++) {
+      var c = ca[i]
+      while (c.charAt(0) == ' ') {
+        c = c.substring(1)
+      }
+      if (c.indexOf(name) == 0) {
+        return c.substring(name.length, c.length)
+      }
+    }
+    return ""
   }
 
 })(jQuery, Drupal, drupalSettings)
