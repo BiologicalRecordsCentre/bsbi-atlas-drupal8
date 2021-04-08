@@ -19,8 +19,8 @@ class AtlasTaxonSelector extends BlockBase {
    * {@inheritdoc}
    */
   public function build() {
-    $species = '<div id="bsbi-atlas-taxon-selector"></div>';
-    $mapcontrols = '<div id="bsbi-atlas-map-controls"></div>';
+    $species = '<div class="bsbi-atlas-taxon-selector"></div>';
+    $mapcontrols = '<div class="bsbi-atlas-map-controls"></div>';
     return [
       '#markup' => $species . $mapcontrols,
     ];

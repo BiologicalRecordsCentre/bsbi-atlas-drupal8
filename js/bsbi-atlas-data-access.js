@@ -72,19 +72,27 @@ bsbiDataAccess.devel = {
 
   function distAllClasses(identifier) {
 
-    var shapes = {
-      n: 'circle', //native
-      a: 'diamond', //non-native (alien),
-      bullseye: 'square',
-      missing: 'circle', //no value yet
-    };
-
     var statusText = {
       n: 'Native', //inative
       a: 'Non-native (alien)', //non-native (alien),
       bullseye: 'Introduced',
       missing: 'missing', //no value yet
     };
+
+    var statusColour = {
+      n: 'blue',
+      a: 'red',
+      bullseye: 'black',
+      missing: 'black'
+    }
+
+    var legendText = {
+      "to 1929": "pre-1930",
+      "1930 - 1969": "1930-69",
+      "1970 - 1986": "1970-86",
+      "1987 - 1999": "1987-99",
+      "2000 - 2019": "2000-19"
+    }
 
     var opacities = {
       "to 1929": 0.3,
@@ -108,50 +116,46 @@ bsbiDataAccess.devel = {
             missing: 0,
             total: 0
           },
-          uk: {
+          gb: {
             n: 0,
             a: 0,
-            reint: 0,
+            bullseye: 0,
             missing: 0,
             total: 0
           }
         }
       });
-      Object.keys(statusText).forEach(function (s) {
-        counts[s] = 0
-      });
 
       d3.csv(getCSV(identifier), function (r) {
         if (r.hectad ) {
-          // UK or Irish?
+          // GB or Irish?
           var country;
           if (r.hectad.length === 3) {
             country='ire';
           } else {
-            country='uk';
+            country='gb';
           }
 
           // Status (can be n for native, a for alien, or bullseye for reintroduced)
           var atlasstatus = r.atlasstatus ? r.atlasstatus : 'missing';
 
-          // See which period it was *last* recorded in and
-          // count it in the relevant category
+          // Count the occurrences in each date category
+          // (not just the last one recorded in)
           var occurs = false
-          var period
+          var period, recent
           for (iPeriod = 0; iPeriod < periods.length; iPeriod++) {
             period = periods[iPeriod];
             var csvperiods = periodMappings[period].csvperiods;
             for (iCsvperiod = 0; iCsvperiod < csvperiods.length; iCsvperiod++) {
               var csvperiod = csvperiods[iCsvperiod];
               if (r[csvperiod] === '1') {
-                occurs = true
                 counts[period][country][atlasstatus]++
                 counts[period][country]['total']++
-                counts[atlasstatus]++
+                occurs = true
+                recent = recent ? recent : period //Save the most recent period
                 break
               }
             }
-            if (occurs) break
           }
 
           if (occurs) {
@@ -159,20 +163,18 @@ bsbiDataAccess.devel = {
               var capText = statusText[atlasstatus]
               return {
                 gr: r.hectad,
-                //period: period,
-                shape: shapes[atlasstatus],
-                colour: 'black',
+                shape: 'circle',
+                colour: statusColour[atlasstatus],
                 size: atlasstatus === 'missing' ? 0.5 : 1,
-                opacity: opacities[period],
+                opacity: opacities[recent],
                 caption: "Hectad: <b>".concat(r.hectad, "</b></br>Status: <b>").concat(capText, "</b>")
               };
             } else {
               return {
                 gr: r.hectad,
-                //period: period,
                 shape: 'circle',
                 colour: 'black',
-                opacity: opacities[period],
+                opacity: opacities[recent],
                 caption: "Hectad: <b>".concat(r.hectad, "</b>")
               };
             }
@@ -180,47 +182,57 @@ bsbiDataAccess.devel = {
         }
       }).then(function (data) {
         var legend
-        var lines = periods.map(function(p) {
-          return {
-            colour: 'black',
-            opacity: opacities[p],
-            text: p.replace(" - ", "-") + ' (uk: ' + counts[p].uk.total + ', ire: ' + counts[p].ire.total + ')',
-            shape: 'circle',
-            size: 1
-          }
-        })
+        var totalAlien = periods.reduce(function(t, p) {return t + counts[p].gb.a + counts[p].ire.a}, 0)
+        var totalNative = periods.reduce(function(t, p) {return t + counts[p].gb.n + counts[p].ire.n}, 0)
         if (bsbiDataAccess.showStatus) {
-          Object.keys(shapes).forEach(function(s){
-            if (counts[s]){
-              lines.push({
-                colour: 'black',
-                opacity: 1,
-                text: s === 'missing' ? 'No status info' : statusText[s],
-                size: s === 'missing' ? 0.5 : 1,
-                shape: shapes[s]
+          var lines = []
+          if (totalNative) {
+            lines.push({text: ['Native', '', 'GB', 'IR'], underline: true})
+            periods.forEach(function(p) {
+              lines.push ({
+                colour: statusColour.n,
+                opacity: opacities[p],
+                text: [legendText[p], 'symbol', counts[p].gb.n, counts[p].ire.n],
+                shape: 'circle'
               })
-            }
-          })
-          legend = {
-            //title: 'Native status',
-            precision: 10000,
-            //size: 1,
-            lines: lines
+            })
+          }
+          if(totalNative && totalAlien){
+            lines.push({text: []})
+          }
+          if (totalAlien) {
+            lines.push({text: ['Alien', '', 'GB', 'IR'], underline: true})
+            periods.forEach(function(p) {
+              lines.push ({
+                colour: statusColour.a,
+                opacity: opacities[p],
+                text: [legendText[p], 'symbol', counts[p].gb.a, counts[p].ire.a],
+                shape: 'circle'
+              })
+            })
           }
         } else {
-          legend = {
-            //title: '',
-            precision: 10000,
-            size: 1.0,
-            lines: lines
-          }
+          var lines = [{text: ['', '', 'GB', 'IR'], underline: true}]
+          periods.forEach(function(p) {
+            lines.push ({
+              colour: 'black',
+              opacity: opacities[p],
+              text: [legendText[p], 'symbol', counts[p].gb.total, counts[p].ire.total],
+              shape: 'circle'
+            })
+          })
         }
+        legend = {
+          size: 0.8,
+          raligned: [false, false, true, true],
+          padding: 5,
+          lines: lines
+        }
+
         resolve({
           records: data,
-          //records: [],
           precision: 10000,
-          opacity: 0.8,
-          size: 1.0,
+          size: 1,
           legend: legend
         });
       })["catch"](function (e) {
@@ -247,9 +259,27 @@ bsbiDataAccess.devel = {
       w: 'blue',
       bullseye: 'red'
     };
-    return new Promise(function (resolve, reject) {
 
-      var nReint = 0
+    var counts = {
+      occurs: {
+        missing: 0,
+        n: 0,
+        a: 0,
+        y: 0,
+        w: 0,
+        bullseye:0
+      },
+      prior: {
+        missing: 0,
+        n: 0,
+        a: 0,
+        y: 0,
+        w: 0,
+        bullseye:0
+      }
+    };
+
+    return new Promise(function (resolve, reject) {
 
       d3.csv(getCSV(identifier), function (r) {
         if (r.hectad ) {
@@ -288,9 +318,15 @@ bsbiDataAccess.devel = {
 
                 case 'bullseye':
                   capText = 'reintroduced';
-                  nReint = nReint + 1;
                   break;
               }
+              
+              if (occurs) {
+                counts.occurs[atlasstatus] = counts.occurs[atlasstatus] + 1;
+              } else {
+                counts.prior[atlasstatus] = counts.prior[atlasstatus] + 1;
+              }
+              
               return {
                 gr: r.hectad,
                 shape: atlasstatus === "w" ? 'bullseye' : 'circle',
@@ -317,54 +353,63 @@ bsbiDataAccess.devel = {
             title: 'Native status',
             precision: 10000,
             size: 1,
-            lines: [{
+            lines: []
+          }
+          if (counts.occurs.n) {
+            legend.lines.push({
               colour: 'blue',
               opacity: 0.8,
               text: 'Native (' + period.replace(" - ", "-") + ')',
               shape: 'circle'
-            },
-            {
+            })
+          }
+          //if (period != 'to 1929') {
+          if (counts.prior.n) {
+            legend.lines.push({
               colour: 'blue',
               opacity: 0.4,
               text: 'Native (earlier)',
               shape: 'circle'
-            },
-            {
+            })
+          }
+          if (counts.occurs.a) {
+            legend.lines.push({
               colour: 'red',
               opacity: 0.8,
               text: 'Alien (' + period.replace(" - ", "-") + ')',
               shape: 'circle'
-            }, 
-            {
+            })
+          }
+          //if (period != 'to 1929') {
+          if (counts.prior.a) {
+            legend.lines.push({
               colour: 'red',
               opacity: 0.4,
               text: 'Alien (earlier)',
               shape: 'circle'
-            }, 
-            {
+            })
+          }
+          // If no reintroductions, remove legend item
+          if (counts.occurs.bullseye) {
+            legend.lines.push({
               colour: 'blue',
               colour2: 'red',
               opacity: 0.8,
               text: 'Reintroduced (' + period.replace(" - ", "-") + ')',
               shape: 'bullseye'
-            },
-            {
+            })
+          }
+          if (counts.prior.bullseye) {
+            legend.lines.push({
               colour: 'blue',
               colour2: 'red',
               opacity: 0.4,
               text: 'Reintroduced (earlier)',
               shape: 'bullseye'
-            }]
-          }
-          // If no reintroductions, remove legend item
-          if (!nReint) {
-            legend.lines.pop()
-            legend.lines.pop()
+            })
           }
         } else {
-          //legend = {lines: []}
           legend = {
-            //title: '',
             precision: 10000,
             size: 1,
             lines: [{

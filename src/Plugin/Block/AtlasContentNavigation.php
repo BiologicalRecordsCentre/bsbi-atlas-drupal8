@@ -20,7 +20,7 @@ class AtlasContentNavigation extends BlockBase {
    */
   public function build() {
     return [
-      '#markup' => '<div id="bsbi-atlas-navigation"></div>',
+      '#markup' => '<div class="bsbi-atlas-navigation"></div>',
     ];
   }
 

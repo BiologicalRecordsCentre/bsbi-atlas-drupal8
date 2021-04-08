@@ -13,11 +13,14 @@ var bsbiDataRoot
     name: null,
   }
   var slippyMap, staticMap
-  //var showStatus
+  var mapType = 'status'
+  var showStatus = false
   var displayedMapType = 'static'
+  var atlasRangeIndex = 5
+  var atlasTrendIndex = 2
   var slippyLegendOpts = {
     display: true,
-    scale: 1,
+    scale: 0.8,
     x: 10,
     y: 0,
     data: null
@@ -172,10 +175,10 @@ var bsbiDataRoot
     mainAtlasContent(tabs)
 
     // Taxon selection control
-    taxonSelectors('#bsbi-atlas-taxon-selector')
+    taxonSelectors('.bsbi-atlas-taxon-selector')
 
     // Navigation block
-    navigationBlock('#bsbi-atlas-navigation')
+    navigationBlock('.bsbi-atlas-navigation')
 
     // Devel block
     develBlock('#bsbi-atlas-development')
@@ -202,9 +205,9 @@ var bsbiDataRoot
         var target = $(e.target).attr("href") // activated tab
         
         if (target === '#bsbi-atlas-section-summary') {
-          $('#bsbi-atlas-map-controls').show()
+          $('.bsbi-atlas-map-controls').show()
         } else {
-          $('#bsbi-atlas-map-controls').hide()
+          $('.bsbi-atlas-map-controls').hide()
         }
         //console.log(target)
       })
@@ -294,7 +297,7 @@ var bsbiDataRoot
     $right.append('<div id="bsbi-caption"></div>')
     
     createMaps("#bsbiMapDiv")
-    createMapControls('#bsbi-atlas-map-controls')
+    createMapControls('.bsbi-atlas-map-controls')
     sectionEnd($sect, tabs)
   }
 
@@ -359,26 +362,28 @@ var bsbiDataRoot
     // Main type selector
     var $sel = $('<select>').appendTo($parent)
     $sel.addClass('selectpicker')
-    $sel.attr('id', 'atlas-map-type-selector')
+    $sel.addClass('atlas-map-type-selector')
     $sel.attr('data-width', '100%')
     $sel.on('changed.bs.select', function (e, clickedIndex, isSelected, previousValue) {
 
-      if ($(this).val() === 'status') {
-        $('#atlas-period-slider-control').show()
+      mapType = $(this).val()
+
+      if (mapType === 'status') {
+        $('.atlas-period-slider-control').show()
       } else {
-        $('#atlas-period-slider-control').hide()
+        $('.atlas-period-slider-control').hide()
       }
 
-      if ($(this).val() === 'allclass' || $(this).val() === 'status') {
-        $('#atlas-status-checkbox-control').show()
+      if (mapType === 'allclass' || $(this).val() === 'status') {
+        $('.atlas-status-checkbox-control').show()
       } else {
-        $('#atlas-status-checkbox-control').hide()
+        $('.atlas-status-checkbox-control').hide()
       }
 
-      if ($(this).val() === 'trends') {
-        $('#atlas-trend-slider-control').show()
+      if (mapType === 'trends') {
+        $('.atlas-trend-slider-control').show()
       } else {
-        $('#atlas-trend-slider-control').hide()
+        $('.atlas-trend-slider-control').hide()
       }
 
       changeMap()
@@ -397,7 +402,7 @@ var bsbiDataRoot
         val: 'trends'
       },
       {
-        caption: 'Tetrad density',
+        caption: 'Tetrad frequency',
         val: 'tetrad'
       },
     ]
@@ -415,15 +420,15 @@ var bsbiDataRoot
   function statusCheckbox($parent) {
     // Overall control container
     var $container = $('<div>').appendTo($parent)
-    $container.attr('id', 'atlas-status-checkbox-control')
+    $container.addClass('atlas-status-checkbox-control')
 
     // Status on/off toggle
     var $checDiv = $('<div class="checkbox">').appendTo($container)
     //$checDiv.css('margin-top', '4.3em')
 
-    $('<label><input type="checkbox" id="atlas-status-checkbox">Show status</label>').appendTo($checDiv)
+    $('<label><input type="checkbox" class="atlas-status-checkbox">Show status</label>').appendTo($checDiv)
 
-    $('#atlas-status-checkbox').change(function() {
+    $('.atlas-status-checkbox').change(function() {
       showStatus = $(this).is(':checked')
       bsbiDataAccess.showStatus = showStatus
       changeMap()
@@ -434,7 +439,7 @@ var bsbiDataRoot
     
     // Overall control container
     var $container = $('<div>').appendTo($parent)
-    $container.attr('id', 'atlas-period-slider-control')
+    $container.addClass('atlas-period-slider-control')
 
     // Period display
     // var $indicator = $('<div>').appendTo($container)
@@ -449,7 +454,7 @@ var bsbiDataRoot
     $slider.addClass('slider')
     $slider.attr('type', 'range').attr('min', '1').attr('max', periods.length).attr('id', 'atlas-range-select')
     $slider.change(function() {
-      //$indicator.text(periods[$('#atlas-range-select').val()-1].caption)
+      atlasRangeIndex = $(this).val()
       changeMap()
     })
 
@@ -484,7 +489,7 @@ var bsbiDataRoot
   function trendControl($parent) {
     // Overall control container
     var $container = $('<div>').appendTo($parent)
-    $container.attr('id', 'atlas-trend-slider-control')
+    $container.addClass('atlas-trend-slider-control')
     $container.hide()
 
     // Trend display
@@ -496,12 +501,12 @@ var bsbiDataRoot
     // Slider
     var $sliderContainer = $('<div>').appendTo($container)
     $sliderContainer.addClass('slidecontainer')
-    $sliderContainer.attr('id', 'atlas-trend-select-container')
+    $sliderContainer.addClass('atlas-trend-select-container')
     var $slider = $('<input>').appendTo($sliderContainer)
     $slider.addClass('slider')
-    $slider.attr('type', 'range').attr('min', '1').attr('max', trends.length).attr('id', 'atlas-trend-select')
+    $slider.attr('type', 'range').attr('min', '1').attr('max', trends.length).addClass('atlas-trend-select')
     $slider.change(function() {
-      //$indicator.text(trends[$('#atlas-trend-select').val()-1].caption)
+      atlasTrendIndex = $(this).val()
       changeMap()
     })
 
@@ -516,11 +521,11 @@ var bsbiDataRoot
       $tick.append('<br>')
       var $tickText = $('<span>').appendTo($tick)
       $tickText.addClass('atlas-trend-tick-text')
-      $tickText.attr('id', 'atlas-trend-tick-text-' + i)
-      $tickText.html(p.lower + '<br>' + p.upper)
+      $tickText.addClass('atlas-trend-tick-text-' + i)
+      $tickText.html(p.lower + '<br>v.<br>' + p.upper)
     })
 
-    $container.css('margin-bottom', '4.3em')
+    $container.css('margin-bottom', '5.3em')
 
   }
 
@@ -654,8 +659,8 @@ var bsbiDataRoot
       captionId: "dotCaption",
       height: height,
       expand: true,
-      legend: true,
-      legendScale: 1,
+      //legend: true,
+      //legendScale: 1,
       legendOpts: svgLegendOpts,
       transOptsKey: getCookie('inset') ? getCookie('inset') : 'BI4',
       transOptsSel: transOptsSel,
@@ -680,8 +685,8 @@ var bsbiDataRoot
       captionId: "dotCaption",
       mapTypesKey: 'status_10_19',
       mapTypesSel: mapTypesSel,
-      legend: true,
-      legendScale: 1,
+      //legend: true,
+      //legendScale: 1,
       legendOpts: slippyLegendOpts,
       basemapConfigs: basemapConfigs,
     })
@@ -741,26 +746,26 @@ var bsbiDataRoot
       displayedMap = slippyMap
     }
 
-    var statusChecked = $('#atlas-status-checkbox').is(':checked')
     svgLegendOpts.scale=0.9
-    var mapType = $('#atlas-map-type-selector').val()
+    
     if (mapType === 'status') {
-      var access = periods[$('#atlas-range-select').val()-1].access
+      //var access = periods[$('#atlas-range-select').val()-1].access
+      var access = periods[atlasRangeIndex-1].access
       displayedMap.setMapType(access)
-      slippyLegendOpts.width = statusChecked ? 180 : 125
+      slippyLegendOpts.width = showStatus ? 150 : 105
       staticMap.basemapImage('colourelev', true)
     } else if (mapType === 'allclass') {
       displayedMap.setMapType('distAllClasses')
-      slippyLegendOpts.width=250
+      slippyLegendOpts.width=140
       staticMap.basemapImage('colourelev', true)
     } else if (mapType === 'trends') {
-      var access = trends[$('#atlas-trend-select').val()-1].access
+      var access = trends[atlasTrendIndex-1].access
       displayedMap.setMapType(access)
-      slippyLegendOpts.width=305
+      slippyLegendOpts.width=240
       staticMap.basemapImage('colourelev', false)
     } else if (mapType === 'tetrad') {
       displayedMap.setMapType('Tetrad frequency')
-      slippyLegendOpts.width=155
+      slippyLegendOpts.width=130
       staticMap.basemapImage('colourelev', true)
     }
 
