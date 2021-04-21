@@ -888,7 +888,7 @@ var bsbiDataRoot
 
     // Dashed grid
     var $dashGrid = $('<div style="margin-top: 1em">').appendTo($(selector))
-    var $gridBtn = $('<button type="button" class="btn btn-primary">Toggle dashed grid</button>').appendTo($dashGrid)
+    var $gridBtn = $('<button type="button" class="btn btn-primary">Toggle Dashed Grid</button>').appendTo($dashGrid)
     var gridDashed = false;
     $gridBtn.click(function() {
       gridDashed = !gridDashed;
