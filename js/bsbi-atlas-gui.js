@@ -4,6 +4,8 @@ var bsbiDataRoot
 
   //bsbiatlas.setDataRoot(drupalSettings.bsbi_atlas.dataRoot + 'atlas_taxa_2020_08_25/hectad-dateclass-status/')
 
+  var mapControls = 0
+
   bsbiDataRoot = drupalSettings.bsbi_atlas.dataRoot + 'bsbi/atlas_taxa_2020_08_25/hectad-dateclass-status/'
   var captionRoot = drupalSettings.bsbi_atlas.dataRoot + 'bsbi/captions/'
   var rasterRoot = drupalSettings.bsbi_atlas.dataRoot + 'rasters/'
@@ -13,7 +15,7 @@ var bsbiDataRoot
     name: null,
   }
   var slippyMap, staticMap
-  var mapType = 'status'
+  var mapType = 'allclass'
   var showStatus = false
   var displayedMapType = 'static'
   var atlasRangeIndex = 5
@@ -313,19 +315,55 @@ var bsbiDataRoot
     sectionEnd($sect, tabs)
   }
 
-  function mapControlRow(selector) {
+  function mapControlRow(selector, classname) {
     var $div =  $('<div>').appendTo($(selector))
     $div.addClass('atlas-map-control-row')
+    if (classname) {
+      $div.addClass(classname)
+    }
     return $div
   }
 
   function createMapControls(selector) {
+    mapControls = mapControls + 1
     mapInterfaceToggle(mapControlRow(selector))
     mapTypeSelector(mapControlRow(selector))
     statusControl(mapControlRow(selector))
     statusCheckbox(mapControlRow(selector))
     trendControl(mapControlRow(selector))
-    insetRadios(mapControlRow(selector))
+    insetRadios(mapControlRow(selector,'atlas-map-overview-only'), mapControls)
+    backdropSelector(mapControlRow(selector, 'atlas-map-overview-only'))
+    gridStyleControl(mapControlRow(selector, 'atlas-map-overview-only'), mapControls)
+  }
+
+  function gridStyleControl($parent) {
+    // Overall control container
+    var $container = $('<div>').appendTo($parent)
+    $container.attr('id', 'atlas-grid-type-control')
+
+    function makeRadio(label, val, checked) {
+      $('<div class="radio"><label><input type="radio" name="atlas-grid-type" value="'+ val + '" ' + checked + '>' + label + '</label></div>').appendTo($container)
+    }
+    var gridStyle = getCookie('gridstyle') ? getCookie('gridstyle') : 'solid'
+
+    console.log(gridStyle) 
+
+    makeRadio('Solid grid lines', 'solid', gridStyle === 'solid' ? 'checked' : '')
+    makeRadio('Dashed grid lines', 'dashed', gridStyle === 'dashed' ? 'checked' : '')
+    makeRadio('No grid lines', 'none', gridStyle === 'none' ? 'checked' : '')
+    
+    $('input:radio[name=atlas-grid-type]').change(function () {
+      var style = $(this).val()
+      if (style === 'dashed') {
+        $('#bsbiMapDiv g#grid path').css('stroke-dasharray', '3,2')
+        $('#bsbiMapDiv g#grid path').show()
+      } else if (style === 'solid') {
+        $('#bsbiMapDiv g#grid path').css('stroke-dasharray', '')
+        $('#bsbiMapDiv g#grid path').show()
+      } else {
+        $('#bsbiMapDiv g#grid path').hide()
+      }
+    })
   }
 
   function mapInterfaceToggle($parent) {
@@ -343,9 +381,11 @@ var bsbiDataRoot
       displayedMapType = $(this).val()
 
       if (displayedMapType === "static") {
+        $('.atlas-map-overview-only').show()
         $('#slippyAtlasMain').hide()
         $('#staticAtlasMain').show()
       } else {
+        $('.atlas-map-overview-only').hide()
         var $svg = $('#staticAtlasMain svg')
         var w = $svg.width()
         var h = $svg.height()
@@ -390,12 +430,12 @@ var bsbiDataRoot
     })
     var types = [
       {
-        caption: 'Distribution by year range',
-        val: 'status'
-      },
-      {
         caption: 'Distribution overview',
         val: 'allclass'
+      },
+      {
+        caption: 'Distribution by year range',
+        val: 'status'
       },
       {
         caption: 'Change maps',
@@ -411,6 +451,58 @@ var bsbiDataRoot
       $opt.attr('value', t.val)
       $opt.html(t.caption).appendTo($sel)
     })
+
+    // This seems to be necessary if interface regenerated,
+    // e.g. changing from tabbed to non-tabbed display.
+    $sel.selectpicker()
+  }
+
+  function backdropSelector($parent) {
+
+    // Backdrops
+    var backdrops = [
+      {
+        caption: 'No backdrop',
+        val: ''
+      },
+      {
+        caption: 'Colour elevation',
+        val: 'colourelev colour_elevation'
+      },
+      {
+        caption: 'Grey elevation',
+        val: 'greyelev grey_elevation_300'
+      },
+    ]
+
+    // Main type selector
+    var $sel = $('<select>').appendTo($parent)
+    $sel.addClass('selectpicker')
+    $sel.addClass('atlas-backdrop-selector')
+    $sel.attr('data-width', '100%')
+    $sel.on('changed.bs.select', function (e, clickedIndex, isSelected, previousValue) {
+      backdrops.forEach(function(b){
+        var s = b.val ? b.val.split(" ") : ['', '']
+        var val = s[0]
+        var file = s[1]
+        if (b.val) {
+          staticMap.basemapImage(`${val}`, false, rasterRoot + `${file}.png`, rasterRoot + `${file}.pgw`)
+        }
+      })
+      var b = $(this).val()
+      if (b) {
+        var s = b ? b.split(" ") : ['', '']
+        var val = s[0]
+        var file = s[1]
+        staticMap.basemapImage(`${val}`, true, rasterRoot + `${file}.png`, rasterRoot + `${file}.pgw`)
+      }
+    })
+    backdrops.forEach(function(b){
+      var $opt = b.selected  ? $('<option>') : $('<option>')
+      $opt.attr('value', b.val)
+      $opt.html(b.caption).appendTo($sel)
+    })
+    $sel.val("colourelev colour_elevation")
 
     // This seems to be necessary if interface regenerated,
     // e.g. changing from tabbed to non-tabbed display.
@@ -440,6 +532,7 @@ var bsbiDataRoot
     // Overall control container
     var $container = $('<div>').appendTo($parent)
     $container.addClass('atlas-period-slider-control')
+    $container.hide()
 
     // Period display
     // var $indicator = $('<div>').appendTo($container)
@@ -470,7 +563,8 @@ var bsbiDataRoot
       $tick.append('<br>')
       var $tickText = $('<span>').appendTo($tick)
       $tickText.addClass('atlas-range-tick-text')
-      $tickText.html(p.min + '<br>' + p.max)
+      $tickText.html((p.min ? p.min : 'pre') + '<br>' + (p.max === 1929 ? 1930 : p.max))
+      //$tickText.html(p.min + '<br>' + p.max)
     })
 
     // // Status on/off toggle
@@ -529,7 +623,9 @@ var bsbiDataRoot
 
   }
 
-  function insetRadios($parent) { 
+  function insetRadios($parent, mapControls) { 
+    
+    console.log('insetRadios', mapControls)
 
     // Overall control container
     var $container = $('<div>').appendTo($parent)
@@ -537,14 +633,14 @@ var bsbiDataRoot
     //$container.hide()
 
     function makeRadio(label, val, checked) {
-      $('<div class="radio"><label><input type="radio" name="bsbi-inset-type" value="'+ val + '" ' + checked + '>' + label + '</label></div>').appendTo($container)
+      $('<div class="radio"><label><input type="radio" name=`bsbi-inset-type-${mapControls}` value="'+ val + '" ' + checked + '>' + label + '</label></div>').appendTo($container)
     }
     var selectedInset = getCookie('inset') ? getCookie('inset') : 'BI4'
     makeRadio('No insets', 'BI1', selectedInset === 'BI1' ? 'checked' : '')
     makeRadio('Channel Isles inset', 'BI2', selectedInset === 'BI2' ? 'checked' : '')
     makeRadio('Northern and Channel Isles inset', 'BI4', selectedInset === 'BI4' ? 'checked' : '')
     
-    $('input:radio[name=bsbi-inset-type]').change(function () {
+    $(`input:radio[name=bsbi-inset-type-${mapControls}]`).change(function () {
       staticMap.setTransform($(this).val())
       setCookie('inset', $(this).val(), 30)
       changeMap()
@@ -556,6 +652,10 @@ var bsbiDataRoot
     // Modify standard UK opts to remove any without CI
     var transOptsSel =  JSON.parse(JSON.stringify(brcatlas.namedTransOpts))
     delete transOptsSel.BI3 // Remove the options without CI
+
+    // Modify the BI4 - northern Isle inset option to go further west in order
+    // to give more room for legends!
+    transOptsSel.BI4.bounds.xmin = -240000,
 
     // Init
     bsbiDataAccess.showStatus = false
@@ -752,21 +852,21 @@ var bsbiDataRoot
       //var access = periods[$('#atlas-range-select').val()-1].access
       var access = periods[atlasRangeIndex-1].access
       displayedMap.setMapType(access)
-      slippyLegendOpts.width = showStatus ? 150 : 105
-      staticMap.basemapImage('colourelev', true)
+      slippyLegendOpts.width = showStatus ? 135 : 90
+      //staticMap.basemapImage('colourelev', true)
     } else if (mapType === 'allclass') {
       displayedMap.setMapType('distAllClasses')
-      slippyLegendOpts.width=140
-      staticMap.basemapImage('colourelev', true)
+      slippyLegendOpts.width=135
+      //staticMap.basemapImage('colourelev', true)
     } else if (mapType === 'trends') {
       var access = trends[atlasTrendIndex-1].access
       displayedMap.setMapType(access)
-      slippyLegendOpts.width=240
-      staticMap.basemapImage('colourelev', false)
+      slippyLegendOpts.width=220
+      //staticMap.basemapImage('colourelev', false)
     } else if (mapType === 'tetrad') {
       displayedMap.setMapType('Tetrad frequency')
-      slippyLegendOpts.width=130
-      staticMap.basemapImage('colourelev', true)
+      slippyLegendOpts.width=110
+      //staticMap.basemapImage('colourelev', true)
     }
 
     // To try to keep the legend around the same apparent size when
@@ -886,19 +986,6 @@ var bsbiDataRoot
       changeMap()
     }
 
-    // Dashed grid
-    var $dashGrid = $('<div style="margin-top: 1em">').appendTo($(selector))
-    var $gridBtn = $('<button type="button" class="btn btn-primary">Toggle Dashed Grid</button>').appendTo($dashGrid)
-    var gridDashed = false;
-    $gridBtn.click(function() {
-      gridDashed = !gridDashed;
-      if (gridDashed) {
-        $('#bsbiMapDiv g#grid path').css('stroke-dasharray', '3,2');
-      } else {
-        $('#bsbiMapDiv g#grid path').css('stroke-dasharray', '');
-      }
-      
-    })
     // Backdrop
     var $bgrp = $('<div class="btn-group" data-toggle="buttons" style="margin-top: 1em">').appendTo($(selector))
     var $greyLabel = $('<label class="btn btn-primary">').appendTo($bgrp)

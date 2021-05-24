@@ -6,32 +6,32 @@ bsbiDataAccess.devel = {
 
 (function() {
 
-    // The periodMappsing code added 19/01/2020 to deal with mapping periods required in app
-    // that are different from those expressed in CSV files that I have available at that time.
-    // Was extended to meet the requirement of showing faded symbols for hectads where recorded
-    // in earlier time period.
-    var periodMappings = {
-      "to 1929": {
-          prior:[],
-          csvperiods: ["to 1929"]
-        },
-      "1930 - 1969": {
-          prior: ["to 1929"],
-          csvperiods: ["1930 - 1949", "1950 - 1969"]
-        },
-      "1970 - 1986": {
-          prior: ["to 1929", "1930 - 1949", "1950 - 1969"],
-          csvperiods: ["1970 - 1986"],
-        },
-      "1987 - 1999": {
-          prior: ["to 1929", "1930 - 1949", "1950 - 1969", "1970 - 1986"],
-          csvperiods: ["1987 - 1999"]
-        },
-      "2000 - 2019": {
-          prior: ["to 1929", "1930 - 1949", "1950 - 1969", "1970 - 1986", "1987 - 1999"],
-          csvperiods: ["2000 - 2009", "2010 - 2019"]
-      }
+  // The periodMappsing code added 19/01/2020 to deal with mapping periods required in app
+  // that are different from those expressed in CSV files that I have available at that time.
+  // Was extended to meet the requirement of showing faded symbols for hectads where recorded
+  // in earlier time period.
+  var periodMappings = {
+    "to 1929": {
+        prior:[],
+        csvperiods: ["to 1929"]
+      },
+    "1930 - 1969": {
+        prior: ["to 1929"],
+        csvperiods: ["1930 - 1949", "1950 - 1969"]
+      },
+    "1970 - 1986": {
+        prior: ["to 1929", "1930 - 1949", "1950 - 1969"],
+        csvperiods: ["1970 - 1986"],
+      },
+    "1987 - 1999": {
+        prior: ["to 1929", "1930 - 1949", "1950 - 1969", "1970 - 1986"],
+        csvperiods: ["1987 - 1999"]
+      },
+    "2000 - 2019": {
+        prior: ["to 1929", "1930 - 1949", "1950 - 1969", "1970 - 1986", "1987 - 1999"],
+        csvperiods: ["2000 - 2009", "2010 - 2019"]
     }
+  }
 
   bsbiDataAccess.distAllClasses = function(identifier) {
     return distAllClasses(identifier)
@@ -359,7 +359,7 @@ bsbiDataAccess.devel = {
             legend.lines.push({
               colour: 'blue',
               opacity: 0.8,
-              text: 'Native (' + period.replace(" - ", "-") + ')',
+              text: 'Native (' + (period === "to 1929" ? "pre-1930" : period.replace(" - ", "-")) + ')',
               shape: 'circle'
             })
           }
@@ -376,7 +376,7 @@ bsbiDataAccess.devel = {
             legend.lines.push({
               colour: 'red',
               opacity: 0.8,
-              text: 'Alien (' + period.replace(" - ", "-") + ')',
+              text: 'Alien (' + (period === "to 1929" ? "pre-1930" : period.replace(" - ", "-")) + ')',
               shape: 'circle'
             })
           }
@@ -395,7 +395,7 @@ bsbiDataAccess.devel = {
               colour: 'blue',
               colour2: 'red',
               opacity: 0.8,
-              text: 'Reintroduced (' + period.replace(" - ", "-") + ')',
+              text: 'Reintroduced (' + (period === "to-1929" ? "pre 1930" : period.replace(" - ", "-")) + ')',
               shape: 'bullseye'
             })
           }
@@ -415,7 +415,7 @@ bsbiDataAccess.devel = {
             lines: [{
               colour: 'black',
               opacity: 0.8,
-              text: period.replace(" - ", "-"),
+              text: period === "to 1929" ? "pre-1930" : period.replace(" - ", "-"),
               shape: 'circle'
             }, {
               colour: 'black',
@@ -554,19 +554,19 @@ bsbiDataAccess.devel = {
             precision: 10000,
             opacity: 0.9,
             lines: [{
-              text: '5 tetrad',
+              text: '1-5 tetrad',
               size: Math.sqrt(5)/5 * legendSizeFact,
             }, {
-              text: '10 tetrads',
+              text: '6-10 tetrads',
               size: Math.sqrt(10)/5 * legendSizeFact,
             },{
-              text: '15 tetrad',
+              text: '11-15 tetrad',
               size: Math.sqrt(15)/5 * legendSizeFact,
             }, {
-              text: '20 tetrads',
+              text: '16-20 tetrads',
               size: Math.sqrt(20)/5 * legendSizeFact,
             }, {
-              text: '25 tetrads',
+              text: '21-25 tetrads',
               size: Math.sqrt(25)/5 * legendSizeFact,
             }]
           }
