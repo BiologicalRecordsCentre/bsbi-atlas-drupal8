@@ -324,6 +324,13 @@ var bsbiDataRoot
 
   function createMapControls(selector) {
 
+    mapInterfaceToggle(mapControlRow(selector))
+    mapTypeSelector(mapControlRow(selector))
+    statusControl(mapControlRow(selector))
+    statusCheckbox(mapControlRow(selector))
+    trendControl(mapControlRow(selector))
+    backdropSelector(mapControlRow(selector, 'atlas-map-overview-only'))
+
     $(selector).each(function(i) {
 
       // We loop through the selection so that we can use the
@@ -341,14 +348,7 @@ var bsbiDataRoot
       // if user might switch between blocks during use - but this
       // is very unlikely. (But nevertheless has been implemented
       // for the radio buttons below.)
-
-      mapInterfaceToggle(mapControlRow(sel))
-      mapTypeSelector(mapControlRow(sel))
-      statusControl(mapControlRow(sel))
-      statusCheckbox(mapControlRow(sel))
-      trendControl(mapControlRow(sel))
       insetRadios(mapControlRow(sel,'atlas-map-overview-only'), i)
-      backdropSelector(mapControlRow(sel, 'atlas-map-overview-only'))
       gridStyleRadios(mapControlRow(sel, 'atlas-map-overview-only'), i)
     })
     
