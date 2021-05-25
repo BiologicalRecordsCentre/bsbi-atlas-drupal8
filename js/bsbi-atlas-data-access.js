@@ -554,19 +554,19 @@ bsbiDataAccess.devel = {
             precision: 10000,
             opacity: 0.9,
             lines: [{
-              text: '1-5 tetrad',
+              text: '1-5',
               size: Math.sqrt(5)/5 * legendSizeFact,
             }, {
-              text: '6-10 tetrads',
+              text: '6-10',
               size: Math.sqrt(10)/5 * legendSizeFact,
             },{
-              text: '11-15 tetrad',
+              text: '11-15',
               size: Math.sqrt(15)/5 * legendSizeFact,
             }, {
-              text: '16-20 tetrads',
+              text: '16-20',
               size: Math.sqrt(20)/5 * legendSizeFact,
             }, {
-              text: '21-25 tetrads',
+              text: '21-25',
               size: Math.sqrt(25)/5 * legendSizeFact,
             }]
           }

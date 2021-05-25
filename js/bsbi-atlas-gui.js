@@ -4,8 +4,6 @@ var bsbiDataRoot
 
   //bsbiatlas.setDataRoot(drupalSettings.bsbi_atlas.dataRoot + 'atlas_taxa_2020_08_25/hectad-dateclass-status/')
 
-  var mapControls = 0
-
   bsbiDataRoot = drupalSettings.bsbi_atlas.dataRoot + 'bsbi/atlas_taxa_2020_08_25/hectad-dateclass-status/'
   var captionRoot = drupalSettings.bsbi_atlas.dataRoot + 'bsbi/captions/'
   var rasterRoot = drupalSettings.bsbi_atlas.dataRoot + 'rasters/'
@@ -325,45 +323,79 @@ var bsbiDataRoot
   }
 
   function createMapControls(selector) {
-    mapControls = mapControls + 1
-    mapInterfaceToggle(mapControlRow(selector))
-    mapTypeSelector(mapControlRow(selector))
-    statusControl(mapControlRow(selector))
-    statusCheckbox(mapControlRow(selector))
-    trendControl(mapControlRow(selector))
-    insetRadios(mapControlRow(selector,'atlas-map-overview-only'), mapControls)
-    backdropSelector(mapControlRow(selector, 'atlas-map-overview-only'))
-    gridStyleControl(mapControlRow(selector, 'atlas-map-overview-only'), mapControls)
+
+    $(selector).each(function(i) {
+
+      // We loop through the selection so that we can use the
+      // index value to differentiate the equivalent controls
+      // from different blocks. This is vital for radio controls
+      // otherwise value can only be selected in one block and
+      // therefore initialisation may be wrong.
+      var sel = 'bsbi-atlas-map-controls-' + i
+      $div = $('<div>').appendTo($(this))
+      $div.addClass(sel)
+      sel = '.' + sel
+
+      // Potentially we can also use this to ensure that selection
+      // in one block is mirrored in the other. This is only important
+      // if user might switch between blocks during use - but this
+      // is very unlikely. (But nevertheless has been implemented
+      // for the radio buttons below.)
+
+      mapInterfaceToggle(mapControlRow(sel))
+      mapTypeSelector(mapControlRow(sel))
+      statusControl(mapControlRow(sel))
+      statusCheckbox(mapControlRow(sel))
+      trendControl(mapControlRow(sel))
+      insetRadios(mapControlRow(sel,'atlas-map-overview-only'), i)
+      backdropSelector(mapControlRow(sel, 'atlas-map-overview-only'))
+      gridStyleRadios(mapControlRow(sel, 'atlas-map-overview-only'), i)
+    })
+    
   }
 
-  function gridStyleControl($parent) {
+  function gridStyleRadios($parent, i) {
     // Overall control container
     var $container = $('<div>').appendTo($parent)
     $container.attr('id', 'atlas-grid-type-control')
 
     function makeRadio(label, val, checked) {
-      $('<div class="radio"><label><input type="radio" name="atlas-grid-type" value="'+ val + '" ' + checked + '>' + label + '</label></div>').appendTo($container)
+      //$('<div class="radio"><label><input type="radio" name="atlas-grid-type" value="'+ val + '" ' + checked + '>' + label + '</label></div>').appendTo($container)
+    
+      var $div = $('<div>').appendTo($container)
+      $div.attr('class', 'radio')
+      var $radio = $('<input>').appendTo($div)
+      $radio.attr('type', 'radio')
+      $radio.attr('name', 'atlas-grid-type-' + i)
+      $radio.attr('class', 'atlas-grid-type-' + val)
+      $radio.attr('value', val)
+      $radio.css('margin-left', 0)
+      if (checked) $radio.prop('checked', true)
+      var $label = $('<label>').appendTo($div)
+      $label.attr('for', 'atlas-grid-type-' + val)
+      $label.text(label)
+
+      $radio.change(function () {
+        var style = $(this).val()
+        if (style === 'dashed') {
+          $('#bsbiMapDiv g#grid path').css('stroke-dasharray', '3,2')
+          $('#bsbiMapDiv g#grid path').show()
+        } else if (style === 'solid') {
+          $('#bsbiMapDiv g#grid path').css('stroke-dasharray', '')
+          $('#bsbiMapDiv g#grid path').show()
+        } else {
+          $('#bsbiMapDiv g#grid path').hide()
+        }
+
+        // Update controls mirrored in other blocks
+        $('.atlas-grid-type-' + val).prop("checked", true)
+      })
     }
     var gridStyle = getCookie('gridstyle') ? getCookie('gridstyle') : 'solid'
-
-    console.log(gridStyle) 
 
     makeRadio('Solid grid lines', 'solid', gridStyle === 'solid' ? 'checked' : '')
     makeRadio('Dashed grid lines', 'dashed', gridStyle === 'dashed' ? 'checked' : '')
     makeRadio('No grid lines', 'none', gridStyle === 'none' ? 'checked' : '')
-    
-    $('input:radio[name=atlas-grid-type]').change(function () {
-      var style = $(this).val()
-      if (style === 'dashed') {
-        $('#bsbiMapDiv g#grid path').css('stroke-dasharray', '3,2')
-        $('#bsbiMapDiv g#grid path').show()
-      } else if (style === 'solid') {
-        $('#bsbiMapDiv g#grid path').css('stroke-dasharray', '')
-        $('#bsbiMapDiv g#grid path').show()
-      } else {
-        $('#bsbiMapDiv g#grid path').hide()
-      }
-    })
   }
 
   function mapInterfaceToggle($parent) {
@@ -467,11 +499,11 @@ var bsbiDataRoot
       },
       {
         caption: 'Colour elevation',
-        val: 'colourelev colour_elevation'
+        val: 'colour_elevation'
       },
       {
         caption: 'Grey elevation',
-        val: 'greyelev grey_elevation_300'
+        val: 'grey_elevation_300'
       },
     ]
 
@@ -481,20 +513,16 @@ var bsbiDataRoot
     $sel.addClass('atlas-backdrop-selector')
     $sel.attr('data-width', '100%')
     $sel.on('changed.bs.select', function (e, clickedIndex, isSelected, previousValue) {
+      // Remove all backdrops
       backdrops.forEach(function(b){
-        var s = b.val ? b.val.split(" ") : ['', '']
-        var val = s[0]
-        var file = s[1]
         if (b.val) {
-          staticMap.basemapImage(`${val}`, false, rasterRoot + `${file}.png`, rasterRoot + `${file}.pgw`)
+          staticMap.basemapImage(b.val, false, rasterRoot + b.val + '.png', rasterRoot + b.val + '.pgw')
         }
       })
-      var b = $(this).val()
-      if (b) {
-        var s = b ? b.split(" ") : ['', '']
-        var val = s[0]
-        var file = s[1]
-        staticMap.basemapImage(`${val}`, true, rasterRoot + `${file}.png`, rasterRoot + `${file}.pgw`)
+      // Display selected backdrop
+      var val = $(this).val()
+      if (val) {
+        staticMap.basemapImage(val, true, rasterRoot + val + '.png', rasterRoot + val + '.pgw')
       }
     })
     backdrops.forEach(function(b){
@@ -502,7 +530,7 @@ var bsbiDataRoot
       $opt.attr('value', b.val)
       $opt.html(b.caption).appendTo($sel)
     })
-    $sel.val("colourelev colour_elevation")
+    $sel.val("colour_elevation")
 
     // This seems to be necessary if interface regenerated,
     // e.g. changing from tabbed to non-tabbed display.
@@ -623,28 +651,42 @@ var bsbiDataRoot
 
   }
 
-  function insetRadios($parent, mapControls) { 
+  function insetRadios($parent, i) { 
     
-    console.log('insetRadios', mapControls)
-
     // Overall control container
     var $container = $('<div>').appendTo($parent)
     $container.attr('id', 'atlas-inset-control')
-    //$container.hide()
 
     function makeRadio(label, val, checked) {
-      $('<div class="radio"><label><input type="radio" name=`bsbi-inset-type-${mapControls}` value="'+ val + '" ' + checked + '>' + label + '</label></div>').appendTo($container)
+      var $div = $('<div>').appendTo($container)
+      $div.attr('class', 'radio')
+      var $radio = $('<input>').appendTo($div)
+      $radio.attr('type', 'radio')
+      $radio.attr('name', 'bsbi-inset-type-' + i)
+      $radio.attr('class', 'bsbi-inset-type-' + val)
+      $radio.attr('value', val)
+      $radio.css('margin-left', 0)
+      if (checked) $radio.prop('checked', true)
+      var $label = $('<label>').appendTo($div)
+      $label.attr('for', 'bsbi-inset-type-' + val)
+      $label.text(label)
+
+      $radio.change(function () {
+
+        var val = $(this).val()
+   
+        // Update controls mirrored in other blocks
+        $('.bsbi-inset-type-' + val).prop("checked", true)
+
+        staticMap.setTransform(val)
+        setCookie('inset', val, 30)
+        changeMap()
+      })
     }
     var selectedInset = getCookie('inset') ? getCookie('inset') : 'BI4'
     makeRadio('No insets', 'BI1', selectedInset === 'BI1' ? 'checked' : '')
     makeRadio('Channel Isles inset', 'BI2', selectedInset === 'BI2' ? 'checked' : '')
     makeRadio('Northern and Channel Isles inset', 'BI4', selectedInset === 'BI4' ? 'checked' : '')
-    
-    $(`input:radio[name=bsbi-inset-type-${mapControls}]`).change(function () {
-      staticMap.setTransform($(this).val())
-      setCookie('inset', $(this).val(), 30)
-      changeMap()
-    })
   }
 
   function createMaps(selector) {
@@ -772,9 +814,10 @@ var bsbiDataRoot
       gridLineColour: '#7C7CD3',
       boundaryColour: '#7C7CD3',
     })
-    staticMap.basemapImage('greyelev', true, rasterRoot + 'grey_elevation_300.png', rasterRoot + 'grey_elevation_300.pgw')
-    staticMap.basemapImage('colourelev', true, rasterRoot + 'colour_elevation.png', rasterRoot + 'colour_elevation.pgw')
-    staticMap.basemapImage('greyelev', false)
+    //staticMap.basemapImage('greyelev', true, rasterRoot + 'grey_elevation_300.png', rasterRoot + 'grey_elevation_300.pgw')
+    // Initial backgrop image
+    staticMap.basemapImage('colour_elevation', true, rasterRoot + 'colour_elevation.png', rasterRoot + 'colour_elevation.pgw')
+    //staticMap.basemapImage('greyelev', false)
 
     // Create the slippy map
     slippyMap = brcatlas.leafletMap({
@@ -986,34 +1029,34 @@ var bsbiDataRoot
       changeMap()
     }
 
-    // Backdrop
-    var $bgrp = $('<div class="btn-group" data-toggle="buttons" style="margin-top: 1em">').appendTo($(selector))
-    var $greyLabel = $('<label class="btn btn-primary">').appendTo($bgrp)
-    $('<input type="radio" name="mapBackground" value="grey_elevation_300">').appendTo($greyLabel)
-    $greyLabel.append("Grey elev")
-    var $colourLabel = $('<label class="btn btn-primary active">').appendTo($bgrp)
-    $('<input type="radio" name="mapBackground" value="colour_elevation" checked>').appendTo($colourLabel)
-    $colourLabel.append("Colour elev")
-    var $noneLabel = $('<label class="btn btn-primary">').appendTo($bgrp)
-    $('<input type="radio" name="mapBackground" value="">').appendTo($noneLabel)
-    $noneLabel.append("None")
+    // Backdrop - keeping because useful reminder of impelmentation of button group
+    // var $bgrp = $('<div class="btn-group" data-toggle="buttons" style="margin-top: 1em">').appendTo($(selector))
+    // var $greyLabel = $('<label class="btn btn-primary">').appendTo($bgrp)
+    // $('<input type="radio" name="mapBackground" value="grey_elevation_300">').appendTo($greyLabel)
+    // $greyLabel.append("Grey elev")
+    // var $colourLabel = $('<label class="btn btn-primary active">').appendTo($bgrp)
+    // $('<input type="radio" name="mapBackground" value="colour_elevation" checked>').appendTo($colourLabel)
+    // $colourLabel.append("Colour elev")
+    // var $noneLabel = $('<label class="btn btn-primary">').appendTo($bgrp)
+    // $('<input type="radio" name="mapBackground" value="">').appendTo($noneLabel)
+    // $noneLabel.append("None")
 
-    $('input[type=radio][name="mapBackground"]').change(function() {
+    // $('input[type=radio][name="mapBackground"]').change(function() {
 
-      var greyelev = false
-      var colourelev = false
-      var opt = $(this).val()
-      if (opt) {
-        if (opt === 'grey_elevation_300') {
-          greyelev = true
-        }
-        if (opt === 'colour_elevation') {
-          colourelev = true
-        }
-      }
-      staticMap.basemapImage('greyelev', greyelev, rasterRoot + 'grey_elevation_300.png', rasterRoot + 'grey_elevation_300.pgw')
-      staticMap.basemapImage('colourelev', colourelev, rasterRoot + 'colour_elevation.png', rasterRoot + 'colour_elevation.pgw')
-    });
+    //   var greyelev = false
+    //   var colourelev = false
+    //   var opt = $(this).val()
+    //   if (opt) {
+    //     if (opt === 'grey_elevation_300') {
+    //       greyelev = true
+    //     }
+    //     if (opt === 'colour_elevation') {
+    //       colourelev = true
+    //     }
+    //   }
+    //   staticMap.basemapImage('greyelev', greyelev, rasterRoot + 'grey_elevation_300.png', rasterRoot + 'grey_elevation_300.pgw')
+    //   staticMap.basemapImage('colourelev', colourelev, rasterRoot + 'colour_elevation.png', rasterRoot + 'colour_elevation.pgw')
+    // });
   }
 
   function ecoFlora(identifier) {
