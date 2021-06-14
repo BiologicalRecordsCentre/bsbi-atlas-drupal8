@@ -1,5 +1,6 @@
 var bsbiDataAccess = {};
 bsbiDataAccess.showStatus = true;
+bsbiDataAccess.resolution = 'hectad';
 bsbiDataAccess.devel = {
   changeColours: ['#FAD0C8', '#DD5A2F', '#525252']
 };
@@ -34,7 +35,13 @@ bsbiDataAccess.devel = {
   }
 
   bsbiDataAccess.distAllClasses = function(identifier) {
-    return distAllClasses(identifier)
+    if (bsbiDataAccess.resolution === 'hectad') {
+      return distAllClasses(identifier)
+    } else if (bsbiDataAccess.resolution === 'tetrad') {
+      return distAllClassesTetrad(identifier)
+    } else {
+      return distAllClassesMonad(identifier)
+    }
   }
 
   bsbiDataAccess.status_29 = function(identifier) {
@@ -234,6 +241,78 @@ bsbiDataAccess.devel = {
           precision: 10000,
           size: 1,
           legend: legend
+        });
+      })["catch"](function (e) {
+        reject(e);
+      });
+    });
+  }
+
+  function distAllClassesTetrad(identifier) {
+
+    return new Promise(function (resolve, reject) {
+
+      d3.csv(getCSV('tetrad/' + identifier), function (r) {
+        if (r.gr ) {
+          return {
+            gr: r.gr,
+            shape: 'circle',
+            colour: 'black',
+            size: 1,
+            opacity: 0.8,
+          }
+        }
+      }).then(function (data) {
+        resolve({
+          records: data,
+          precision: 2000,
+          size: 1,
+          legend: {
+            lines:[
+              {
+                colour: 'black',
+                opacity:0.8,
+                text: 'Present in tetrad',
+                shape: 'circle'
+              }
+            ]
+          }
+        });
+      })["catch"](function (e) {
+        reject(e);
+      });
+    });
+  }
+
+  function distAllClassesMonad(identifier) {
+
+    return new Promise(function (resolve, reject) {
+
+      d3.csv(getCSV('monad/' + identifier), function (r) {
+        if (r.gr ) {
+          return {
+            gr: r.gr,
+            shape: 'circle',
+            colour: 'black',
+            size: 1,
+            opacity: 0.8,
+          }
+        }
+      }).then(function (data) {
+        resolve({
+          records: data,
+          precision: 1000,
+          size: 1,
+          legend: {
+            lines:[
+              {
+                colour: 'black',
+                opacity: 0.8,
+                text: 'Present in monad',
+                shape: 'circle'
+              }
+            ]
+          }
         });
       })["catch"](function (e) {
         reject(e);

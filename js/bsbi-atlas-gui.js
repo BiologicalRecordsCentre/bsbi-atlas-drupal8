@@ -11,11 +11,14 @@ var bsbiDataRoot
   var currentTaxon = {
     identifier: null,
     name: null,
+    tetrad: null,
+    monad: null
   }
   var slippyMap, staticMap
   var mapType = 'allclass'
   var showStatus = false
   var displayedMapType = 'static'
+  var resolution = 'hectad'
   var atlasRangeIndex = 5
   var atlasTrendIndex = 2
   var slippyLegendOpts = {
@@ -350,6 +353,7 @@ var bsbiDataRoot
       // for the radio buttons below.)
       insetRadios(mapControlRow(sel,'atlas-map-overview-only'), i)
       gridStyleRadios(mapControlRow(sel, 'atlas-map-overview-only'), i)
+      resolutionControl(mapControlRow(sel), i)
     })
     
   }
@@ -411,22 +415,112 @@ var bsbiDataRoot
 
     $('input[type=radio][name="mapType"]').change(function() {
       displayedMapType = $(this).val()
-
-      if (displayedMapType === "static") {
-        $('.atlas-map-overview-only').show()
-        $('#slippyAtlasMain').hide()
-        $('#staticAtlasMain').show()
-      } else {
-        $('.atlas-map-overview-only').hide()
+      if (displayedMapType === "slippy") {
+        // Get current width of static map
         var $svg = $('#staticAtlasMain svg')
         var w = $svg.width()
         var h = $svg.height()
-        $('#staticAtlasMain').hide()
-        $('#slippyAtlasMain').show()
+        setControlState()
         slippyMap.setSize(w, h)
+      } else {
+        if (resolution !== 'hectad') {
+          bsbiDataAccess.resolution = 'hectad'
+          setControlState()
+        } else {
+          setControlState()
+        }
       }
       changeMap()
     })
+  }
+
+  function setControlState() {
+
+    console.log('setControlState')
+    if (displayedMapType === "static") {
+      $('.atlas-map-overview-only').show()
+      $('#slippyAtlasMain').hide()
+      $('#staticAtlasMain').show()
+    } else {
+      $('.atlas-map-overview-only').hide()
+      $('#staticAtlasMain').hide()
+      $('#slippyAtlasMain').show()
+    }
+
+    if (mapType === 'status') {
+      $('.atlas-period-slider-control').show()
+    } else {
+      $('.atlas-period-slider-control').hide()
+    }
+
+    if (mapType === 'allclass' || mapType === 'status') {
+      $('.atlas-status-checkbox-control').show()
+    } else {
+      $('.atlas-status-checkbox-control').hide()
+    }
+
+    if (mapType === 'trends') {
+      $('.atlas-trend-slider-control').show()
+    } else {
+      $('.atlas-trend-slider-control').hide()
+    }
+
+    if (mapType === 'allclass' && displayedMapType === 'slippy') {
+      $('.atlas-resolution-control').show()
+      // Enable/disable options depending on availability of resolution data
+      var identifier = currentTaxon.identifier
+      console.log('tetrad', currentTaxon.tetrad, 'monad', currentTaxon.monad)
+
+      if (identifier) {
+        var fileTetrad = "".concat(bsbiDataRoot, 'tetrad/').concat(identifier.replace(".", "_"), ".csv")
+        var fileMonad = "".concat(bsbiDataRoot, 'monad/').concat(identifier.replace(".", "_"), ".csv")
+
+        //checkCsv(fileTetrad,)
+        //checkCsv(fileMonad)
+        
+        //console.log(fileTetrad, fileTetrad)
+
+        if (resolution === 'monad' && !currentTaxon.monad) {
+          resolution = 'hectad'
+        } else if (resolution === 'tetrad' && !currentTaxon.tetrad) {
+          resolution = 'hectad'
+        }
+        bsbiDataAccess.resolution = resolution
+
+        $('.bsbi-resolution-' + resolution).prop('checked', true)
+        console.log('id', '.bsbi-resolution-' + resolution)
+        
+        $('.bsbi-resolution-hectad').attr('disabled', false)
+        if (currentTaxon.tetrad){
+          $('.bsbi-resolution-tetrad').attr('disabled', false)
+        } else {
+          $('.bsbi-resolution-tetrad').attr('disabled', true)
+        }
+        if (currentTaxon.monad){
+          $('.bsbi-resolution-monad').attr('disabled', false)
+        } else {
+          $('.bsbi-resolution-monad').attr('disabled', true)
+        }
+
+        // Uncheck and disable status checkbutton if not hectad resolution
+        if (resolution === 'hectad') {
+          $('.atlas-status-checkbox-control').show()
+        } else {
+          $('.atlas-status-checkbox-control').hide()
+        }   
+      } else {
+        $('.bsbi-resolution-monad').prop('checked', false)
+        $('.bsbi-resolution-tetrad').prop('checked', false)
+        $('.bsbi-resolution-hectad').prop('checked', true)
+
+        $('.bsbi-resolution-monad').attr('disabled', true)
+        $('.bsbi-resolution-tetrad').attr('disabled', true)
+        $('.bsbi-resolution-hectad').attr('disabled', true)
+      }
+
+    } else {
+      $('.atlas-resolution-control').hide()
+    }
   }
 
   function mapTypeSelector($parent) {
@@ -437,27 +531,8 @@ var bsbiDataRoot
     $sel.addClass('atlas-map-type-selector')
     $sel.attr('data-width', '100%')
     $sel.on('changed.bs.select', function (e, clickedIndex, isSelected, previousValue) {
-
       mapType = $(this).val()
-
-      if (mapType === 'status') {
-        $('.atlas-period-slider-control').show()
-      } else {
-        $('.atlas-period-slider-control').hide()
-      }
-
-      if (mapType === 'allclass' || $(this).val() === 'status') {
-        $('.atlas-status-checkbox-control').show()
-      } else {
-        $('.atlas-status-checkbox-control').hide()
-      }
-
-      if (mapType === 'trends') {
-        $('.atlas-trend-slider-control').show()
-      } else {
-        $('.atlas-trend-slider-control').hide()
-      }
-
+      setControlState()
       changeMap()
     })
     var types = [
@@ -608,6 +683,41 @@ var bsbiDataRoot
     // })
   }
 
+  function resolutionControl($parent, i) {
+    // Overall control container
+    var $container = $('<div>').appendTo($parent)
+    $container.addClass('atlas-resolution-control')
+    $container.hide()
+
+    function makeRadio(label, val, checked) {
+      var $div = $('<div>').appendTo($container)
+      $div.attr('class', 'radio')
+      var $radio = $('<input>').appendTo($div)
+      $radio.attr('type', 'radio')
+      $radio.attr('name', 'bsbi-resolution-' + i)
+      $radio.attr('class', 'bsbi-resolution-' + val)
+      $radio.attr('value', val)
+      $radio.css('margin-left', 0)
+      if (checked) $radio.prop('checked', true)
+      var $label = $('<label>').appendTo($div)
+      $label.attr('for', 'bsbi-resolution-' + val)
+      $label.text(label)
+
+      $radio.change(function () {
+
+        resolution = $(this).val()
+   
+        // Update controls mirrored in other blocks
+        $('.bsbi-resolution-' + resolution).prop("checked", true)
+        setControlState()
+        changeMap()
+      })
+    }
+    makeRadio('Hectads', 'hectad', true)
+    makeRadio('Tetrads', 'tetrad', false)
+    makeRadio('Monads', 'monad', false)
+  }
+
   function trendControl($parent) {
     // Overall control container
     var $container = $('<div>').appendTo($parent)
@@ -703,6 +813,8 @@ var bsbiDataRoot
     bsbiDataAccess.showStatus = false
 
     // Data access 
+
+    console.log()
     var mapTypesSel = {
       'status_29': bsbiDataAccess.status_29,
       // 'status_30_49': bsbiDataAccess.status_30_49,
@@ -859,6 +971,9 @@ var bsbiDataRoot
         $opt.attr('data-qualifier', d['qualifier'])
         $opt.attr('data-vernacular', d['vernacular'])
 
+        $opt.attr('data-tetrad', d['tetrad'])
+        $opt.attr('data-monad', d['monad'])
+
         $opt.html(name).appendTo($sel)
       })
 
@@ -871,7 +986,10 @@ var bsbiDataRoot
       $sel.on('changed.bs.select', function (e, clickedIndex, isSelected, previousValue) {
         currentTaxon.identifier = $(this).val()
         currentTaxon.name =  $(this).find(":selected").attr("data-content")
+        currentTaxon.tetrad = $(this).find(":selected").attr("data-tetrad")
+        currentTaxon.monad = $(this).find(":selected").attr("data-monad")
         $('.bsbi-selected-taxon-name').html(currentTaxon.name)
+        setControlState()
         changeMap()
         changeCaption()
       })
@@ -891,6 +1009,7 @@ var bsbiDataRoot
 
     svgLegendOpts.scale=0.9
     
+    console.log('mapType', mapType)
     if (mapType === 'status') {
       //var access = periods[$('#atlas-range-select').val()-1].access
       var access = periods[atlasRangeIndex-1].access
