@@ -332,6 +332,7 @@ var bsbiDataRoot
     mapTypeSelector(mapControlRow(selector))
     statusControl(mapControlRow(selector))
     statusCheckbox(mapControlRow(selector))
+    opacitySlider(mapControlRow(selector))
     trendControl(mapControlRow(selector))
     backdropSelector(mapControlRow(selector, 'atlas-backdrop-selector'))
 
@@ -410,6 +411,13 @@ var bsbiDataRoot
       $('.atlas-status-checkbox-control').show()
     } else {
       $('.atlas-status-checkbox-control').hide()
+    }
+
+    // show opacity slider
+    if (displayedMapType === 'slippy') {
+      $('.atlas-opacity-slider-control').show()
+    } else {
+      $('.atlas-opacity-slider-control').hide()
     }
 
     // status checkbox enabled and checked value
@@ -620,6 +628,33 @@ var bsbiDataRoot
     // This seems to be necessary if interface regenerated,
     // e.g. changing from tabbed to non-tabbed display.
     $sel.selectpicker()
+  }
+
+  function opacitySlider($parent) {
+
+    const initOpacity = 70
+    $('#atlas-leaflet-svg').css('opacity', initOpacity/100)
+    
+    // Overall control container
+    var $container = $('<div>').appendTo($parent)
+    $container.addClass('atlas-opacity-slider-control')
+    $container.hide()
+
+    // Label
+    var $sliderLabel = $('<div>').appendTo($container)
+    $sliderLabel.addClass('atlas-opacity-slider-label')
+    $sliderLabel.text('Opacity:')
+
+    // Slider
+    var $sliderContainer = $('<div>').appendTo($container)
+    $sliderContainer.addClass('slidecontainer')
+    $sliderContainer.addClass('atlas-opacity-slider-slider')
+    var $slider = $('<input>').appendTo($sliderContainer)
+    $slider.addClass('slider')
+    $slider.attr('type', 'range').attr('min', '1').attr('max', '100').attr('value', initOpacity).attr('id', 'atlas-opacity-slider')
+    $slider.change(function() {
+      $('#atlas-leaflet-svg').css('opacity', $(this).val()/100)
+    })
   }
 
   function statusCheckbox($parent) {

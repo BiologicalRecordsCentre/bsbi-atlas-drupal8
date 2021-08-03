@@ -104,9 +104,9 @@ bsbiDataAccess.devel = {
     var opacities = {
       "to 1929": 0.3,
       "1930 - 1969": 0.4,
-      "1970 - 1986": 0.5,
-      "1987 - 1999": 0.6,
-      "2000 - 2019": 0.8
+      "1970 - 1986": 0.6,
+      "1987 - 1999": 0.8,
+      "2000 - 2019": 1
     }
 
     var periods = Object.keys(periodMappings).reverse();
@@ -259,7 +259,7 @@ bsbiDataAccess.devel = {
             shape: 'circle',
             colour: 'black',
             size: 1,
-            opacity: 0.8,
+            opacity: 1,
           }
         }
       }).then(function (data) {
@@ -271,7 +271,7 @@ bsbiDataAccess.devel = {
             lines:[
               {
                 colour: 'black',
-                opacity:0.8,
+                opacity: 1,
                 text: 'Present in tetrad',
                 shape: 'circle'
               }
@@ -295,7 +295,7 @@ bsbiDataAccess.devel = {
             shape: 'circle',
             colour: 'black',
             size: 1,
-            opacity: 0.8,
+            opacity: 1,
           }
         }
       }).then(function (data) {
@@ -307,7 +307,7 @@ bsbiDataAccess.devel = {
             lines:[
               {
                 colour: 'black',
-                opacity: 0.8,
+                opacity: 1,
                 text: 'Present in monad',
                 shape: 'circle'
               }
@@ -411,7 +411,7 @@ bsbiDataAccess.devel = {
                 shape: atlasstatus === "w" ? 'bullseye' : 'circle',
                 colour: colours[atlasstatus],
                 colour2: colours.bullseye,
-                opacity: occurs ? 0.8 : 0.4,
+                opacity: occurs ? 1 : 0.5,
                 caption: "Hectad: <b>".concat(r.hectad, "</b></br>Status: <b>").concat(capText, "</b>")
               };
             } else {
@@ -419,7 +419,7 @@ bsbiDataAccess.devel = {
                 gr: r.hectad,
                 shape: 'circle',
                 colour: 'black',
-                opacity: occurs ? 0.8 : 0.4,
+                opacity: occurs ? 1 : 0.5,
                 caption: "Hectad: <b>".concat(r.hectad, "</b>")
               };
             }
@@ -437,7 +437,7 @@ bsbiDataAccess.devel = {
           if (counts.occurs.n) {
             legend.lines.push({
               colour: 'blue',
-              opacity: 0.8,
+              opacity: 1,
               text: 'Native (' + (period === "to 1929" ? "pre-1930" : period.replace(" - ", "-")) + ')',
               shape: 'circle'
             })
@@ -446,7 +446,7 @@ bsbiDataAccess.devel = {
           if (counts.prior.n) {
             legend.lines.push({
               colour: 'blue',
-              opacity: 0.4,
+              opacity: 0.5,
               text: 'Native (earlier)',
               shape: 'circle'
             })
@@ -454,7 +454,7 @@ bsbiDataAccess.devel = {
           if (counts.occurs.a) {
             legend.lines.push({
               colour: 'red',
-              opacity: 0.8,
+              opacity: 1,
               text: 'Alien (' + (period === "to 1929" ? "pre-1930" : period.replace(" - ", "-")) + ')',
               shape: 'circle'
             })
@@ -463,7 +463,7 @@ bsbiDataAccess.devel = {
           if (counts.prior.a) {
             legend.lines.push({
               colour: 'red',
-              opacity: 0.4,
+              opacity: 0.5,
               text: 'Alien (earlier)',
               shape: 'circle'
             })
@@ -473,7 +473,7 @@ bsbiDataAccess.devel = {
             legend.lines.push({
               colour: 'blue',
               colour2: 'red',
-              opacity: 0.8,
+              opacity: 1,
               text: 'Reintroduced (' + (period === "to-1929" ? "pre 1930" : period.replace(" - ", "-")) + ')',
               shape: 'bullseye'
             })
@@ -482,7 +482,7 @@ bsbiDataAccess.devel = {
             legend.lines.push({
               colour: 'blue',
               colour2: 'red',
-              opacity: 0.4,
+              opacity: 0.5,
               text: 'Reintroduced (earlier)',
               shape: 'bullseye'
             })
@@ -493,12 +493,12 @@ bsbiDataAccess.devel = {
             size: 1,
             lines: [{
               colour: 'black',
-              opacity: 0.8,
+              opacity: 1,
               text: period === "to 1929" ? "pre-1930" : period.replace(" - ", "-"),
               shape: 'circle'
             }, {
               colour: 'black',
-              opacity: 0.4,
+              opacity: 0.5,
               text: 'Earlier',
               shape: 'circle'
             }]
@@ -511,7 +511,7 @@ bsbiDataAccess.devel = {
         resolve({
           records: data,
           precision: 10000,
-          opacity: 0.8,
+          opacity: 1,
           size: 1,
           legend: legend
         });
@@ -571,12 +571,12 @@ bsbiDataAccess.devel = {
           records: data,
           size: 1,
           precision: 10000,
-          opacity: 0.9,
+          opacity: 1,
           legend: {
             title: legendTitle,
             size: 1,
             precision: 10000,
-            opacity: 0.9,
+            opacity: 1,
             lines: [{
               colour: colours[1],
               text: 'Gain',
@@ -624,14 +624,14 @@ bsbiDataAccess.devel = {
           colour: 'black',
           shape: 'circle',
           precision: 10000,
-          opacity: 0.9,
+          opacity: 1,
           legend: {
             title: 'Tetrad frequency',
             size: 1,
             shape: 'circle',
             colour: 'black',
             precision: 10000,
-            opacity: 0.9,
+            opacity: 1,
             lines: [{
               text: '1-5',
               size: Math.sqrt(5)/5 * legendSizeFact,
