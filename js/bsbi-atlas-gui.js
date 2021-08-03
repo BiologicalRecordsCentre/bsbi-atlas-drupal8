@@ -463,16 +463,19 @@ var bsbiDataRoot
     
       var $div = $('<div>').appendTo($container)
       $div.attr('class', 'radio')
-      var $radio = $('<input>').appendTo($div)
+      var $label = $('<label>').appendTo($div)
+      $label.css('padding-left', '0')
+      var $radio = $('<input>').appendTo($label)
+      var $span = $('<span>').appendTo($label)
+      $span.text(label)
+      $span.css('padding-left', '20px')
       $radio.attr('type', 'radio')
       $radio.attr('name', 'atlas-grid-type-' + i)
       $radio.attr('class', 'atlas-grid-type-' + val)
       $radio.attr('value', val)
       $radio.css('margin-left', 0)
       if (checked) $radio.prop('checked', true)
-      var $label = $('<label>').appendTo($div)
-      $label.attr('for', 'atlas-grid-type-' + val)
-      $label.text(label)
+
 
       $radio.change(function () {
         var style = $(this).val()
@@ -775,16 +778,18 @@ var bsbiDataRoot
     function makeRadio(label, val, checked) {
       var $div = $('<div>').appendTo($container)
       $div.attr('class', 'radio')
-      var $radio = $('<input>').appendTo($div)
+      var $label = $('<label>').appendTo($div)
+      $label.css('padding-left', '0')
+      var $radio = $('<input>').appendTo($label)
+      var $span = $('<span>').appendTo($label)
+      $span.text(label)
+      $span.css('padding-left', '20px')
       $radio.attr('type', 'radio')
       $radio.attr('name', 'bsbi-inset-type-' + i)
       $radio.attr('class', 'bsbi-inset-type-' + val)
       $radio.attr('value', val)
       $radio.css('margin-left', 0)
       if (checked) $radio.prop('checked', true)
-      var $label = $('<label>').appendTo($div)
-      $label.attr('for', 'bsbi-inset-type-' + val)
-      $label.text(label)
 
       $radio.change(function () {
 
