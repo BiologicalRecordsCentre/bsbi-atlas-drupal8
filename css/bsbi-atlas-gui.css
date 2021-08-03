@@ -115,3 +115,7 @@ taxon {
   font-size: 14px;
 }
 
+.dropdown-menu {
+  z-index: 2000 !important;
+}
+

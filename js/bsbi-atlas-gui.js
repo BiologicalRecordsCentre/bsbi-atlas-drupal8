@@ -12,7 +12,7 @@ var bsbiDataRoot
     identifier: null,
     name: null,
     tetrad: null,
-    monad: null
+    //monad: null
   }
   var slippyMap, staticMap
   var mapType = 'allclass'
@@ -301,6 +301,7 @@ var bsbiDataRoot
     
     createMaps("#bsbiMapDiv")
     createMapControls('.bsbi-atlas-map-controls')
+    setControlState()
     sectionEnd($sect, tabs)
   }
 
@@ -332,7 +333,7 @@ var bsbiDataRoot
     statusControl(mapControlRow(selector))
     statusCheckbox(mapControlRow(selector))
     trendControl(mapControlRow(selector))
-    backdropSelector(mapControlRow(selector, 'atlas-map-overview-only'))
+    backdropSelector(mapControlRow(selector, 'atlas-backdrop-selector'))
 
     $(selector).each(function(i) {
 
@@ -351,17 +352,111 @@ var bsbiDataRoot
       // if user might switch between blocks during use - but this
       // is very unlikely. (But nevertheless has been implemented
       // for the radio buttons below.)
-      insetRadios(mapControlRow(sel,'atlas-map-overview-only'), i)
-      gridStyleRadios(mapControlRow(sel, 'atlas-map-overview-only'), i)
-      resolutionControl(mapControlRow(sel), i)
+      insetRadios(mapControlRow(sel,'atlas-inset-control'), i)
+      gridStyleRadios(mapControlRow(sel, 'atlas-grid-type-control'), i)
+      resolutionControl(mapControlRow(sel, 'atlas-resolution-control'), i)
     })
+    
+  }
+
+  function setControlState() {
+
+    // map display
+    if (displayedMapType === "static") {
+      $('#slippyAtlasMain').hide()
+      $('#staticAtlasMain').show()
+    } else {
+      $('#staticAtlasMain').hide()
+      $('#slippyAtlasMain').show()
+    }
+
+    // backdrop selector
+    if (displayedMapType === "static") {
+      $('.atlas-backdrop-selector').show()
+    } else {
+      $('.atlas-backdrop-selector').hide()
+    }
+
+    // inset control
+    if (displayedMapType === "static") {
+      $('.atlas-inset-control').show()
+    } else {
+      $('.atlas-inset-control').hide()
+    }
+
+    // grid type control
+    if (displayedMapType === "static") {
+      $('.atlas-grid-type-control').show()
+    } else {
+      $('.atlas-grid-type-control').hide()
+    }
+
+    // period slider visibility
+    if (mapType === 'status') {
+      $('.atlas-period-slider-control').show()
+    } else {
+      $('.atlas-period-slider-control').hide()
+    }
+
+    // trend slider control
+    if (mapType === 'trends') {
+      $('.atlas-trend-slider-control').show()
+    } else {
+      $('.atlas-trend-slider-control').hide()
+    }
+
+    // show status checkbox
+    if (mapType === 'allclass' || mapType === 'slippy') {
+      $('.atlas-status-checkbox-control').show()
+    } else {
+      $('.atlas-status-checkbox-control').hide()
+    }
+
+    // status checkbox enabled and checked value
+    if (displayedMapType === 'slippy' && mapType === 'allclass' && resolution !== 'hectad') {
+      // Uncheck and disable status checkbutton if not hectad resolution
+      $('.atlas-status-checkbox').prop('checked', false)
+      $('.atlas-status-checkbox').attr('disable', true)
+    } else {
+      // Display and set checked status to current value of showStatus global
+      $('.atlas-status-checkbox').attr('disable', false)
+      $('.atlas-status-checkbox').prop('checked', showStatus)
+    }
+
+    // atlas resolution control visibility
+    if (displayedMapType === "slippy" && mapType === 'allclass') {
+      $('.atlas-resolution-control').show()
+    } else {
+      $('.atlas-resolution-control').hide()
+    }
+
+    // atlas resolution control value and global variables
+    if (displayedMapType === "slippy" && mapType === 'allclass') {
+      // Reset resolution if currently set to a value that is not
+      // appropriate for the taxon
+      if (resolution === 'tetrad' && !currentTaxon.tetrad) {
+        resolution = 'hectad'
+      }
+      bsbiDataAccess.resolution = resolution
+
+      // Ensure right option is selected
+      $('.bsbi-resolution-' + resolution).prop('checked', true)
+
+      // Enable/disable tetrad option as appropriate
+      if (currentTaxon.tetrad) {
+        $('.bsbi-resolution-tetrad').attr('disabled', false)
+      } else {
+        $('.bsbi-resolution-tetrad').attr('disabled', true)
+      }
+    } else {
+      bsbiDataAccess.resolution = 'hectad'
+    }
     
   }
 
   function gridStyleRadios($parent, i) {
     // Overall control container
     var $container = $('<div>').appendTo($parent)
-    $container.attr('id', 'atlas-grid-type-control')
 
     function makeRadio(label, val, checked) {
       //$('<div class="radio"><label><input type="radio" name="atlas-grid-type" value="'+ val + '" ' + checked + '>' + label + '</label></div>').appendTo($container)
@@ -423,104 +518,16 @@ var bsbiDataRoot
         setControlState()
         slippyMap.setSize(w, h)
       } else {
-        if (resolution !== 'hectad') {
-          bsbiDataAccess.resolution = 'hectad'
-          setControlState()
-        } else {
-          setControlState()
-        }
+        // if (resolution !== 'hectad') {
+        //   bsbiDataAccess.resolution = 'hectad'
+        //   setControlState()
+        // } else {
+        //   setControlState()
+        // }
+        setControlState()
       }
       changeMap()
     })
-  }
-
-  function setControlState() {
-
-    console.log('setControlState')
-    if (displayedMapType === "static") {
-      $('.atlas-map-overview-only').show()
-      $('#slippyAtlasMain').hide()
-      $('#staticAtlasMain').show()
-    } else {
-      $('.atlas-map-overview-only').hide()
-      $('#staticAtlasMain').hide()
-      $('#slippyAtlasMain').show()
-    }
-
-    if (mapType === 'status') {
-      $('.atlas-period-slider-control').show()
-    } else {
-      $('.atlas-period-slider-control').hide()
-    }
-
-    if (mapType === 'allclass' || mapType === 'status') {
-      $('.atlas-status-checkbox-control').show()
-    } else {
-      $('.atlas-status-checkbox-control').hide()
-    }
-
-    if (mapType === 'trends') {
-      $('.atlas-trend-slider-control').show()
-    } else {
-      $('.atlas-trend-slider-control').hide()
-    }
-
-    if (mapType === 'allclass' && displayedMapType === 'slippy') {
-      $('.atlas-resolution-control').show()
-      // Enable/disable options depending on availability of resolution data
-      var identifier = currentTaxon.identifier
-      console.log('tetrad', currentTaxon.tetrad, 'monad', currentTaxon.monad)
-
-      if (identifier) {
-        var fileTetrad = "".concat(bsbiDataRoot, 'tetrad/').concat(identifier.replace(".", "_"), ".csv")
-        var fileMonad = "".concat(bsbiDataRoot, 'monad/').concat(identifier.replace(".", "_"), ".csv")
-
-        //checkCsv(fileTetrad,)
-        //checkCsv(fileMonad)
-        
-        //console.log(fileTetrad, fileTetrad)
-
-        if (resolution === 'monad' && !currentTaxon.monad) {
-          resolution = 'hectad'
-        } else if (resolution === 'tetrad' && !currentTaxon.tetrad) {
-          resolution = 'hectad'
-        }
-        bsbiDataAccess.resolution = resolution
-
-        $('.bsbi-resolution-' + resolution).prop('checked', true)
-        console.log('id', '.bsbi-resolution-' + resolution)
-        
-        $('.bsbi-resolution-hectad').attr('disabled', false)
-        if (currentTaxon.tetrad){
-          $('.bsbi-resolution-tetrad').attr('disabled', false)
-        } else {
-          $('.bsbi-resolution-tetrad').attr('disabled', true)
-        }
-        if (currentTaxon.monad){
-          $('.bsbi-resolution-monad').attr('disabled', false)
-        } else {
-          $('.bsbi-resolution-monad').attr('disabled', true)
-        }
-
-        // Uncheck and disable status checkbutton if not hectad resolution
-        if (resolution === 'hectad') {
-          $('.atlas-status-checkbox-control').show()
-        } else {
-          $('.atlas-status-checkbox-control').hide()
-        }   
-      } else {
-        $('.bsbi-resolution-monad').prop('checked', false)
-        $('.bsbi-resolution-tetrad').prop('checked', false)
-        $('.bsbi-resolution-hectad').prop('checked', true)
-
-        $('.bsbi-resolution-monad').attr('disabled', true)
-        $('.bsbi-resolution-tetrad').attr('disabled', true)
-        $('.bsbi-resolution-hectad').attr('disabled', true)
-      }
-
-    } else {
-      $('.atlas-resolution-control').hide()
-    }
   }
 
   function mapTypeSelector($parent) {
@@ -585,7 +592,7 @@ var bsbiDataRoot
     // Main type selector
     var $sel = $('<select>').appendTo($parent)
     $sel.addClass('selectpicker')
-    $sel.addClass('atlas-backdrop-selector')
+    //$sel.addClass('atlas-backdrop-selector')
     $sel.attr('data-width', '100%')
     $sel.on('changed.bs.select', function (e, clickedIndex, isSelected, previousValue) {
       // Remove all backdrops
@@ -686,8 +693,6 @@ var bsbiDataRoot
   function resolutionControl($parent, i) {
     // Overall control container
     var $container = $('<div>').appendTo($parent)
-    $container.addClass('atlas-resolution-control')
-    $container.hide()
 
     function makeRadio(label, val, checked) {
       var $div = $('<div>').appendTo($container)
@@ -715,7 +720,7 @@ var bsbiDataRoot
     }
     makeRadio('Hectads', 'hectad', true)
     makeRadio('Tetrads', 'tetrad', false)
-    makeRadio('Monads', 'monad', false)
+    //makeRadio('Monads', 'monad', false)
   }
 
   function trendControl($parent) {
@@ -765,7 +770,7 @@ var bsbiDataRoot
     
     // Overall control container
     var $container = $('<div>').appendTo($parent)
-    $container.attr('id', 'atlas-inset-control')
+    //$container.attr('id', 'atlas-inset-control')
 
     function makeRadio(label, val, checked) {
       var $div = $('<div>').appendTo($container)
@@ -972,7 +977,7 @@ var bsbiDataRoot
         $opt.attr('data-vernacular', d['vernacular'])
 
         $opt.attr('data-tetrad', d['tetrad'])
-        $opt.attr('data-monad', d['monad'])
+        //$opt.attr('data-monad', d['monad'])
 
         $opt.html(name).appendTo($sel)
       })
@@ -987,7 +992,7 @@ var bsbiDataRoot
         currentTaxon.identifier = $(this).val()
         currentTaxon.name =  $(this).find(":selected").attr("data-content")
         currentTaxon.tetrad = $(this).find(":selected").attr("data-tetrad")
-        currentTaxon.monad = $(this).find(":selected").attr("data-monad")
+        //currentTaxon.monad = $(this).find(":selected").attr("data-monad")
         $('.bsbi-selected-taxon-name').html(currentTaxon.name)
         setControlState()
         changeMap()
