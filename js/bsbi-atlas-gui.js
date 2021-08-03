@@ -335,7 +335,7 @@ var bsbiDataRoot
     opacitySlider(mapControlRow(selector))
     trendControl(mapControlRow(selector))
     backdropSelector(mapControlRow(selector, 'atlas-backdrop-selector'))
-
+    
     $(selector).each(function(i) {
 
       // We loop through the selection so that we can use the
@@ -358,6 +358,7 @@ var bsbiDataRoot
       resolutionControl(mapControlRow(sel, 'atlas-resolution-control'), i)
     })
     
+    mapImageButton(mapControlRow(selector))
   }
 
   function setControlState() {
@@ -369,6 +370,13 @@ var bsbiDataRoot
     } else {
       $('#staticAtlasMain').hide()
       $('#slippyAtlasMain').show()
+    }
+
+    // save map image button
+    if (displayedMapType === 'static') {
+      $('.atlas-save-map-image').show()
+    } else {
+      $('.atlas-save-map-image').hide()
     }
 
     // backdrop selector
@@ -628,6 +636,20 @@ var bsbiDataRoot
     // This seems to be necessary if interface regenerated,
     // e.g. changing from tabbed to non-tabbed display.
     $sel.selectpicker()
+  }
+
+  function mapImageButton($parent) {
+    // Overall control container
+    var $container = $('<div>').appendTo($parent)
+    $container.addClass('atlas-save-map-image')
+    $container.hide()
+
+    var $button = $('<button>').appendTo($container)
+    $button.text('Download image')
+    $button.on('click', function(){
+      console.log('downlaod')
+      staticMap.saveMap()
+    })
   }
 
   function opacitySlider($parent) {
