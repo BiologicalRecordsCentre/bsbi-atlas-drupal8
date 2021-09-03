@@ -2,6 +2,8 @@
 var bsbiDataRoot
 (function ($, Drupal, drupalSettings) {
 
+  console.log('Identifier', drupalSettings.bsbi_atlas.identifier)
+
   //bsbiatlas.setDataRoot(drupalSettings.bsbi_atlas.dataRoot + 'atlas_taxa_2020_08_25/hectad-dateclass-status/')
 
   bsbiDataRoot = drupalSettings.bsbi_atlas.dataRoot + 'bsbi/atlas_taxa_2020_08_25/hectad-dateclass-status/'
@@ -14,6 +16,7 @@ var bsbiDataRoot
     tetrad: null,
     //monad: null
   }
+  var gridStyle = getCookie('gridstyle') ? getCookie('gridstyle') : 'solid'
   var slippyMap, staticMap
   var mapType = 'allclass'
   var showStatus = false
@@ -356,9 +359,8 @@ var bsbiDataRoot
       insetRadios(mapControlRow(sel,'atlas-inset-control'), i)
       gridStyleRadios(mapControlRow(sel, 'atlas-grid-type-control'), i)
       resolutionControl(mapControlRow(sel, 'atlas-resolution-control'), i)
+      mapImageButton(mapControlRow(sel, 'atlas-image-button'), i)
     })
-    
-    mapImageButton(mapControlRow(selector))
   }
 
   function setControlState() {
@@ -492,28 +494,29 @@ var bsbiDataRoot
       $radio.css('margin-left', 0)
       if (checked) $radio.prop('checked', true)
 
-
       $radio.change(function () {
-        var style = $(this).val()
-        if (style === 'dashed') {
-          $('#bsbiMapDiv g#grid path').css('stroke-dasharray', '3,2')
-          $('#bsbiMapDiv g#grid path').show()
-        } else if (style === 'solid') {
-          $('#bsbiMapDiv g#grid path').css('stroke-dasharray', '')
-          $('#bsbiMapDiv g#grid path').show()
-        } else {
-          $('#bsbiMapDiv g#grid path').hide()
-        }
-
+        gridStyle = $(this).val()
+        setCookie('gridstyle', gridStyle, 30)
+        setGridStyle()
         // Update controls mirrored in other blocks
         $('.atlas-grid-type-' + val).prop("checked", true)
       })
     }
-    var gridStyle = getCookie('gridstyle') ? getCookie('gridstyle') : 'solid'
-
     makeRadio('Solid grid lines', 'solid', gridStyle === 'solid' ? 'checked' : '')
     makeRadio('Dashed grid lines', 'dashed', gridStyle === 'dashed' ? 'checked' : '')
     makeRadio('No grid lines', 'none', gridStyle === 'none' ? 'checked' : '')
+  }
+
+  function setGridStyle() {
+    if (gridStyle === 'dashed') {
+      $('#bsbiMapDiv g#grid path').css('stroke-dasharray', '3,2')
+      $('#bsbiMapDiv g#grid path').show()
+    } else if (gridStyle === 'solid') {
+      $('#bsbiMapDiv g#grid path').css('stroke-dasharray', '')
+      $('#bsbiMapDiv g#grid path').show()
+    } else {
+      $('#bsbiMapDiv g#grid path').hide()
+    }
   }
 
   function mapInterfaceToggle($parent) {
@@ -638,18 +641,51 @@ var bsbiDataRoot
     $sel.selectpicker()
   }
 
-  function mapImageButton($parent) {
+  function mapImageButton($parent, i) {
+
+    var imageType = 'png'
+
     // Overall control container
     var $container = $('<div>').appendTo($parent)
     $container.addClass('atlas-save-map-image')
     $container.hide()
 
     var $button = $('<button>').appendTo($container)
+    $button.addClass('btn btn-default')
     $button.text('Download image')
     $button.on('click', function(){
-      console.log('downlaod')
-      staticMap.saveMap()
+      console.log('download', imageType)
+      staticMap.saveMap(imageType === 'svg')
     })
+
+    makeRadio('PNG', 'png', true)
+    makeRadio('SVG', 'svg', false)
+
+    function makeRadio(label, val, checked) {
+
+      var $div = $('<div>').appendTo($container)
+      $div.css('display', 'inline-block')
+      $div.css('margin-left', '0.5em')
+      $div.attr('class', 'radio')
+      var $label = $('<label>').appendTo($div)
+      $label.css('padding-left', '0')
+      var $radio = $('<input>').appendTo($label)
+      var $span = $('<span>').appendTo($label)
+      $span.text(label)
+      $span.css('padding-left', '20px')
+      $radio.attr('type', 'radio')
+      $radio.attr('name', 'download-type-' + i)
+      $radio.attr('class', 'download-type-' + val)
+      $radio.attr('value', val)
+      $radio.css('margin-left', 0)
+      if (checked) $radio.prop('checked', true)
+
+      $radio.change(function () {
+        // Update controls mirrored in other blocks
+        $('.download-type-' + val).prop("checked", true)
+        imageType = val
+      })
+    }
   }
 
   function opacitySlider($parent) {
@@ -858,6 +894,7 @@ var bsbiDataRoot
         staticMap.setTransform(val)
         setCookie('inset', val, 30)
         changeMap()
+        setGridStyle()
       })
     }
     var selectedInset = getCookie('inset') ? getCookie('inset') : 'BI4'
@@ -1015,8 +1052,56 @@ var bsbiDataRoot
     $('#slippyAtlasMain').hide()
   }
 
+  // return a promise
+  function copyToClipboard(textToCopy) {
+    // https://stackoverflow.com/questions/51805395/navigator-clipboard-is-undefined
+    // navigator clipboard api needs a secure context (https)
+    if (navigator.clipboard && window.isSecureContext) {
+      // navigator clipboard api method'
+      return navigator.clipboard.writeText(textToCopy)
+    } else {
+      // text area method
+      let textArea = document.createElement("textarea")
+      textArea.value = textToCopy
+      // make the textarea out of viewport
+      textArea.style.position = "fixed"
+      textArea.style.left = "-999999px"
+      textArea.style.top = "-999999px"
+      document.body.appendChild(textArea)
+      textArea.focus()
+      textArea.select()
+      return new Promise((res, rej) => {
+          // here the magic happens
+          document.execCommand('copy') ? res() : rej()
+          textArea.remove()
+      })
+    }
+  }
+
   function taxonSelectors(selector) {
-    var $sel = $('<select>').appendTo($(selector))
+    //var $sel = $('<select>').appendTo($(selector))
+
+    // Overall control container
+    var $container = $('<div>').appendTo($(selector))
+    $container.addClass('atlas-taxon-selector-div')
+
+    // Selector
+    var $sel = $('<select>').appendTo($container)
+    $sel.addClass('atlas-taxon-selector-sel')
+
+    // Slider
+    var $link = $('<button>').appendTo($container)
+    $link.addClass('atlas-taxon-selector-link')
+    $link.attr('title', 'Copy link for taxon into clipboard')
+    $link.addClass('btn btn-default')
+    $link.html('&#128279;')
+    $link.css('padding', '6px 6px')
+    $link.on('click', function() {
+      if (currentTaxon.identifier) {
+        copyToClipboard(location.origin + '/atlas/' + currentTaxon.identifier)
+      }
+    })
+
     d3.csv(taxaCsv).then(function(data) {
       data.forEach(function(d) {
         var name = ''
@@ -1048,9 +1133,11 @@ var bsbiDataRoot
       $sel.attr('data-live-search', 'true')
       $sel.attr('data-header', 'Start typing the name of a taxon')
       $sel.attr('title', 'Select a taxon to display')
-      $sel.attr('data-width', '100%')
+      //$sel.attr('data-width', '100%')
       $sel.selectpicker()
       $sel.on('changed.bs.select', function (e, clickedIndex, isSelected, previousValue) {
+
+        console.log('Identifier:', $(this).val())
         currentTaxon.identifier = $(this).val()
         currentTaxon.name =  $(this).find(":selected").attr("data-content")
         currentTaxon.tetrad = $(this).find(":selected").attr("data-tetrad")
@@ -1061,6 +1148,10 @@ var bsbiDataRoot
         changeCaption()
       })
 
+      // If identifier passed in URL, set the value
+      if (drupalSettings.bsbi_atlas.identifier) {
+        $sel.selectpicker('val', drupalSettings.bsbi_atlas.identifier)
+      }
     }).catch(function(e){
       console.log('Error reading taxon CSV')
     })
@@ -1183,7 +1274,7 @@ var bsbiDataRoot
 
     // mainAtlasContent($(this).val() === "on")
     // changeMap()
-    
+
     // Colours
     var $colours = $('<div style="margin-top: 1em">').appendTo($(selector))
 

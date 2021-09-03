@@ -19,6 +19,25 @@
   flex: 1;
 }
 
+.atlas-taxon-selector-div {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  width: 100%;
+}
+
+.atlas-taxon-selector-sel {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.atlas-taxon-selector-link {
+  display: flex;
+  flex-direction: column;
+  margin-left: 0.5em;
+}
+
 .bsbi-atlas-taxon-selector {
     margin-bottom: 1em;
 }
