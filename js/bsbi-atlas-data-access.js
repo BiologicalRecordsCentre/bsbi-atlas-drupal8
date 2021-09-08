@@ -2,7 +2,8 @@ var bsbiDataAccess = {};
 bsbiDataAccess.showStatus = true;
 bsbiDataAccess.resolution = 'hectad';
 bsbiDataAccess.devel = {
-  changeColours: ['#FAD0C8', '#DD5A2F', '#525252']
+  changeColours: ['#FAD0C8', '#DD5A2F', '#525252'],
+  symboltype: 'circle'
 };
 
 (function() {
@@ -250,13 +251,15 @@ bsbiDataAccess.devel = {
 
   function distAllClassesTetrad(identifier) {
 
+    console.log('symboltype', bsbiDataAccess.devel.symboltype)
+
     return new Promise(function (resolve, reject) {
 
       d3.csv(getCSV('tetrad/' + identifier), function (r) {
         if (r.gr ) {
           return {
             gr: r.gr,
-            shape: 'circle',
+            shape: bsbiDataAccess.devel.symboltype, //'circle' dev only,
             colour: 'black',
             size: 1,
             opacity: 1,
@@ -273,7 +276,7 @@ bsbiDataAccess.devel = {
                 colour: 'black',
                 opacity: 1,
                 text: 'Present in tetrad',
-                shape: 'circle'
+                shape: bsbiDataAccess.devel.symboltype === 'square' ? 'square' : 'circle', //'circle' dev only
               }
             ]
           }

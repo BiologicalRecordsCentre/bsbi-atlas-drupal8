@@ -338,7 +338,7 @@ var bsbiDataRoot
     opacitySlider(mapControlRow(selector))
     trendControl(mapControlRow(selector))
     backdropSelector(mapControlRow(selector, 'atlas-backdrop-selector'))
-    
+
     $(selector).each(function(i) {
 
       // We loop through the selection so that we can use the
@@ -361,6 +361,8 @@ var bsbiDataRoot
       resolutionControl(mapControlRow(sel, 'atlas-resolution-control'), i)
       mapImageButton(mapControlRow(sel, 'atlas-image-button'), i)
     })
+
+    devStuff(selector)
   }
 
   function setControlState() {
@@ -497,7 +499,7 @@ var bsbiDataRoot
       $radio.change(function () {
         gridStyle = $(this).val()
         setCookie('gridstyle', gridStyle, 30)
-        setGridStyle()
+        staticMap.setGridLineStyle(gridStyle)
         // Update controls mirrored in other blocks
         $('.atlas-grid-type-' + val).prop("checked", true)
       })
@@ -507,20 +509,42 @@ var bsbiDataRoot
     makeRadio('No grid lines', 'none', gridStyle === 'none' ? 'checked' : '')
   }
 
-  function setGridStyle() {
-    if (gridStyle === 'dashed') {
-      $('#bsbiMapDiv g#grid path').css('stroke-dasharray', '3,2')
-      $('#bsbiMapDiv g#grid path').show()
-    } else if (gridStyle === 'solid') {
-      $('#bsbiMapDiv g#grid path').css('stroke-dasharray', '')
-      $('#bsbiMapDiv g#grid path').show()
-    } else {
-      $('#bsbiMapDiv g#grid path').hide()
-    }
+  function devStuff($parent) {
+
+    // dev only
+    var $container = $('<div id="slippy-dev" style="padding: 0.5em; display: none; background-color: yellow">').appendTo($parent)
+
+    var $title = $('<div>').appendTo($container)
+    $title.html('<b>Testing tetrad styles &amp; performance</b>')
+    
+    var $radios = $('<div style="margin-top: 0.5em">').appendTo($container)
+    $('<input type="radio" name="symboltype" value="circle" id="symb-poly-circle">').appendTo($radios)
+    $('<label for="symb-poly-circle" style="font-weight: 500">').html('&nbsp;Polygon circles').appendTo($radios)
+    
+    $('<br/><input type="radio" name="symboltype" value="square" id="symb-poly-square">').appendTo($radios)
+    $('<label for="symb-poly-square" style="font-weight: 500">').html('&nbsp;Polygon squares').appendTo($radios)
+
+    $('<br/><input type="radio" name="symboltype" value="circlerad" id="symb-circle">').appendTo($radios)
+    $('<label for="symb-circle" style="font-weight: 500">').html('&nbsp;SVG Circles').appendTo($radios)
+
+    $('#symb-poly-circle').prop( "checked", true )
+
+    $('input[name="symboltype"]').on("change", function() {
+      console.log($('input[name="symboltype"]:checked').val())
+      bsbiDataAccess.devel.symboltype=$('input[name="symboltype"]:checked').val()
+      changeMap()
+    })
+
+    $('<div id="dev-download-time">').appendTo($container)
+    $('<div id="dev-display-time">').appendTo($container)
   }
 
   function mapInterfaceToggle($parent) {
-    var $bgrp = $('<div class="btn-group" data-toggle="buttons">').appendTo($parent)
+
+    var $container = $('<div style="display: flex">').appendTo($parent)
+
+    // Buttons
+    var $bgrp = $('<div class="btn-group" data-toggle="buttons">').appendTo($container)
 
     var $staticLabel = $('<label class="btn btn-primary active">').appendTo($bgrp)
     var $staticButton = $('<input type="radio" name="mapType" value="static" checked>').appendTo($staticLabel)
@@ -529,6 +553,10 @@ var bsbiDataRoot
     var $slippyLabel = $('<label class="btn btn-primary">').appendTo($bgrp)
     var $slippyButton = $('<input type="radio" name="mapType" value="slippy">').appendTo($slippyLabel)
     $slippyLabel.append("Zoomable")
+
+    // Busy indicator
+    var $loader = $('<div id="atlas-loader" style="display: none">').appendTo($container) 
+    var $spinner = $('<div class="atlas-loader">').appendTo($loader)
 
     $('input[type=radio][name="mapType"]').change(function() {
       displayedMapType = $(this).val()
@@ -539,14 +567,15 @@ var bsbiDataRoot
         var h = $svg.height()
         setControlState()
         slippyMap.setSize(w, h)
+
+        // Dev only stuff...
+        $('#slippy-dev').show()
+        
       } else {
-        // if (resolution !== 'hectad') {
-        //   bsbiDataAccess.resolution = 'hectad'
-        //   setControlState()
-        // } else {
-        //   setControlState()
-        // }
         setControlState()
+
+        // Dev only stuff...
+        $('#slippy-dev').hide()
       }
       changeMap()
     })
@@ -894,7 +923,6 @@ var bsbiDataRoot
         staticMap.setTransform(val)
         setCookie('inset', val, 30)
         changeMap()
-        setGridStyle()
       })
     }
     var selectedInset = getCookie('inset') ? getCookie('inset') : 'BI4'
@@ -1028,12 +1056,35 @@ var bsbiDataRoot
       transOptsControl: false,
       seaFill: 'white',
       gridLineColour: '#7C7CD3',
+      gridLineStyle: gridStyle,
       boundaryColour: '#7C7CD3',
     })
     //staticMap.basemapImage('greyelev', true, rasterRoot + 'grey_elevation_300.png', rasterRoot + 'grey_elevation_300.pgw')
     // Initial backgrop image
     staticMap.basemapImage('colour_elevation', true, rasterRoot + 'colour_elevation.png', rasterRoot + 'colour_elevation.pgw')
     //staticMap.basemapImage('greyelev', false)
+
+    // Callbacks for slippy maps
+    function startLoad() {
+      t1 = Math.floor(Date.now() / 100)
+      document.getElementById('atlas-loader').style.display = 'inline-block'
+      document.getElementById('dev-download-time').innerHTML= "Downloading data..."
+    }
+    function endLoad() {
+      document.getElementById('atlas-loader').style.display = 'none'
+      var t2 = Math.floor(Date.now() / 100)
+      document.getElementById('dev-download-time').innerHTML= "Downloading took <b>" + String((t2-t1)/10) + "</b> seconds"
+    }
+    function startDraw() {
+      t1 = Math.floor(Date.now() / 100)
+      document.getElementById('atlas-loader').style.display = 'inline-block'
+      document.getElementById('dev-display-time').innerHTML= "Displaying data..."
+    }
+    function endDraw() {
+      document.getElementById('atlas-loader').style.display = 'none'
+      var t2 = Math.floor(Date.now() / 100)
+      document.getElementById('dev-display-time').innerHTML= "Displaying took <b>" + String((t2-t1)/10) + "</b> seconds"
+    }
 
     // Create the slippy map
     slippyMap = brcatlas.leafletMap({
@@ -1048,6 +1099,7 @@ var bsbiDataRoot
       //legendScale: 1,
       legendOpts: slippyLegendOpts,
       basemapConfigs: basemapConfigs,
+      callbacks: [startDraw, endDraw, startLoad, endLoad]
     })
     $('#slippyAtlasMain').hide()
   }
