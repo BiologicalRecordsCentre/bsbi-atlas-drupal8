@@ -1433,12 +1433,15 @@ var bsbiDataRoot
         // Citation
         $caption.append('<h4>Recommended citation <span id="bsbi-citation-toggle">[show]</span></h4>')
         var $div = $('<div id="bsbi-citation-div">').appendTo($caption)
-        $p = $('<p>').appendTo($div)
+        $p = $('<p id="bsbi-citation-text">').appendTo($div)
         $p.append('<i>' + d[0].taxonName + ',</i> ')
         $p.append('in <i>BSBI Online Atlas 2020</i>, eds P.A. Stroh, T. Humphrey, R. Burkmar, O.L. Pescott, & K.J. Walker. ')
         $p.append(location.origin + '/atlas/' + currentTaxon.identifier)
         $p.append(' [Accessed ' + new Date().toLocaleDateString('en-GB') + ']')
-
+        var $but1 = $('<button id="bsbi-citation-copy-text">Copy as text</button>').appendTo($div)
+        $but1.addClass('btn btn-default')
+        var $but2 = $('<button id="bsbi-citation-copy-html">Copy as HTML</button>').appendTo($div)
+        $but2.addClass('btn btn-default')
 
         var taxaCitationShown = false
         $('#bsbi-citation-toggle').click(function() {
@@ -1451,6 +1454,14 @@ var bsbiDataRoot
             $('#bsbi-citation-div').hide()
             $('#bsbi-citation-toggle').html('[show]')
           }
+        })
+
+        $('#bsbi-citation-copy-text').click(function() {
+          copyToClipboard($('#bsbi-citation-text').text())
+        })
+
+        $('#bsbi-citation-copy-html').click(function() {
+          copyToClipboard($('#bsbi-citation-text').html())
         })
 
         // Update meta tags
