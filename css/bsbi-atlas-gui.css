@@ -174,3 +174,24 @@ taxon {
   z-index: 2000 !important;
 }
 
+.bsbi-section-summary span.taxname {
+  display: block
+}
+
+#bsbi-taxa-covered-toggle {
+  cursor: pointer;
+  font-size: 14px;
+}
+
+#bsbi-taxa-covered-list {
+  display: none;
+}
+
+#bsbi-citation-toggle {
+  cursor: pointer;
+  font-size: 14px;
+}
+
+#bsbi-citation-div {
+  display: none;
+}

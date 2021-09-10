@@ -8,8 +8,10 @@ var bsbiDataRoot
 
   bsbiDataRoot = drupalSettings.bsbi_atlas.dataRoot + 'bsbi/atlas_taxa_2020_08_25/hectad-dateclass-status/'
   var captionRoot = drupalSettings.bsbi_atlas.dataRoot + 'bsbi/captions/'
+  var bsbidburl = drupalSettings.bsbi_atlas.dataBsbidb
   var rasterRoot = drupalSettings.bsbi_atlas.dataRoot + 'rasters/'
   var taxaCsv = drupalSettings.bsbi_atlas.dataRoot + 'bsbi/taxon_list.csv'
+  var taxaList = []
   var currentTaxon = {
     identifier: null,
     name: null,
@@ -175,6 +177,9 @@ var bsbiDataRoot
     // $title.text("No taxon selected")
     // $('#bsbi-atlas-gui').append('<hr>')
 
+    // Meta tags
+    setBaseMetaTags()
+    
     // Initialise main content
     $('#bsbi-atlas-gui').append('<div id="main-atlas-content"></div>')
     var tabs = drupalSettings.bsbi_atlas.useTabs
@@ -189,6 +194,72 @@ var bsbiDataRoot
     // Devel block
     develBlock('#bsbi-atlas-development')
   })
+
+  function addMetaTags(type, value, update) {
+
+    function addHeadTag(name, content, update) {
+      if (update) {
+        $('meta[name="' + name + '"').attr('content', content) 
+      } else {
+        $('head').append('<meta name="' + name + '" content="' + content + '" />') 
+      }
+    }
+
+    // http://div.div1.com.au/div-thoughts/div-commentaries/66-div-commentary-metadata
+    switch(type) {
+      case 'title':
+        $('title').html(value)
+        addHeadTag("citation_title", value, update)
+        addHeadTag("dc.title", value, update)
+        addHeadTag("dcterms.title", value, update)
+        addHeadTag("prism.alternateTitle", value, update)
+        addHeadTag("eprints.title", value, update)
+        addHeadTag("bepress_citation_title", value, update)
+        break
+      case 'author':
+        addHeadTag("citation_author", value)
+        addHeadTag("dc.creator", value)
+        addHeadTag("dcterms.creator", value)
+        addHeadTag("eprints.creators_name", value)
+        addHeadTag("bepress_citation_author", value)
+        break
+      case 'authors':
+        addHeadTag("author", value)
+        addHeadTag("citation_authors", value)
+        break
+      case 'year':
+        addHeadTag("citation_year", value)
+        addHeadTag("citation_date", value)
+        addHeadTag("citation_publication_date", value)
+        addHeadTag("dc.date", value)
+        addHeadTag("dcterms.date", value)
+        addHeadTag("dcterms.created", value)
+        addHeadTag("prism.copyrightYear", value)
+        addHeadTag("prism.coverDate", value)
+        addHeadTag("prism.publicationDate", value)
+        addHeadTag("eprints.datestamp", value)
+        addHeadTag("eprints.date", value)
+        addHeadTag("bepress_citation_date", value)
+        break
+      case 'url':
+        addHeadTag("citation_public_url", value)
+        addHeadTag("prism.url", value)
+        addHeadTag("eprints.official_url", value)
+        addHeadTag("bepress_citation_pdf_url", value)
+    }
+  }
+
+  function setBaseMetaTags() {
+    addMetaTags('title', 'BSBI Online Atlas 2020')
+    addMetaTags('authors', 'Stroh, P. A., Humphrey, T., Burkmar, R. J., Pescott, O. L. and Walker, K. J.')
+    addMetaTags('author', 'Stroh, P. A.')
+    addMetaTags('author', 'Humphrey, T.')
+    addMetaTags('author', 'Burkmar, R. J.')
+    addMetaTags('author', 'Pescott, O. L.')
+    addMetaTags('author', 'Walker, K. J.')
+    addMetaTags('year', '2022')
+    addMetaTags('url', location.origin + '/atlas')
+  }
 
   function mainAtlasContent(tabs) {
     var selected = 'summary'
@@ -246,8 +317,6 @@ var bsbiDataRoot
         $div.addClass('active')
       }
     }
-    //$h = $('<h2>')
-    //$h.text(title)
 
     var $h = $('<p class="bsbi-selected-taxon-name"></p>')
     $h.css('font-size', '1.3em')
@@ -297,7 +366,7 @@ var bsbiDataRoot
     var $right = $('<div class="col-sm-4">').appendTo($r)
     $left.append('<div id="bsbiMapDiv" width="100%"></div>')
 
-    var $taxon = $('<div class="bsbi-selected-taxon-name"></div>').appendTo($right)
+    var $taxon = $('<div class="bsbi-selected-taxon-name bsbi-section-summary"></div>').appendTo($right)
     $taxon.css('font-size', '1.3em')
     $right.append('<hr/>')
     $right.append('<div id="bsbi-caption"></div>')
@@ -1155,7 +1224,8 @@ var bsbiDataRoot
     })
 
     d3.csv(taxaCsv).then(function(data) {
-      data.forEach(function(d) {
+      taxaList = data
+      taxaList.forEach(function(d) {
         var name = ''
         if (d['vernacular']) {
           name = '<b>' + d['vernacular'] + '</b> '
@@ -1194,10 +1264,10 @@ var bsbiDataRoot
         currentTaxon.name =  $(this).find(":selected").attr("data-content")
         currentTaxon.tetrad = $(this).find(":selected").attr("data-tetrad")
         //currentTaxon.monad = $(this).find(":selected").attr("data-monad")
-        $('.bsbi-selected-taxon-name').html(currentTaxon.name)
+        //$('.bsbi-selected-taxon-name').html(currentTaxon.name)
         setControlState()
         changeMap()
-        changeCaption()
+        changeCaption() //Also changes taxon name display in sections
       })
 
       // If identifier passed in URL, set the value
@@ -1272,37 +1342,119 @@ var bsbiDataRoot
     // }
   }
 
+  function postProcessCaptionText(txt) {
+    var txtn = txt
+    txtn  = txtn.replace(/href="\/object.php/g, 'target="_blank" href="' + bsbidburl + 'object.php')
+    txtn  = txtn.replace(/href='\/object.php/g, 'target=\'_blank\' href=\'' + bsbidburl + 'object.php')
+    return txtn
+  }
+
+  function getFormattedTaxonName(vernacular, scientific, authority) {
+    var vernacular = vernacular ? '<span class="taxname"><b>' + vernacular + ' </b></span>' : ''
+    var scientific = scientific ? '<span class="taxname"><i>' + scientific + ' </i></span>' : ''
+    var authority = authority ? '<span class="taxname"><span style="color: grey">' + authority + '</span></span>' : ''
+
+    return vernacular + scientific + authority
+  }
+
   function changeCaption() {
     //console.log('caption', currentTaxon)
 
     var $p
     var $caption = $('#bsbi-caption')
     $caption.html('')
-    d3.csv(captionRoot + currentTaxon.identifier.replace(/\./g, "_") + '.csv')
+    d3.csv(captionRoot + currentTaxon.identifier.replace(/\./g, "_") + '.csv?prevent-cache=09092021')
       .then(function(d) {
-        if (d[0].description) {
+        
+        console.log(captionRoot)
+        console.log(d)
+
+        // Set taxon name
+        $('.bsbi-selected-taxon-name').html(getFormattedTaxonName(d[0].vernacular, d[0].taxonName, d[0].authority))
+
+        // For caption, set the various sections
+        // Description
+        if (d[0].atlasSpeciesDescription) {
           $caption.append('<h4>Description</h4>')
           $p = $('<p>').appendTo($caption)
-          $p.append(d[0].description)
+          $p.append(postProcessCaptionText(d[0].atlasSpeciesDescription))
         }
-        if (d[0].biogeography) {
+
+        // Taxa covered
+        if (d[0].captionedChildTaxonIds) {
+          $caption.append('<h4>Taxa covered <span id="bsbi-taxa-covered-toggle">[show]</span></h4>')
+          //$p = $('<p id="bsbi-taxa-covered-toggle">').appendTo($caption)
+          //$p.html('[show]')
+          var $ul = $('<ul id="bsbi-taxa-covered-list">').appendTo($caption)
+          ddbids = d[0].captionedChildTaxonIds.split(';')
+          ddbids.forEach(function(ddbid) {
+            var $li = $('<li>').appendTo($ul)
+            var taxon = taxaList.find(function(t) {return t['ddb id'] === ddbid})
+            if (taxon) {
+              $li.html(getFormattedTaxonName(taxon['vernacular'], taxon['taxon name'], taxon['authority']))
+            }
+          })
+          var taxaCoveredShown = false
+          $('#bsbi-taxa-covered-toggle').click(function() {
+            taxaCoveredShown = !taxaCoveredShown
+            if (taxaCoveredShown) {
+              $('#bsbi-taxa-covered-list').show()
+              $('#bsbi-taxa-covered-toggle').html('[hide]')
+            }
+            if (!taxaCoveredShown) {
+              $('#bsbi-taxa-covered-list').hide()
+              $('#bsbi-taxa-covered-toggle').html('[show]')
+            }
+          })
+        }
+        
+        // Biogeography
+        if (d[0].atlasSpeciesBiogeography) {
           $caption.append('<h4>Biogeography</h4>')
           $p = $('<p>').appendTo($caption)
-          $p.append(d[0].biogeography)
+          $p.append(postProcessCaptionText(d[0].atlasSpeciesBiogeography))
         }
-        if (d[0].trends) {
+
+        // Trends
+        if (d[0].atlasSpeciesTrends) {
           $caption.append('<h4>Trends</h4>')
           $p = $('<p>').appendTo($caption)
-          $p.append(d[0].trends)
+          $p.append(postProcessCaptionText(d[0].atlasSpeciesTrends))
         }
-        if (d[0].authors) {
+        if (d[0].captionAuthors) {
           $caption.append('<h4>Authors</h4>')
           var $ul = $('<ul>').appendTo($caption)
-          d[0].authors.split(';').forEach(function(a) {
+          d[0].captionAuthors.split(';').forEach(function(a) {
             var $li = $('<li>').appendTo($ul)
             $li.text(a)
           })
         }
+
+        // Citation
+        $caption.append('<h4>Recommended citation <span id="bsbi-citation-toggle">[show]</span></h4>')
+        var $div = $('<div id="bsbi-citation-div">').appendTo($caption)
+        $p = $('<p>').appendTo($div)
+        $p.append('<i>' + d[0].taxonName + ',</i> ')
+        $p.append('in <i>BSBI Online Atlas 2020</i>, eds P.A. Stroh, T. Humphrey, R. Burkmar, O.L. Pescott, & K.J. Walker. ')
+        $p.append(location.origin + '/atlas/' + currentTaxon.identifier)
+        $p.append(' [Accessed ' + new Date().toLocaleDateString('en-GB') + ']')
+
+
+        var taxaCitationShown = false
+        $('#bsbi-citation-toggle').click(function() {
+          taxaCitationShown = !taxaCitationShown
+          if (taxaCitationShown) {
+            $('#bsbi-citation-div').show()
+            $('#bsbi-citation-toggle').html('[hide]')
+          }
+          if (!taxaCitationShown) {
+            $('#bsbi-citation-div').hide()
+            $('#bsbi-citation-toggle').html('[show]')
+          }
+        })
+
+        // Update meta tags
+        addMetaTags('title', d[0].taxonName + ' in BSBI Online Atlas 2020', true)
       })
     //$p = $('<p>').appendTo($caption)
     //$p.text('Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.')

@@ -39,6 +39,20 @@ class BsbiAtlasConfig extends ConfigFormBase {
       '#description' => $this->t('Indicates the location of the root folder for BSBI data.'),
     ];
 
+    $form['atlas_image_url'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Base URL for images:'),
+      '#default_value' => $config->get('data.imagesurl'),
+      '#description' => $this->t('Indicates the base URL for the Atlas images.'),
+    ];
+
+    $form['bsbi_db_url'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Base URL for BSBI db:'),
+      '#default_value' => $config->get('data.bsbidb'),
+      '#description' => $this->t('Indicates the base URL for the BSBI db.'),
+    ];
+
     return $form;
   }
 
@@ -56,6 +70,8 @@ class BsbiAtlasConfig extends ConfigFormBase {
     $config = $this->config('bsbi_atlas.settings');
     $config->set('gui.tabs', $form_state->getValue('atlas_gui_tabs'));
     $config->set('data.root', $form_state->getValue('atlas_data_root'));
+    $config->set('data.imagesurl', $form_state->getValue('atlas_image_url'));
+    $config->set('data.bsbidb', $form_state->getValue('bsbi_db_url'));
     $config->save();
     return parent::submitForm($form, $form_state);
   }
