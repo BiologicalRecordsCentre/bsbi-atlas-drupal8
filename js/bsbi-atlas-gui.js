@@ -251,11 +251,12 @@ var bsbiDataRoot
 
   function setBaseMetaTags() {
     addMetaTags('title', 'BSBI Online Atlas 2020')
-    addMetaTags('authors', 'Stroh, P. A., Humphrey, T., Burkmar, R. J., Pescott, O. L. and Walker, K. J.')
+    addMetaTags('authors', 'Stroh, P. A., Humphrey, T., Burkmar, R. J., Pescott, O. L., , Roy, D.B., and Walker, K. J.')
     addMetaTags('author', 'Stroh, P. A.')
     addMetaTags('author', 'Humphrey, T.')
     addMetaTags('author', 'Burkmar, R. J.')
     addMetaTags('author', 'Pescott, O. L.')
+    addMetaTags('author', 'Roy, D. B.')
     addMetaTags('author', 'Walker, K. J.')
     addMetaTags('year', '2022')
     addMetaTags('url', location.origin + '/atlas')
@@ -1435,7 +1436,7 @@ var bsbiDataRoot
         var $div = $('<div id="bsbi-citation-div">').appendTo($caption)
         $p = $('<p id="bsbi-citation-text">').appendTo($div)
         $p.append('<i>' + d[0].taxonName + ',</i> ')
-        $p.append('in <i>BSBI Online Atlas 2020</i>, eds P.A. Stroh, T. Humphrey, R. Burkmar, O.L. Pescott, & K.J. Walker. ')
+        $p.append('in <i>BSBI Online Atlas 2020</i>, eds P.A. Stroh, T. Humphrey, R.J. Burkmar, O.L. Pescott, D.B. Roy, & K.J. Walker. ')
         $p.append(location.origin + '/atlas/' + currentTaxon.identifier)
         $p.append(' [Accessed ' + new Date().toLocaleDateString('en-GB') + ']')
         var $but1 = $('<button id="bsbi-citation-copy-text">Copy as text</button>').appendTo($div)
