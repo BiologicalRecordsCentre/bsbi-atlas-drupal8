@@ -11,7 +11,9 @@ var bsbiDataRoot
   var bsbidburl = drupalSettings.bsbi_atlas.dataBsbidb
   var rasterRoot = drupalSettings.bsbi_atlas.dataRoot + 'rasters/'
   var taxaCsv = drupalSettings.bsbi_atlas.dataRoot + 'bsbi/taxon_list.csv'
+  var taxaNoStatusCsv = drupalSettings.bsbi_atlas.dataRoot + 'bsbi/no_status.csv'
   var taxaList = []
+  var taxaNoStatusList = []
   var currentTaxon = {
     identifier: null,
     name: null,
@@ -432,7 +434,7 @@ var bsbiDataRoot
       mapImageButton(mapControlRow(sel, 'atlas-image-button'), i)
     })
 
-    devStuff(selector)
+    //devStuff(selector)
   }
 
   function setControlState() {
@@ -503,13 +505,24 @@ var bsbiDataRoot
     }
 
     // status checkbox enabled and checked value
-    if (displayedMapType === 'slippy' && mapType === 'allclass' && resolution !== 'hectad') {
-      // Uncheck and disable status checkbutton if not hectad resolution
+    var disableStatus = taxaNoStatusList.indexOf(currentTaxon.identifier) > -1
+    if (disableStatus) {
+      showStatus = false
+      bsbiDataAccess.showStatus = false
+      $('.atlas-status-checkbox-control span').text('No status info for this taxon')
+      $('.atlas-status-checkbox-control span').css('color', 'silver')
+    } else {
+      $('.atlas-status-checkbox-control span').text('Show status')
+      $('.atlas-status-checkbox-control span').css('color', 'black')
+    }
+    if (disableStatus || (displayedMapType === 'slippy' && mapType === 'allclass' && resolution !== 'hectad')) {
+      console.log('disable')
+      // Uncheck and disable status checkbutton if not hectad resolution or no status info
       $('.atlas-status-checkbox').prop('checked', false)
-      $('.atlas-status-checkbox').attr('disable', true)
+      $('.atlas-status-checkbox').attr('disabled', true)
     } else {
       // Display and set checked status to current value of showStatus global
-      $('.atlas-status-checkbox').attr('disable', false)
+      $('.atlas-status-checkbox').attr('disabled', false)
       $('.atlas-status-checkbox').prop('checked', showStatus)
     }
 
@@ -630,6 +643,8 @@ var bsbiDataRoot
 
     $('input[type=radio][name="mapType"]').change(function() {
       displayedMapType = $(this).val()
+      bsbiDataAccess.displayedMapType = displayedMapType
+
       if (displayedMapType === "slippy") {
         // Get current width of static map
         var $svg = $('#staticAtlasMain svg')
@@ -637,15 +652,15 @@ var bsbiDataRoot
         var h = $svg.height()
         setControlState()
         slippyMap.setSize(w, h)
-
+        
         // Dev only stuff...
-        $('#slippy-dev').show()
+        // $('#slippy-dev').show()
         
       } else {
         setControlState()
 
         // Dev only stuff...
-        $('#slippy-dev').hide()
+        // $('#slippy-dev').hide()
       }
       changeMap()
     })
@@ -823,7 +838,7 @@ var bsbiDataRoot
     var $checDiv = $('<div class="checkbox">').appendTo($container)
     //$checDiv.css('margin-top', '4.3em')
 
-    $('<label><input type="checkbox" class="atlas-status-checkbox">Show status</label>').appendTo($checDiv)
+    $('<label><input type="checkbox" class="atlas-status-checkbox"/><span>Show status</span></label>').appendTo($checDiv)
 
     $('.atlas-status-checkbox').change(function() {
       showStatus = $(this).is(':checked')
@@ -1138,22 +1153,22 @@ var bsbiDataRoot
     function startLoad() {
       t1 = Math.floor(Date.now() / 100)
       document.getElementById('atlas-loader').style.display = 'inline-block'
-      document.getElementById('dev-download-time').innerHTML= "Downloading data..."
+      //document.getElementById('dev-download-time').innerHTML= "Downloading data..."
     }
     function endLoad() {
       document.getElementById('atlas-loader').style.display = 'none'
-      var t2 = Math.floor(Date.now() / 100)
-      document.getElementById('dev-download-time').innerHTML= "Downloading took <b>" + String((t2-t1)/10) + "</b> seconds"
+      //var t2 = Math.floor(Date.now() / 100)
+      //document.getElementById('dev-download-time').innerHTML= "Downloading took <b>" + String((t2-t1)/10) + "</b> seconds"
     }
     function startDraw() {
-      t1 = Math.floor(Date.now() / 100)
+      //t1 = Math.floor(Date.now() / 100)
       document.getElementById('atlas-loader').style.display = 'inline-block'
-      document.getElementById('dev-display-time').innerHTML= "Displaying data..."
+      //document.getElementById('dev-display-time').innerHTML= "Displaying data..."
     }
     function endDraw() {
       document.getElementById('atlas-loader').style.display = 'none'
-      var t2 = Math.floor(Date.now() / 100)
-      document.getElementById('dev-display-time').innerHTML= "Displaying took <b>" + String((t2-t1)/10) + "</b> seconds"
+      //var t2 = Math.floor(Date.now() / 100)
+      //document.getElementById('dev-display-time').innerHTML= "Displaying took <b>" + String((t2-t1)/10) + "</b> seconds"
     }
 
     // Create the slippy map
@@ -1202,6 +1217,13 @@ var bsbiDataRoot
 
   function taxonSelectors(selector) {
     //var $sel = $('<select>').appendTo($(selector))
+
+    // Get list of taxa for which no status exists
+    // (for use elsewhere - might as well be done here)
+    d3.csv(taxaNoStatusCsv).then(function(data) {
+      console.log('Taxa with no status info', data)
+      taxaNoStatusList = data.map(function(d) {return d['ddb id']})
+    })
 
     // Overall control container
     var $container = $('<div>').appendTo($(selector))

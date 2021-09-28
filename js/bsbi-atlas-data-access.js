@@ -5,6 +5,7 @@ bsbiDataAccess.devel = {
   changeColours: ['#FAD0C8', '#DD5A2F', '#525252'],
   symboltype: 'circle'
 };
+bsbiDataAccess.displayedMapType = 'static';
 
 (function() {
 
@@ -171,6 +172,7 @@ bsbiDataAccess.devel = {
               var capText = statusText[atlasstatus]
               return {
                 gr: r.hectad,
+                //shape: bsbiDataAccess.displayedMapType === 'static' ? 'circle' : 'circlerad',
                 shape: 'circle',
                 colour: statusColour[atlasstatus],
                 size: atlasstatus === 'missing' ? 0.5 : 1,
@@ -180,8 +182,10 @@ bsbiDataAccess.devel = {
             } else {
               return {
                 gr: r.hectad,
+                //shape: bsbiDataAccess.displayedMapType === 'static' ? 'circle' : 'circlerad',
                 shape: 'circle',
                 colour: 'black',
+                size: 1,
                 opacity: opacities[recent],
                 caption: "Hectad: <b>".concat(r.hectad, "</b>")
               };
@@ -259,7 +263,8 @@ bsbiDataAccess.devel = {
         if (r.gr ) {
           return {
             gr: r.gr,
-            shape: bsbiDataAccess.devel.symboltype, //'circle' dev only,
+            //shape: bsbiDataAccess.devel.symboltype, //'circle' dev only,
+            shape: 'square',
             colour: 'black',
             size: 1,
             opacity: 1,
@@ -276,7 +281,8 @@ bsbiDataAccess.devel = {
                 colour: 'black',
                 opacity: 1,
                 text: 'Present in tetrad',
-                shape: bsbiDataAccess.devel.symboltype === 'square' ? 'square' : 'circle', //'circle' dev only
+                //shape: bsbiDataAccess.devel.symboltype === 'square' ? 'square' : 'circle', //'circle' dev only
+                shape: 'square'
               }
             ]
           }
@@ -295,7 +301,7 @@ bsbiDataAccess.devel = {
         if (r.gr ) {
           return {
             gr: r.gr,
-            shape: 'circle',
+            shape: 'square',
             colour: 'black',
             size: 1,
             opacity: 1,
@@ -312,7 +318,7 @@ bsbiDataAccess.devel = {
                 colour: 'black',
                 opacity: 1,
                 text: 'Present in monad',
-                shape: 'circle'
+                shape: 'square'
               }
             ]
           }
@@ -378,54 +384,57 @@ bsbiDataAccess.devel = {
             }
           })
           if (occurs || prior) {
-            if (bsbiDataAccess.showStatus) {
-              var atlasstatus = r.atlasstatus ? r.atlasstatus : 'missing';
-              var capText;
-              switch (atlasstatus) {
-                case 'missing':
-                  capText = 'missing';
-                  break;
+            // if (bsbiDataAccess.showStatus) {
+            //   var atlasstatus = r.atlasstatus ? r.atlasstatus : 'missing';
+            //   var capText;
+            //   switch (atlasstatus) {
+            //     case 'missing':
+            //       capText = 'missing';
+            //       break;
 
-                case 'n':
-                  capText = 'native';
-                  break;
+            //     case 'n':
+            //       capText = 'native';
+            //       break;
 
-                case 'a':
-                  capText = 'alien (non-native)';
-                  break;
+            //     case 'a':
+            //       capText = 'alien (non-native)';
+            //       break;
 
-                case 'y':
-                  capText = 'present';
-                  break;
+            //     case 'y':
+            //       capText = 'present';
+            //       break;
 
-                case 'bullseye':
-                  capText = 'reintroduced';
-                  break;
-              }
+            //     case 'bullseye':
+            //       capText = 'reintroduced';
+            //       break;
+            //   }
               
-              if (occurs) {
-                counts.occurs[atlasstatus] = counts.occurs[atlasstatus] + 1;
-              } else {
-                counts.prior[atlasstatus] = counts.prior[atlasstatus] + 1;
-              }
+            //   if (occurs) {
+            //     counts.occurs[atlasstatus] = counts.occurs[atlasstatus] + 1;
+            //   } else {
+            //     counts.prior[atlasstatus] = counts.prior[atlasstatus] + 1;
+            //   }
               
+            //   return {
+            //     gr: r.hectad,
+            //     shape: atlasstatus === "w" ? 'bullseye' : bsbiDataAccess.displayedMapType === 'static' ? 'circle' : 'circlerad',
+            //     size: 1,
+            //     colour: colours[atlasstatus],
+            //     colour2: colours.bullseye,
+            //     opacity: occurs ? 1 : 0.5,
+            //     caption: "Hectad: <b>".concat(r.hectad, "</b></br>Status: <b>").concat(capText, "</b>")
+            //   };
+            // } else {
               return {
                 gr: r.hectad,
-                shape: atlasstatus === "w" ? 'bullseye' : 'circle',
-                colour: colours[atlasstatus],
-                colour2: colours.bullseye,
-                opacity: occurs ? 1 : 0.5,
-                caption: "Hectad: <b>".concat(r.hectad, "</b></br>Status: <b>").concat(capText, "</b>")
-              };
-            } else {
-              return {
-                gr: r.hectad,
+                //shape: bsbiDataAccess.displayedMapType === 'static' ? 'circle' : 'circlerad',
                 shape: 'circle',
+                size: 1,
                 colour: 'black',
                 opacity: occurs ? 1 : 0.5,
                 caption: "Hectad: <b>".concat(r.hectad, "</b>")
               };
-            }
+            //}
           }
         }
       }).then(function (data) {
@@ -625,6 +634,7 @@ bsbiDataAccess.devel = {
           records: data,
           //size: 1,
           colour: 'black',
+          //shape: bsbiDataAccess.displayedMapType === 'static' ? 'circle' : 'circlerad',
           shape: 'circle',
           precision: 10000,
           opacity: 1,
