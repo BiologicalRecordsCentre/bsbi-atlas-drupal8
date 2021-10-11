@@ -13,8 +13,10 @@ bsbiatlas:
     - core/jquery
     - core/drupal
     - core/drupalSettings
-    - brc_atlas/atlas
-    - brc_atlas/access
+    # - brc_atlas/atlas
+    # - brc_atlas/access
+    - brc_vis/brcvis_core_common
+    - brc_vis/brcvis_core_atlas
 
 bsbiatlasgen:
   css:
