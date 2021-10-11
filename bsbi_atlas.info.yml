@@ -6,5 +6,4 @@ type: module
 core: 8.x
 configure: bsbi_atlas.config
 dependencies:
-  #- brc_atlas:brc_atlas
   - brc_vis:brc_vis
