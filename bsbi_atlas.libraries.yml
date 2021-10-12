@@ -15,6 +15,7 @@ bsbiatlas:
     - core/drupalSettings
     - brc_vis/brcvis_core_common
     - brc_vis/brcvis_core_atlas
+    - brc_vis/brcvis_core_charts
 
 bsbiatlasgen:
   css:
