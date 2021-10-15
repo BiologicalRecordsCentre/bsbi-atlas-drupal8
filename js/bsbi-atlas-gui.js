@@ -8,6 +8,8 @@ var bsbiDataRoot
 
   bsbiDataRoot = drupalSettings.bsbi_atlas.dataRoot + 'bsbi/atlas_taxa_2020_08_25/hectad-dateclass-status/'
   var captionRoot = drupalSettings.bsbi_atlas.dataRoot + 'bsbi/captions/'
+  var apparencyRoot = drupalSettings.bsbi_atlas.dataRoot + 'bsbi/apparency/'
+  var phenologyRoot = drupalSettings.bsbi_atlas.dataRoot + 'bsbi/phenology/'
   var bsbidburl = drupalSettings.bsbi_atlas.dataBsbidb
   var rasterRoot = drupalSettings.bsbi_atlas.dataRoot + 'rasters/'
   var taxaCsv = drupalSettings.bsbi_atlas.dataRoot + 'bsbi/taxon_list.csv'
@@ -22,6 +24,7 @@ var bsbiDataRoot
   }
   var gridStyle = getCookie('gridstyle') ? getCookie('gridstyle') : 'solid'
   var slippyMap, staticMap
+  var phen1, phen2
   var mapType = 'allclass'
   var showStatus = false
   var displayedMapType = 'static'
@@ -286,9 +289,15 @@ var bsbiDataRoot
         
         if (target === '#bsbi-atlas-section-summary') {
           $('.bsbi-atlas-map-controls').show()
+          changeMap()
         } else {
           $('.bsbi-atlas-map-controls').hide()
         }
+
+        if (target === '#bsbi-atlas-section-ecology') {
+          changeEcology()
+        }
+
         //console.log(target)
       })
 
@@ -383,13 +392,62 @@ var bsbiDataRoot
   function sectionEcology(id, tabs) {
     var $sect, $p, $h
     $sect = $('#bsbi-atlas-section-' + id)
-    $p = $('<p>').appendTo($sect)
-    $p.text('Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.')
-    $h = $('<h3>').appendTo($sect).text('Attributes')
-    $p = $('<p>').appendTo($sect)
-    $p.text('Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.')
-    
+    $sect.append('<div id="bsbi-phenology"></div>')
+
+    createPhenology("#bsbi-phenology")
+
     sectionEnd($sect, tabs)
+  }
+
+  function createPhenology(sel) {
+
+    var $h = $('<h4>').appendTo($(sel)).text('Phenology')
+
+    var $p1 = $('<p>').appendTo($(sel))
+    $p1.text("Explanation of apparency and phenology charts. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque blandit dui vel mauris maximus interdum. Aliquam orci eros, venenatis vel purus nec, venenatis congue leo. Pellentesque rhoncus metus eros, tincidunt congue massa volutpat facilisis. Curabitur pellentesque turpis velit, quis ornare mauris ullamcorper a.")
+    
+    $apparency = $('<div>').appendTo($(sel))
+    $apparency.attr('id', 'bsbi-apparency-chart').css('max-width', '400px')
+
+    phen1 = brccharts.phen1({
+      selector: '#bsbi-apparency-chart',
+      data: [],
+      taxa: ['taxon'],
+      //metrics: [{ prop: 'n', label: 'Apparency', colour: 'red' }],
+      metrics: [],
+      width: 400,
+      height: 250,
+      headPad: 35,
+      perRow: 1,
+      expand: true,
+      showTaxonLabel: false
+    })
+
+    $phenology = $('<div>').appendTo($(sel))
+    $phenology.attr('id', 'bsbi-phenology-chart').css('max-width', '400px')
+
+    phen2 = brccharts.phen2({
+      selector: '#bsbi-phenology-chart',
+      data: [],
+      taxa: ['taxon'],
+      metrics: [],
+      width: 400,
+      height: 25,
+      headPad: 35,
+      chartPad: 35,
+      perRow: 1,
+      expand: true,
+      showTaxonLabel: false
+    })
+
+    $phenSource = $('<div>').appendTo($(sel))
+    $phenSource.attr('id', 'bsbi-phenology-source')
+    $phenSource.css('font-size', '0.8em')
+    $phenSource.css('padding-left', '32px')
+    $phenSource.css('max-width', '400px')
+
+    // Website style is overriding some charts style, so reset it
+    $('.brc-chart-phen1').css('overflow', 'visible')
   }
 
   function mapControlRow(selector, classname) {
@@ -1291,6 +1349,7 @@ var bsbiDataRoot
         setControlState()
         changeMap()
         changeCaption() //Also changes taxon name display in sections
+        changeEcology()
       })
 
       // If identifier passed in URL, set the value
@@ -1380,18 +1439,102 @@ var bsbiDataRoot
     return vernacular + scientific + authority
   }
 
-  function changeCaption() {
-    //console.log('caption', currentTaxon)
+  function changeEcology() {
+   
+    if (!currentTaxon.identifier) return 
 
+    // Apparency
+    var file = apparencyRoot + currentTaxon.identifier.replace(/\./g, "_") + '.csv'
+    d3.csv(file + '?prevent-cache=')
+      .then(function(data) {
+        apparency(data)
+      })
+      .catch(function() {
+        // TEMPORARY CODE FOR TESTING so that a file always returned 
+        var fileDefault = apparencyRoot + 'dummy-apparency.csv'
+        d3.csv(fileDefault + '?prevent-cache=')
+          .then(function(data) {
+            apparency(data)
+          })
+      })
+
+    function apparency(data) {
+      var dayCol = data.columns[0]
+      var nCol = 'total freq'
+      var phen1Data = []
+      for (i=1; i<=53; i++) {
+        phen1Data.push ({
+          taxon: 'taxon',
+          week: i,
+          n: 0
+        })
+      }
+      data.forEach(function(d) {
+        day = Number(d[dayCol])
+        n = Number(d[nCol])
+        week = Math.ceil(day/7)
+        phen1Data[week-1].n += n
+      })
+      // Update the apparency chart
+      phen1.setChartOpts({
+        data: phen1Data,
+        metrics: [{ prop: 'n', label: 'Apparency', colour: 'green' }],
+      })
+    }
+
+    // Phenology
+    var file = phenologyRoot + currentTaxon.identifier.replace(/\./g, "_") + '.csv'
+    d3.csv(file + '?prevent-cache=')
+      .then(function(data) {
+        phenology(data)
+      })
+      .catch(function() {
+        // TEMPORARY CODE FOR TESTING so that a file always returned 
+        var fileDefault = phenologyRoot + 'dummy-phenology.csv'
+        d3.csv(fileDefault + '?prevent-cache=')
+          .then(function(data) {
+            phenology(data)
+          })
+      })
+    function phenology(data) {
+      console.log("phenology data", data[0])
+
+      // Chart
+      m2d = [1, 32, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 365]
+      var flower = data[0].flower.split('-')
+      var leaf = data[0].leaf.split('-')
+
+      var flowerStart = m2d[Number(flower[0])-1]
+      var flowerEnd = flower[1] ? m2d[Number(flower[1])] : m2d[Number(flower[0])]
+      var leafStart = m2d[Number(leaf[0])-1]
+      var leafEnd = leaf[1] ? m2d[Number(leaf[1])] : m2d[Number(leaf[0])]
+
+      phen2.setChartOpts({
+        data: [
+          {
+            taxon: 'taxon',
+            band2: {start: leafStart, end: leafEnd},
+            band1: {start: flowerStart, end: flowerEnd},
+          }
+        ],
+        metrics: [
+          { prop: 'band2', label: 'In leaf', colour: '#00990066' },
+          { prop: 'band1', label: 'Flowering', colour: '#ff9900aa' },
+        ]
+      })
+      // Source
+      $source = "Data for flower phenology from <i>" + data[0].flowerSource + "</i>. Data for leafing phenology from <i>" + data[0].leafSource + "</i>."
+      $('#bsbi-phenology-source').html($source)
+    }
+  }
+
+  function changeCaption() {
     var $p
     var $caption = $('#bsbi-caption')
     $caption.html('')
     d3.csv(captionRoot + currentTaxon.identifier.replace(/\./g, "_") + '.csv?prevent-cache=09092021')
       .then(function(d) {
         
-        console.log(captionRoot)
-        console.log(d)
-
         // Set taxon name
         $('.bsbi-selected-taxon-name').html(getFormattedTaxonName(d[0].vernacular, d[0].taxonName, d[0].authority))
 
@@ -1602,6 +1745,7 @@ var bsbiDataRoot
         if (s.external) {
           s.fn(currentTaxon.identifier)
         } else {
+          console.log('tab selected')
           $('.nav-tabs a[href="#bsbi-atlas-section-' + s.id + '').tab('show')
         }
       })
