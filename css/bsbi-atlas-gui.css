@@ -195,3 +195,17 @@ taxon {
 #bsbi-citation-div {
   display: none;
 }
+
+.phenRow {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.phenColumn {
+  display: flex;
+  flex-direction: column;
+  min-width: 250px;
+  flex: 1;
+}

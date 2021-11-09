@@ -6,6 +6,7 @@ bsbiDataAccess.devel = {
   symboltype: 'circle'
 };
 bsbiDataAccess.displayedMapType = 'static';
+bsbiDataAccess.taxaHybridList = [];
 
 (function() {
 
@@ -34,6 +35,107 @@ bsbiDataAccess.displayedMapType = 'static';
         prior: ["to 1929", "1930 - 1949", "1950 - 1969", "1970 - 1986", "1987 - 1999"],
         csvperiods: ["2000 - 2009", "2010 - 2019"]
     }
+  }
+
+  bsbiDataAccess.hybrid = function(identifier) {
+
+    var hybridInfo = bsbiDataAccess.taxaHybridList.find(function(h){return h.taxon === identifier})
+
+    console.log("hybridInfo", hybridInfo)
+
+    var pHybrid =  new Promise(function (resolve, reject) {
+      d3.csv(getCSV(identifier)).then(function (data) {
+        resolve(data)
+      })["catch"](function (e) {
+        reject(e)
+      })
+    })
+    var pParent1 =  new Promise(function (resolve, reject) {
+      d3.csv(getCSV(hybridInfo.parent1)).then(function (data) {
+        resolve(data)
+      })["catch"](function (e) {
+        reject(e)
+      })
+    })
+    var pParent2 =  new Promise(function (resolve, reject) {
+      d3.csv(getCSV(hybridInfo.parent2)).then(function (data) {
+        resolve(data)
+      })["catch"](function (e) {
+        reject(e)
+      })
+    })
+
+    return new Promise(function (resolve, reject) {
+      pAll=Promise.all([pHybrid, pParent1, pParent2]).then(function (data) {
+        //https://nbn.org.uk/wp-content/uploads/2020/01/Preston_et_al-2015-Biological_Journal_of_the_Linnean_Society.pdf
+
+        var pink = '#E4C3AA'
+        var blue = '#A8CBE2'
+        var yellow = '#F7F619'
+
+        var all = []
+        data.filter(function(d,i){return i > 0}).forEach(function(taxonData, iTaxonData) {
+          taxonData.forEach(function(r){
+            var match = all.find(function(ar){return r.hectad === ar.gr})
+            if (match){
+              match.presence[iTaxonData] = true
+            } else {
+              var presence = [false, false]
+              presence[iTaxonData] = true
+              all.push({
+                gr: r.hectad,
+                presence: presence
+              })
+            }
+          })
+        })
+        all.forEach(function(r) {
+          r.colour = r.presence[0] && r.presence[1] ? yellow : r.presence[0] ? pink : blue
+        }) 
+        data[0].forEach(function(r){
+          all.push({
+            gr: r.hectad,
+            shape: 'square',
+            size: 0.6,
+            colour: 'black'
+          })
+        })
+        resolve({
+          records: all,
+          precision: 10000,
+          shape: 'circle',
+          size: 1,
+          opacity: 1,
+          legend: {
+            lines:[
+              {
+                colour: 'black',
+                text: hybridInfo.taxonName,
+                fontStyle: 'italic',
+                shape: 'square',
+                size: 0.6
+              },
+              {
+                colour: pink,
+                text: hybridInfo.parent1Name,
+                fontStyle: 'italic',
+              },
+              {
+                colour: blue,
+                text: hybridInfo.parent2Name,
+                fontStyle: 'italic',
+              },
+              {
+                colour: yellow,
+                text: 'Both parents',
+              }
+            ]
+          }
+        })
+      })["catch"](function (e) {
+        reject(e)
+      })
+    })
   }
 
   bsbiDataAccess.distAllClasses = function(identifier) {
