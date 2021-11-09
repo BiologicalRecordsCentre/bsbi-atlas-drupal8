@@ -30,6 +30,7 @@ var bsbiDataRoot
   var slippyMap, staticMap
   var phen1, phen2
   var mapType = 'allclass'
+  var insetType = 'BI4'
   var showStatus = false
   var displayedMapType = 'static'
   var resolution = 'hectad'
@@ -760,20 +761,14 @@ var bsbiDataRoot
         var $svg = $('#staticAtlasMain svg')
         var w = $svg.width()
         var h = $svg.height()
-        setControlState()
         slippyMap.setSize(w, h)
-
-        slippyMap.setLegendOpts(slippyLegendOpts)
-        
-        // Dev only stuff...
-        // $('#slippy-dev').show()
-      } else {
-        setControlState()
-
-        // Dev only stuff...
-        // $('#slippy-dev').hide()
       }
+      setControlState()
       changeMap()
+
+      if (displayedMapType === "slippy") {
+        slippyMap.invalidateSize()
+      }
     })
   }
 
@@ -1114,18 +1109,17 @@ var bsbiDataRoot
       if (checked) $radio.prop('checked', true)
 
       $radio.change(function () {
+        insetType = $(this).val()
 
-        var val = $(this).val()
-   
         // Update controls mirrored in other blocks
-        $('.bsbi-inset-type-' + val).prop("checked", true)
+        $('.bsbi-inset-type-' + insetType).prop("checked", true)
 
-        staticMap.setTransform(val)
-        setCookie('inset', val, 30)
+        staticMap.setTransform(insetType)
+        setCookie('inset', insetType, 30)
         changeMap()
       })
     }
-    var selectedInset = getCookie('inset') ? getCookie('inset') : 'BI4'
+    var selectedInset = getCookie('inset') ? getCookie('inset') : insetType
     makeRadio('No insets', 'BI1', selectedInset === 'BI1' ? 'checked' : '')
     makeRadio('Channel Isles inset', 'BI2', selectedInset === 'BI2' ? 'checked' : '')
     makeRadio('Northern and Channel Isles inset', 'BI4', selectedInset === 'BI4' ? 'checked' : '')
@@ -1247,7 +1241,7 @@ var bsbiDataRoot
       //legend: true,
       //legendScale: 1,
       legendOpts: svgLegendOpts,
-      transOptsKey: getCookie('inset') ? getCookie('inset') : 'BI4',
+      transOptsKey: getCookie('inset') ? getCookie('inset') : insetType,
       transOptsSel: transOptsSel,
       mapTypesKey: 'status_10_19',
       mapTypesSel: mapTypesSel,
@@ -1450,64 +1444,37 @@ var bsbiDataRoot
     } else {
       displayedMap = slippyMap
     }
-
-    svgLegendOpts.scale=0.9
-    
-    console.log('mapType', mapType)
     if (mapType === 'status') {
-      //var access = periods[$('#atlas-range-select').val()-1].access
       var access = periods[atlasRangeIndex-1].access
       displayedMap.setMapType(access)
-      slippyLegendOpts.width = showStatus ? 135 : 90
-      //staticMap.basemapImage('colourelev', true)
     } else if (mapType === 'allclass') {
       displayedMap.setMapType('distAllClasses')
-      slippyLegendOpts.width=135
-      //staticMap.basemapImage('colourelev', true)
     } else if (mapType === 'trends') {
       var access = trends[atlasTrendIndex-1].access
       displayedMap.setMapType(access)
-      slippyLegendOpts.width=220
-      //staticMap.basemapImage('colourelev', false)
     } else if (mapType === 'tetrad') {
       displayedMap.setMapType('Tetrad frequency')
-      slippyLegendOpts.width=110
-      //staticMap.basemapImage('colourelev', true)
     } else if (mapType === 'hybrid') {
       displayedMap.setMapType('hybrid')
-      //slippyLegendOpts.width=110
     }
 
     // To try to keep the legend around the same apparent size when
     // actual map size changes due to inset change, we set a scale
     // factor to apply to the legend depending on what inset value
     // is specified.
-    var inset = $('input:radio[name=bsbi-inset-type]:checked').val()
-    if (inset == 'BI1') {
+    svgLegendOpts.scale=0.9
+    if (insetType == 'BI1') {
       svgLegendOpts.scale = svgLegendOpts.scale * 0.77
     }
-    if (inset == 'BI2') {
+    if (insetType == 'BI2') {
       svgLegendOpts.scale = svgLegendOpts.scale * 0.85
     }
-    
     staticMap.setLegendOpts(svgLegendOpts)
-    slippyMap.setLegendOpts(slippyLegendOpts)
 
     if (currentTaxon.identifier) {
-      //$('#bsbi-taxon-title').html(currentTaxon.name)
       displayedMap.setIdentfier(currentTaxon.identifier)
       displayedMap.redrawMap()
     }
-
-    // // Legend display
-    // if (displayedMapType !== 'static') {
-    //   // if (mapType === 'status') {
-    //   //   slippyLegendOpts.display = showStatus
-    //   // } else {
-    //   //   slippyLegendOpts.display = true
-    //   // }
-    //   slippyMap.setLegendOpts(slippyLegendOpts)
-    // }
   }
 
   function postProcessCaptionText(txt) {

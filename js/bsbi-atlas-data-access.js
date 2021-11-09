@@ -43,6 +43,12 @@ bsbiDataAccess.taxaHybridList = [];
 
     console.log("hybridInfo", hybridInfo)
 
+    function markup(text) {
+      // Look for ' x ' and replace either size with '</i> x <i>'
+      textOut = text.replace(/ x /g, '</i> x <i>')
+      return '<i>' + textOut + '</i>'
+    }
+
     var pHybrid =  new Promise(function (resolve, reject) {
       d3.csv(getCSV(identifier)).then(function (data) {
         resolve(data)
@@ -110,20 +116,17 @@ bsbiDataAccess.taxaHybridList = [];
             lines:[
               {
                 colour: 'black',
-                text: hybridInfo.taxonName,
-                fontStyle: 'italic',
+                text: markup(hybridInfo.taxonName),
                 shape: 'square',
                 size: 0.6
               },
               {
                 colour: pink,
-                text: hybridInfo.parent1Name,
-                fontStyle: 'italic',
+                text: markup(hybridInfo.parent1Name),
               },
               {
                 colour: blue,
-                text: hybridInfo.parent2Name,
-                fontStyle: 'italic',
+                text: markup(hybridInfo.parent2Name),
               },
               {
                 colour: yellow,
