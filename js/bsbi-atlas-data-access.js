@@ -116,7 +116,7 @@ bsbiDataAccess.taxaHybridList = [];
             lines:[
               {
                 colour: 'black',
-                text: markup(hybridInfo.taxonName),
+                text: 'Hybrid recorded',
                 shape: 'square',
                 size: 0.6
               },

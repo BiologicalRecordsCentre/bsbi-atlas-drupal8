@@ -209,3 +209,7 @@ taxon {
   min-width: 250px;
   flex: 1;
 }
+
+.phen-path-no-data {
+  display: none
+}

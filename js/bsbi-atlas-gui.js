@@ -405,6 +405,23 @@ var bsbiDataRoot
     sectionEnd($sect, tabs)
   }
 
+  function latPhenNormalizeCheckbox($parent, phenChart) {
+    // Overall control container
+    var $container = $('<div style="margin-left: 0px">').appendTo($parent)
+    $container.addClass('atlas-phen-normalize-checkbox-control')
+
+    // Status on/off toggle
+    var $checDiv = $('<div class="checkbox">').appendTo($container)
+    //$checDiv.css('margin-top', '4.3em')
+
+    $('<label><input type="checkbox" class="atlas-phen-normalize-checkbox"/><span>Normalize over latitudes</span></label>').appendTo($checDiv)
+
+    $('.atlas-phen-normalize-checkbox').change(function() {
+      normalize = $(this).is(':checked')
+      phenChart.setChartOpts({ytype: normalize ? 'normalized' : 'count'})
+    })
+  }
+
   function createPhenology(sel) {
 
     var $h = $('<h4>').appendTo($(sel)).text('Phenology')
@@ -437,7 +454,7 @@ var bsbiDataRoot
       showLegend: false,
       interactivity: 'none'
     })
-
+    
     $phenology = $('<div>').appendTo($phenFlexLeft)
     $phenology.attr('id', 'bsbi-phenology-chart').css('max-width', '400px')
 
@@ -465,6 +482,9 @@ var bsbiDataRoot
     $apparencyByLat = $('<div>').appendTo($phenFlexRight)
     $apparencyByLat.attr('id', 'bsbi-apparency-by-lat-chart').css('max-width', '400px')
 
+    $apparencyByLat = $('<div>').appendTo($phenFlexRight)
+    $apparencyByLat.attr('id', 'bsbi-apparency-by-lat-chart').css('max-width', '400px')
+
     phen3 = brccharts.phen1({
       selector: '#bsbi-apparency-by-lat-chart',
       data: [],
@@ -478,8 +498,13 @@ var bsbiDataRoot
       expand: true,
       showTaxonLabel: false,
       showLegend: false,
-      interactivity: 'mousemove'
+      interactivity: 'mousemove',
+      margin: {left: 40, right: 0, top: 20, bottom: 5},
+      axisLeftLabel: 'Latitudinal band',
+      axisLabelFontSize: 12
     })
+
+    latPhenNormalizeCheckbox($phenFlexRight, phen3) 
 
     // Website style is overriding some charts style, so reset it
     $('.brc-chart-phen1').css('overflow', 'visible')
@@ -1292,7 +1317,8 @@ var bsbiDataRoot
       //legendScale: 1,
       legendOpts: slippyLegendOpts,
       basemapConfigs: basemapConfigs,
-      callbacks: [startDraw, endDraw, startLoad, endLoad]
+      callbacks: [startDraw, endDraw, startLoad, endLoad],
+      showVcs: true
     })
     $('#slippyAtlasMain').hide()
   }
@@ -1554,7 +1580,8 @@ var bsbiDataRoot
         return nd
       })
 
-      var latitudes = Object.keys(data[0]).filter(f => f.length === 2)
+      //var latitudes = Object.keys(data[0]).filter(f => f.length === 2)
+      var latitudes = ['50', '51', '52', '53', '54', '55', '56', '57', '58', '59', '60']
       var metrics = latitudes.map(l => {
         return {prop: l, label: l, colour: 'green', fill: '#ddffdd' }
       })
@@ -1564,7 +1591,7 @@ var bsbiDataRoot
       // Update the apparency chart
       phen3.setChartOpts({
         data: sorted,
-        metrics: metrics
+        metrics: metrics,
       })
     }
 
@@ -1583,7 +1610,7 @@ var bsbiDataRoot
           })
       })
     function phenology(data) {
-      console.log("phenology data", data[0])
+      //console.log("phenology data", data[0])
 
       // Chart
       m2d = [1, 32, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 365]
