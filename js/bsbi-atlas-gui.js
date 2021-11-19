@@ -2,10 +2,6 @@
 var bsbiDataRoot
 (function ($, Drupal, drupalSettings) {
 
-  console.log('Identifier', drupalSettings.bsbi_atlas.identifier)
-
-  //bsbiatlas.setDataRoot(drupalSettings.bsbi_atlas.dataRoot + 'atlas_taxa_2020_08_25/hectad-dateclass-status/')
-
   bsbiDataRoot = drupalSettings.bsbi_atlas.dataRoot + 'bsbi/atlas_taxa_2020_08_25/hectad-dateclass-status/'
   var captionRoot = drupalSettings.bsbi_atlas.dataRoot + 'bsbi/captions/'
   var apparencyRoot = drupalSettings.bsbi_atlas.dataRoot + 'bsbi/apparency/'
@@ -300,7 +296,6 @@ var bsbiDataRoot
         }
 
         if (target === '#bsbi-atlas-section-ecology') {
-          console.log('ecology tab aselected')
           changeEcology()
         }
 
@@ -424,7 +419,7 @@ var bsbiDataRoot
 
   function createPhenology(sel) {
 
-    var $h = $('<h4>').appendTo($(sel)).text('Phenology')
+    var $h = $('<h4>').appendTo($(sel)).text('Phenology & Apparency')
 
     var $p1 = $('<p>').appendTo($(sel))
     $p1.text("Explanation of apparency and phenology charts. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque blandit dui vel mauris maximus interdum. Aliquam orci eros, venenatis vel purus nec, venenatis congue leo. Pellentesque rhoncus metus eros, tincidunt congue massa volutpat facilisis. Curabitur pellentesque turpis velit, quis ornare mauris ullamcorper a.")
@@ -553,6 +548,7 @@ var bsbiDataRoot
       gridStyleRadios(mapControlRow(sel, 'atlas-grid-type-control'), i)
       resolutionControl(mapControlRow(sel, 'atlas-resolution-control'), i)
       mapImageButton(mapControlRow(sel, 'atlas-image-button'), i)
+      mapDownloadButton(mapControlRow(sel, 'atlas-download-button'), i)
     })
 
     //devStuff(selector)
@@ -574,6 +570,14 @@ var bsbiDataRoot
       $('.atlas-save-map-image').show()
     } else {
       $('.atlas-save-map-image').hide()
+    }
+
+    // download map data button
+    $('.atlas-download-map-data').show()
+    if (mapType === 'allclass' && resolution === 'hectad') {
+      $('.atlas-download-map-data input, .atlas-download-map-data button').attr('disabled', false)
+    } else {
+      $('.atlas-download-map-data input, .atlas-download-map-data button').attr('disabled', true)
     }
 
     // backdrop selector
@@ -637,7 +641,6 @@ var bsbiDataRoot
       $('.atlas-status-checkbox-control span').css('color', 'black')
     }
     if (disableStatus || (displayedMapType === 'slippy' && mapType === 'allclass' && resolution !== 'hectad')) {
-      console.log('disable')
       // Uncheck and disable status checkbutton if not hectad resolution or no status info
       $('.atlas-status-checkbox').prop('checked', false)
       $('.atlas-status-checkbox').attr('disabled', true)
@@ -749,7 +752,6 @@ var bsbiDataRoot
     $('#symb-poly-circle').prop( "checked", true )
 
     $('input[name="symboltype"]').on("change", function() {
-      console.log($('input[name="symboltype"]:checked').val())
       bsbiDataAccess.devel.symboltype=$('input[name="symboltype"]:checked').val()
       changeMap()
     })
@@ -903,12 +905,62 @@ var bsbiDataRoot
     $button.addClass('btn btn-default')
     $button.text('Download image')
     $button.on('click', function(){
-      console.log('download', imageType)
       staticMap.saveMap(imageType === 'svg')
     })
 
     makeRadio('PNG', 'png', true)
     makeRadio('SVG', 'svg', false)
+
+    function makeRadio(label, val, checked) {
+
+      var $div = $('<div>').appendTo($container)
+      $div.css('display', 'inline-block')
+      $div.css('margin-left', '0.5em')
+      $div.attr('class', 'radio')
+      var $label = $('<label>').appendTo($div)
+      $label.css('padding-left', '0')
+      var $radio = $('<input>').appendTo($label)
+      var $span = $('<span>').appendTo($label)
+      $span.text(label)
+      $span.css('padding-left', '20px')
+      $radio.attr('type', 'radio')
+      $radio.attr('name', 'img-download-type-' + i)
+      $radio.attr('class', 'img-download-type-' + val)
+      $radio.attr('value', val)
+      $radio.css('margin-left', 0)
+      if (checked) $radio.prop('checked', true)
+
+      $radio.change(function () {
+        // Update controls mirrored in other blocks
+        $('.img-download-type-' + val).prop("checked", true)
+        imageType = val
+      })
+    }
+  }
+
+  function mapDownloadButton($parent, i) {
+
+    var downloadType = 'csv'
+
+    // Overall control container
+    var $container = $('<div>').appendTo($parent)
+    $container.addClass('atlas-download-map-data')
+    $container.hide()
+
+    var $button = $('<button>').appendTo($container)
+    $button.addClass('btn btn-default')
+    $button.text('Download data')
+    $button.on('click', function(){
+      if (displayedMapType === 'static') {
+        displayedMap = staticMap
+      } else {
+        displayedMap = slippyMap
+      }
+      displayedMap.downloadData(downloadType === 'geojson')
+    })
+
+    makeRadio('CSV', 'csv', true)
+    makeRadio('GeoJson', 'geojson', false)
 
     function makeRadio(label, val, checked) {
 
@@ -932,7 +984,7 @@ var bsbiDataRoot
       $radio.change(function () {
         // Update controls mirrored in other blocks
         $('.download-type-' + val).prop("checked", true)
-        imageType = val
+        downloadType = val
       })
     }
   }
@@ -1355,7 +1407,6 @@ var bsbiDataRoot
     // Get list of taxa for which no status exists
     // (for use elsewhere - might as well be done here)
     d3.csv(taxaNoStatusCsv).then(function(data) {
-      console.log('Taxa with no status info', data)
       taxaNoStatusList = data.map(function(d) {return d['ddb id']})
     })
 
@@ -1437,24 +1488,40 @@ var bsbiDataRoot
       }
 
       // Get list of hybrid taxa which can be mapped with their parents
-      // Thi is done after taxon list loaded so that data can be enriched
+      // This is done after taxon list loaded so that data can be enriched
       // with names.
       d3.csv(taxaHybridsCsv, function(h) {
-        
-        var mTaxon = taxaList.find(function(t){return t['ddb id'] === h.taxon.trim()})
-        var mParent1 = taxaList.find(function(t){return t['ddb id'] === h.parent1.trim()})
-        var mParent2 = taxaList.find(function(t){return t['ddb id'] === h.parent2.trim()})
 
-        return {
-          taxon: h.taxon.trim(),
-          parent1: h.parent1.trim(),
-          parent2: h.parent2.trim(),
-          taxonName: mTaxon['taxon name'],
-          parent1Name: mParent1['taxon name'],
-          parent2Name: mParent2['taxon name'],
+        var ddbid = h['ddb id']
+        var parentDdbids = h['hybrid parent ids'].split(';')
+        if (parentDdbids.length === 2) {
+          var p1ddbid = parentDdbids[0]
+          var p2ddbid = parentDdbids[1]
+
+          var mTaxon = taxaList.find(function(t){return t['ddb id'] === ddbid})
+          var mParent1 = taxaList.find(function(t){return t['ddb id'] === p1ddbid})
+          var mParent2 = taxaList.find(function(t){return t['ddb id'] === p2ddbid})
+
+          if (mTaxon && mParent1 && mParent2) {
+            return {
+              taxon: ddbid,
+              parent1: p1ddbid,
+              parent2: p2ddbid,
+              taxonName: mTaxon['taxon name'],
+              parent1Name: mParent1['taxon name'],
+              parent2Name: mParent2['taxon name'],
+            }
+          } else {
+            if (!mTaxon) console.error('Cannot find ' + ddbid + ' in taxon list')
+            if (!mParent1) console.error('Cannot find ' + p1ddbid + ' in taxon list')
+            if (!mParent2) console.error('Cannot find ' + p2ddbid + ' in taxon list')
+            return null
+          }
+        } else {
+          return null // Excludes from result
         }
       }).then(function(data) {
-        console.log(data)
+        delete data.columns
         taxaHybridList = data
         bsbiDataAccess.taxaHybridList = data
       })
@@ -1464,6 +1531,8 @@ var bsbiDataRoot
   }
 
   function changeMap() {
+
+    //console.log('mapType', mapType)
 
     if (displayedMapType === 'static') {
       displayedMap = staticMap
@@ -1861,7 +1930,6 @@ var bsbiDataRoot
         if (s.external) {
           s.fn(currentTaxon.identifier)
         } else {
-          console.log('tab selected')
           $('.nav-tabs a[href="#bsbi-atlas-section-' + s.id + '').tab('show')
         }
       })
