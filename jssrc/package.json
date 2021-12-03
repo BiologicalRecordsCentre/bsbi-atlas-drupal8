@@ -1,0 +1,30 @@
+{
+  "name": "bsbi-atlas",
+  "version": "0.1.0",
+  "description": "Javscript code for BSBI atlas.",
+  "type": "module",
+  "main": "../js/bsbi-atlas.umd.js",
+  "browser": "../js/bsbi-atlas.umd.js",
+  "browser_min": "../js/bsbi-atlas-min.umd.js",
+  "browser_css": "../css/bsbi-atlas.css",
+  "scripts": {
+    "lint": "npx eslint js",
+    "build": "rollup --config"
+  },
+  "author": "UKCEH Biological Records Centre",
+  "license": "GPL-3.0-only",
+  "devDependencies": {
+    "@babel/core": "^7.10.4",
+    "@babel/preset-env": "^7.10.4",
+    "@rollup/plugin-babel": "^5.0.4",
+    "@rollup/plugin-commonjs": "^13.0.0",
+    "@rollup/plugin-json": "^4.1.0",
+    "@rollup/plugin-node-resolve": "^8.1.0",
+    "eslint": "^7.4.0",
+    "rollup": "^2.23.0",
+    "rollup-plugin-css-only": "^2.1.0",
+    "rollup-plugin-eslint": "^4.0.0",
+    "rollup-plugin-terser": "^6.1.0"
+  },
+  "dependencies": {}
+}

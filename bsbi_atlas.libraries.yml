@@ -3,11 +3,13 @@ bsbiatlas:
   css:
     layout:
       css/bsbi-atlas-gui.css: {}
+      css/bsbi-atlas.css: {}
       css/bootstrap-select.min.css: {}
   js:
     js/bootstrap-select.min.js: {}
     js/bsbi-atlas-data-access.js: {}
     js/bsbi-atlas-gui.js: {}
+    js/bsbi-atlas.umd.js: {}
     js/jscolor.min.js: {}
   dependencies:
     - core/jquery
