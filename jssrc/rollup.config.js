@@ -18,8 +18,12 @@ export default [
   },
   // Browser-friendly UMD build
   {
+    external: ['d3'],
 		input: 'index.js',
 		output: {
+      globals: {
+        'd3': 'd3',
+      },
 			name: 'bsbi-atlas',
 			file: pkg.browser,
 			format: 'umd'
@@ -33,8 +37,12 @@ export default [
   },
   // Minified browser-friendly UMD build
   {
+    external: ['d3'],
 		input: 'index.js',
 		output: {
+      globals: {
+        'd3': 'd3',
+      },
 			name: 'bsbi-atlas',
 			file: pkg.browser_min,
 			format: 'umd'
