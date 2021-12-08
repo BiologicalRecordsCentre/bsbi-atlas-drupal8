@@ -1,5 +1,10 @@
 {
   "root": true,
+  "globals": {
+    "brccharts": "readonly",
+    "brcatlas": "readonly",
+    "JSColor": "readonly"
+  },
   "env": {
     "browser": true,
     "es2020": true

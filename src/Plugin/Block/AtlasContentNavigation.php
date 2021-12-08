@@ -6,6 +6,7 @@ use Drupal\Core\Block\BlockBase;
 
 /**
  * Provides a Block for navigation of main BSBI Atlas page content.
+ * (Not used.)
  *
  * @Block(
  *   id = "atlas_content_navigation",

@@ -10,6 +10,7 @@ bsbiDataAccess.showStatus = true
 bsbiDataAccess.resolution = 'hectad'
 bsbiDataAccess.displayedMapType = 'static'
 bsbiDataAccess.taxaHybridList = []
+bsbiDataAccess.taxaNoStatusList = []
 bsbiDataAccess.devel = {
   changeColours: ['#FAD0C8', '#DD5A2F', '#525252'],
   symboltype: 'circle'

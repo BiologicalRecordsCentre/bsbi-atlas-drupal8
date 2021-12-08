@@ -15,7 +15,7 @@ export function setBaseMetaTags(_$) {
   addMetaTags('url', location.origin + '/atlas')
 }
 
-function addMetaTags(type, value, update) {
+export function addMetaTags(type, value, update) {
 
   const addHeadTag = (name, content, update) => {
     if (update) {

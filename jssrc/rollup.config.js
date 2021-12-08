@@ -18,11 +18,13 @@ export default [
   },
   // Browser-friendly UMD build
   {
-    external: ['d3'],
+    external: ['d3', 'brcatlas', 'brccharts'],
 		input: 'index.js',
 		output: {
       globals: {
         'd3': 'd3',
+        'brcatlas': 'brcatlas',
+        'brccharts': 'brccharts'
       },
 			name: 'bsbi-atlas',
 			file: pkg.browser,
@@ -37,11 +39,13 @@ export default [
   },
   // Minified browser-friendly UMD build
   {
-    external: ['d3'],
+    external: ['d3', 'brcatlas', 'brccharts'],
 		input: 'index.js',
 		output: {
       globals: {
         'd3': 'd3',
+        'brcatlas': 'brcatlas',
+        'brccharts': 'brccharts'
       },
 			name: 'bsbi-atlas',
 			file: pkg.browser_min,
