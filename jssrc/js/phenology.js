@@ -1,11 +1,9 @@
 import * as d3 from 'd3'
 
-let $
+const $=jQuery
 let phen1, phen2, phen3
 
-export function createPhenology(_$, sel) {
-
-  $ = _$
+export function createPhenology(sel) {
 
   $('<h4>').appendTo($(sel)).text('Phenology & Apparency')
 

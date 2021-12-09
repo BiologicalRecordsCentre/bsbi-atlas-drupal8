@@ -1,7 +1,7 @@
 import { bsbiDataAccess } from './dataAccessAtlas'
 import { setCookie, getCookie} from './utils'
 
-let $, drupalSettings
+const $ = jQuery
 let currentTaxon 
 let gridStyle = getCookie('gridstyle') ? getCookie('gridstyle') : 'solid'
 let slippyMap, staticMap
@@ -711,11 +711,8 @@ export function mapSetCurrentTaxon(taxon) {
   currentTaxon.parent2 = hybrid ? hybrid.parent2 : ''
 }
 
-export function createMaps(selector, _drupalSettings, _$) {
+export function createMaps(selector) {
 
-  // Set module level variables
-  $ = _$
-  drupalSettings = _drupalSettings
 
   // Modify standard UK opts to remove any without CI
   const transOptsSel =  JSON.parse(JSON.stringify(brcatlas.namedTransOpts))

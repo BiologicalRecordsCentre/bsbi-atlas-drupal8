@@ -1,6 +1,7 @@
 let t1
+const $ = jQuery
 
-export function develChangeMapColours($, selector, changeMap, bsbiDataAccess) {
+export function develChangeMapColours(selector, changeMap, bsbiDataAccess) {
 
   // Colours
   const $colours = $('<div style="margin-top: 1em">').appendTo($(selector))
@@ -34,7 +35,7 @@ export function develChangeMapColours($, selector, changeMap, bsbiDataAccess) {
   }
 }
 
-export function develTabsOnOff($, selector, changeMap, mainAtlasContent) {
+export function develTabsOnOff(selector, changeMap, mainAtlasContent) {
   // Tabs on/off
   const $bgrp = $('<div class="btn-group" data-toggle="buttons">').appendTo($(selector))
   const $onLabel = $('<label class="btn btn-primary">').appendTo($bgrp)
@@ -50,7 +51,7 @@ export function develTabsOnOff($, selector, changeMap, mainAtlasContent) {
   })
 }
 
-export function develMappingPerformance($, $parent, changeMap, bsbiDataAccess) {
+export function develMappingPerformance($parent, changeMap, bsbiDataAccess) {
 
   const $container = $('<div id="slippy-dev" style="padding: 0.5em; background-color: yellow">').appendTo($parent)
 

@@ -5,7 +5,9 @@ import { copyToClipboard } from './utils'
 import { mapSetCurrentTaxon, createMaps, changeMap, createMapControls, setControlState, updateBsbiDataAccess} from './mapping'
 // import { develChangeMapColours } from './devel'
 
-export function main($, drupalSettings) {
+const $ = jQuery
+
+export function main() {
 
   let taxaList = []
   const currentTaxon = {
@@ -20,13 +22,13 @@ export function main($, drupalSettings) {
   $(document).ready(function () {
 
     // Set meta tags
-    setBaseMetaTags($)
+    setBaseMetaTags()
 
     // Initialise main content
     mainAtlasContent()
 
     // Devel block
-    // develChangeMapColours($, '#bsbi-atlas-development', changeMap, bsbiDataAccess)
+    // develChangeMapColours('#bsbi-atlas-development', changeMap, bsbiDataAccess)
   })
 
   function mainAtlasContent() {
@@ -307,7 +309,7 @@ export function main($, drupalSettings) {
     $right.append('<hr/>')
     $right.append('<div id="bsbi-caption"></div>')
     
-    createMaps("#bsbiMapDiv", drupalSettings, $)
+    createMaps("#bsbiMapDiv")
     createMapControls('.bsbi-atlas-map-controls')
     setControlState()
   }
@@ -316,7 +318,7 @@ export function main($, drupalSettings) {
     const $sect = $('#bsbi-atlas-section-' + id)
     $sect.append('<div id="bsbi-phenology"></div>')
 
-    createPhenology($, "#bsbi-phenology")
+    createPhenology("#bsbi-phenology")
   }
 
   function postProcessCaptionText(txt) {
