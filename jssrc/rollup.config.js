@@ -18,13 +18,14 @@ export default [
   },
   // Browser-friendly UMD build
   {
-    external: ['d3', 'brcatlas', 'brccharts'],
+    external: ['d3', 'brcatlas', 'brccharts', 'lightgallery'],
 		input: 'index.js',
 		output: {
       globals: {
         'd3': 'd3',
         'brcatlas': 'brcatlas',
-        'brccharts': 'brccharts'
+        'brccharts': 'brccharts',
+        'lightgallery': 'lightgallery'
       },
 			name: 'bsbi-atlas',
 			file: pkg.browser,
@@ -39,13 +40,14 @@ export default [
   },
   // Minified browser-friendly UMD build
   {
-    external: ['d3', 'brcatlas', 'brccharts'],
+    external: ['d3', 'brcatlas', 'brccharts', 'lightgallery'],
 		input: 'index.js',
 		output: {
       globals: {
         'd3': 'd3',
         'brcatlas': 'brcatlas',
-        'brccharts': 'brccharts'
+        'brccharts': 'brccharts',
+        'lightgallery': 'lightgallery'
       },
 			name: 'bsbi-atlas',
 			file: pkg.browser_min,

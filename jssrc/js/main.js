@@ -1,6 +1,8 @@
 import * as d3 from 'd3'
+// import lightGallery from 'lightGallery'
 import { setBaseMetaTags, addMetaTags } from './metaTags'
 import { createPhenology, changePhenology } from './phenology'
+import { createGallery } from './gallery'
 import { copyToClipboard } from './utils'
 import { mapSetCurrentTaxon, createMaps, changeMap, createMapControls, setControlState, updateBsbiDataAccess} from './mapping'
 // import { develChangeMapColours } from './devel'
@@ -50,7 +52,7 @@ export function main() {
         group: null,
         id: 'gallery',
         title: 'Gallery',
-        fn: sectionEmpty,
+        fn: sectionGallery,
       },
       {
         group: 'CHARACTERISTICS',
@@ -131,6 +133,10 @@ export function main() {
         // Regenerate graphics (to deal with bad legend display if map hidden when created)
         changeEcology()
       }
+
+      if (target === '#bsbi-atlas-section-gallery') {
+        createGallery('bsbi-gallery', currentTaxon.identifier)
+      }
     })
   }
 
@@ -202,6 +208,7 @@ export function main() {
         changeMap()
         changeCaption() //Also changes taxon name display in sections
         changeEcology()
+        createGallery('bsbi-gallery', currentTaxon.identifier)
       })
 
       // If identifier passed in URL, set the value
@@ -319,6 +326,13 @@ export function main() {
     $sect.append('<div id="bsbi-phenology"></div>')
 
     createPhenology("#bsbi-phenology")
+  }
+
+  function sectionGallery(id) {
+    const $sect = $('#bsbi-atlas-section-' + id)
+    $sect.append('<div id="bsbi-gallery" class="inline-gallery-container"></div>')
+
+    //createGallery('bsbi-gallery')
   }
 
   function postProcessCaptionText(txt) {

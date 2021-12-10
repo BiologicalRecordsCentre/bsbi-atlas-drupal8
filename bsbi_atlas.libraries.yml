@@ -4,10 +4,15 @@ bsbiatlas:
     layout:
       css/bsbi-atlas.css: {}
       css/bootstrap-select.min.css: {}
+      css/lightgallery-bundle.min.css: {}
   js:
     js/bootstrap-select.min.js: {}
     js/bsbi-atlas.umd.js: {}
     js/jscolor.min.js: {}
+    js/lightgallery.umd.js: {}
+    js/lg-thumbnail.umd.js: {}
+    js/lg-zoom.umd.js: {}
+
   dependencies:
     - core/jquery
     - core/drupal
@@ -15,8 +20,3 @@ bsbiatlas:
     - brc_vis/brcvis_core_common
     - brc_vis/brcvis_core_atlas
     - brc_vis/brcvis_core_charts
-
-bsbiatlasgen:
-  css:
-    layout:
-      css/bsbi-atlas-general.css: {}
