@@ -445,7 +445,6 @@
         taxon: 'dummy'
       };
     }).then(function (data) {
-      console.log(data);
       altlat.setChartOpts({
         data: data
       });

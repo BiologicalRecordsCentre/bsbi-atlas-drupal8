@@ -20,3 +20,9 @@ bsbiatlas:
     - brc_vis/brcvis_core_common
     - brc_vis/brcvis_core_atlas
     - brc_vis/brcvis_core_charts
+
+bsbiatlasgen:
+  version: 1.x
+  css:
+    layout:
+      css/bsbi-atlas-general.css: {}
