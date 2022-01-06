@@ -1,9 +1,9 @@
 import * as d3 from 'd3'
 
-const $=jQuery
-let phen1, phen2, phen3
+const $=jQuery // eslint-disable-line no-undef
+let phen1, phen2, phen3, altlat
 
-export function createPhenology(sel) {
+export function createEcology(sel) {
 
   $('<h4>').appendTo($(sel)).text('Phenology & Apparency')
 
@@ -16,6 +16,11 @@ export function createPhenology(sel) {
   $phenFlexLeft.attr('class', 'phenColumn')
   const $phenFlexRight = $('<div>').appendTo($phenFlexParent)
   $phenFlexRight.attr('class', 'phenColumn')
+  
+  $('<h4>').appendTo($(sel)).text('Altitude vs Latitude')
+  const $p2 = $('<p>').appendTo($(sel))
+  $p2.text("Explanation of latitude/altitude chart. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque blandit dui vel mauris maximus interdum. Aliquam orci eros, venenatis vel purus nec, venenatis congue leo. Pellentesque rhoncus metus eros, tincidunt congue massa volutpat facilisis. Curabitur pellentesque turpis velit, quis ornare mauris ullamcorper a.")
+  const $altlat = $('<div>').appendTo($(sel))
 
   const $apparency = $('<div>').appendTo($phenFlexLeft)
   $apparency.attr('id', 'bsbi-apparency-chart').css('max-width', '400px')
@@ -87,6 +92,48 @@ export function createPhenology(sel) {
 
   latPhenNormalizeCheckbox($phenFlexRight, phen3) 
 
+  // Alt vs Lat visualisation
+  $altlat.attr('id', 'bsbi-altlat-chart')
+  $altlat.css('max-width', '600px')
+
+  const opts = {
+    selector: '#bsbi-altlat-chart',
+    data: [],
+    ranges:  [
+      {
+        min: 0,
+        max: 0.99999,
+        radius: 8,
+        legend: '<1%'
+      },
+      {
+        min: 1,
+        max: 10,
+        radius: 14,
+        legend: '1-10%'
+      },
+      {
+        min: 10.00001,
+        max: 100,
+        radius: 20,
+        legend: '11-100%'
+      }
+    ],
+    taxa: ['dummy'],
+    width: 600,
+    height: 300,
+    perRow: 1,
+    expand: true,
+    margin: {left: 45, right: 10, top: 20, bottom: 35},
+    showTaxonLabel: false,
+    showLegend: true,
+    axisLabelFontSize: 12,
+    legendFontSize: 10,
+    interactivity: 'toggle'
+  }
+
+  altlat = brccharts.altlat(opts)
+
   // Website style is overriding some charts style, so reset it
   $('.brc-chart-phen1').css('overflow', 'visible')
 
@@ -98,10 +145,11 @@ function latPhenNormalizeCheckbox($parent, phenChart) {
   // Overall control container
   const $container = $('<div style="margin-left: 0px">').appendTo($parent)
   $container.addClass('atlas-phen-normalize-checkbox-control')
+  $container.css('margin-left', '35px')
 
   // Status on/off toggle
   const $checDiv = $('<div class="checkbox">').appendTo($container)
-  //$checDiv.css('margin-top', '4.3em')
+  $checDiv.css('margin-top', '0')
 
   $('<label><input type="checkbox" class="atlas-phen-normalize-checkbox"/><span>Normalize over latitudes</span></label>').appendTo($checDiv)
 
@@ -111,12 +159,13 @@ function latPhenNormalizeCheckbox($parent, phenChart) {
   })
 }
 
-export function changePhenology(dataRoot, identifier) {
+export function changeEcology(dataRoot, identifier) {
    
   if (!identifier) return 
 
   const apparencyRoot = dataRoot + 'bsbi/apparency/'
   const phenologyRoot = dataRoot + 'bsbi/phenology/'
+  const mapRoot = dataRoot + 'bsbi/20210923/'
 
   // Apparency all
   const fileAll = apparencyRoot + 'all/' + identifier.replace(/\./g, "_") + '.csv'
@@ -238,4 +287,29 @@ export function changePhenology(dataRoot, identifier) {
     const source = "Data for flower phenology from <i>" + data[0].flowerSource + "</i>. Data for leafing phenology from <i>" + data[0].leafSource + "</i>."
     $('#bsbi-phenology-source').html(source)
   }
+
+  // Alt/Lat
+
+  // Using raw tetrad mapping data
+  // const tetrads = `${mapRoot}tetrads/${identifier.replace(/\./g, "_")}.csv`
+  // d3.csv(tetrads, function(row) {
+  //   return row.tetrad
+  // }).then(function(data){
+  //   altlat.dataFromTetrads(data).then(function(data) {
+  //     altlat.setChartOpts({data: data })
+  //   })
+  // })
+
+  // Using pre-processed altlat data
+  const altlatdata = `${mapRoot}altlat/${identifier.replace(/\./g, "_")}.csv`
+  d3.csv(altlatdata, function(r) {
+    return {
+      distance: Number(r.distance),
+      altitude: Number(r.altitude),
+      metric: Number(r.percent),
+      taxon: 'dummy'
+    }
+  }).then(function(data){
+    altlat.setChartOpts({data: data })
+  })
 }

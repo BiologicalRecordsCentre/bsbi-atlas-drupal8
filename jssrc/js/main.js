@@ -1,13 +1,14 @@
 import * as d3 from 'd3'
 // import lightGallery from 'lightGallery'
 import { setBaseMetaTags, addMetaTags } from './metaTags'
-import { createPhenology, changePhenology } from './phenology'
+import { createEcology, changeEcology } from './ecology'
 import { createGallery } from './gallery'
 import { copyToClipboard } from './utils'
 import { mapSetCurrentTaxon, createMaps, changeMap, createMapControls, setControlState, updateBsbiDataAccess} from './mapping'
 // import { develChangeMapColours } from './devel'
 
-const $ = jQuery
+const $ = jQuery // eslint-disable-line no-undef
+const ds = drupalSettings // eslint-disable-line no-undef
 
 export function main() {
 
@@ -131,7 +132,7 @@ export function main() {
 
       if (target === '#bsbi-atlas-section-ecology') {
         // Regenerate graphics (to deal with bad legend display if map hidden when created)
-        changeEcology()
+        changeEcologyTab()
       }
 
       if (target === '#bsbi-atlas-section-gallery') {
@@ -163,7 +164,7 @@ export function main() {
       }
     })
 
-    d3.csv(drupalSettings.bsbi_atlas.dataRoot + 'bsbi/taxon_list.csv').then(function(data) {
+    d3.csv(ds.bsbi_atlas.dataRoot + 'bsbi/taxon_list.csv').then(function(data) {
       taxaList = data
       taxaList.forEach(function(d) {
         let name = ''
@@ -207,19 +208,19 @@ export function main() {
         setControlState()
         changeMap()
         changeCaption() //Also changes taxon name display in sections
-        changeEcology()
+        changeEcologyTab()
         createGallery('bsbi-gallery', currentTaxon.identifier)
       })
 
       // If identifier passed in URL, set the value
-      if (drupalSettings.bsbi_atlas.identifier) {
-        $sel.selectpicker('val', drupalSettings.bsbi_atlas.identifier)
+      if (ds.bsbi_atlas.identifier) {
+        $sel.selectpicker('val', ds.bsbi_atlas.identifier)
       }
 
       // Get list of hybrid taxa which can be mapped with their parents
       // This is done after taxon list loaded so that data can be enriched
       // with names.
-      d3.csv(drupalSettings.bsbi_atlas.dataRoot + 'bsbi/hybrids.csv', function(h) {
+      d3.csv(ds.bsbi_atlas.dataRoot + 'bsbi/hybrids.csv', function(h) {
 
         const ddbid = h['ddb id']
         const parentDdbids = h['hybrid parent ids'].split(';')
@@ -256,7 +257,7 @@ export function main() {
 
       // Get list of taxa for which no status exists
       // (for use elsewhere - might as well be done here)
-      d3.csv(drupalSettings.bsbi_atlas.dataRoot + 'bsbi/no_status.csv').then(function(data) {
+      d3.csv(ds.bsbi_atlas.dataRoot + 'bsbi/no_status.csv').then(function(data) {
         updateBsbiDataAccess('taxaNoStatusList',  data.map(function(d) {return d['ddb id']}))
       })
     }).catch(function(){
@@ -325,7 +326,7 @@ export function main() {
     const $sect = $('#bsbi-atlas-section-' + id)
     $sect.append('<div id="bsbi-phenology"></div>')
 
-    createPhenology("#bsbi-phenology")
+    createEcology("#bsbi-phenology")
   }
 
   function sectionGallery(id) {
@@ -337,7 +338,7 @@ export function main() {
 
   function postProcessCaptionText(txt) {
     let txtn = txt
-    const bsbidburl = drupalSettings.bsbi_atlas.dataBsbidb
+    const bsbidburl = ds.bsbi_atlas.dataBsbidb
     txtn  = txtn.replace(/href="\/object.php/g, 'target="_blank" href="' + bsbidburl + 'object.php')
     txtn  = txtn.replace(/href='\/object.php/g, 'target=\'_blank\' href=\'' + bsbidburl + 'object.php')
     return txtn
@@ -351,16 +352,16 @@ export function main() {
     return vernacularHtml+ scientificHtml + authorityHtml
   }
 
-  function changeEcology() {
+  function changeEcologyTab() {
    
-    changePhenology(drupalSettings.bsbi_atlas.dataRoot, currentTaxon.identifier)
+    changeEcology(ds.bsbi_atlas.dataRoot, currentTaxon.identifier)
   }
 
   function changeCaption() {
     let $p
     const $caption = $('#bsbi-caption')
     $caption.html('')
-    const captionRoot = drupalSettings.bsbi_atlas.dataRoot + 'bsbi/captions/'
+    const captionRoot = ds.bsbi_atlas.dataRoot + 'bsbi/captions/'
     d3.csv(captionRoot + currentTaxon.identifier.replace(/\./g, "_") + '.csv?prevent-cache=09092021')
       .then(function(d) {
         

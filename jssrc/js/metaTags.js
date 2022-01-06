@@ -1,4 +1,4 @@
-const $=jQuery
+const $=jQuery // eslint-disable-line no-undef
 
 export function setBaseMetaTags() {
 

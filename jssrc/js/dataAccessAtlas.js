@@ -27,18 +27,18 @@ const periodMappings = {
     },
   "1930 - 1969": {
       prior: ["to 1929"],
-      csvperiods: ["1930 - 1949", "1950 - 1969"]
+      csvperiods: ["1930 - 1969"]
     },
   "1970 - 1986": {
-      prior: ["to 1929", "1930 - 1949", "1950 - 1969"],
+      prior: ["to 1929", "1930 - 1969"],
       csvperiods: ["1970 - 1986"],
     },
   "1987 - 1999": {
-      prior: ["to 1929", "1930 - 1949", "1950 - 1969", "1970 - 1986"],
+      prior: ["to 1929", "1930 - 1969", "1970 - 1986"],
       csvperiods: ["1987 - 1999"]
     },
   "2000 - 2019": {
-      prior: ["to 1929", "1930 - 1949", "1950 - 1969", "1970 - 1986", "1987 - 1999"],
+      prior: ["to 1929", "1930 - 1969", "1970 - 1986", "1987 - 1999"],
       csvperiods: ["2000 - 2009", "2010 - 2019"]
   }
 }
@@ -178,8 +178,9 @@ bsbiDataAccess.hybrid = function(identifier) {
   })
 }
 
-function getCSV(identifier) {
-  const file = "".concat(bsbiDataAccess.bsbiDataRoot).concat(identifier.replace(".", "_"), ".csv")
+function getCSV(identifier, type) {
+  const folder = type ? type : 'hectads'
+  const file = `${bsbiDataAccess.bsbiDataRoot}${folder}/${identifier.replace(".", "_")}.csv`
   return file
 }
 
@@ -250,7 +251,7 @@ function distAllClasses(identifier) {
         }
 
         // Status (can be n for native, a for alien, or bullseye for reintroduced)
-        const atlasstatus = r.atlasstatus ? r.atlasstatus : 'missing'
+        const hectadstatus = r.hectadstatus ? r.hectadstatus : 'missing'
 
         // Count the occurrences in each date category
         // (not just the last one recorded in)
@@ -262,7 +263,7 @@ function distAllClasses(identifier) {
           for (let iCsvperiod = 0; iCsvperiod < csvperiods.length; iCsvperiod++) {
             const csvperiod = csvperiods[iCsvperiod]
             if (r[csvperiod] === '1') {
-              counts[period][country][atlasstatus]++
+              counts[period][country][hectadstatus]++
               counts[period][country]['total']++
               occurs = true
               recent = recent ? recent : period //Save the most recent period
@@ -273,13 +274,13 @@ function distAllClasses(identifier) {
 
         if (occurs) {
           if (bsbiDataAccess.showStatus) {
-            const capText = statusText[atlasstatus]
+            const capText = statusText[hectadstatus]
             return {
               gr: r.hectad,
               //shape: bsbiDataAccess.displayedMapType === 'static' ? 'circle' : 'circlerad',
               shape: 'circle',
-              colour: statusColour[atlasstatus],
-              size: atlasstatus === 'missing' ? 0.5 : 1,
+              colour: statusColour[hectadstatus],
+              size: hectadstatus === 'missing' ? 0.5 : 1,
               opacity: opacities[recent],
               caption: "Hectad: <b>".concat(r.hectad, "</b></br>Status: <b>").concat(capText, "</b>")
             }
@@ -300,7 +301,7 @@ function distAllClasses(identifier) {
       let legend
       const totalAlien = periods.reduce(function(t, p) {return t + counts[p].gb.a + counts[p].ire.a}, 0)
       const totalNative = periods.reduce(function(t, p) {return t + counts[p].gb.n + counts[p].ire.n}, 0)
-      const lines = []
+      let lines = []
       if (bsbiDataAccess.showStatus) {
         if (totalNative) {
           lines.push({text: ['Native', '', 'GB', 'IR'], underline: true})
@@ -328,7 +329,7 @@ function distAllClasses(identifier) {
           })
         }
       } else {
-        const lines = [{text: ['', '', 'GB', 'IR'], underline: true}]
+        lines = [{text: ['', '', 'GB', 'IR'], underline: true}]
         periods.forEach(function(p) {
           lines.push ({
             colour: 'black',
@@ -345,6 +346,8 @@ function distAllClasses(identifier) {
         lines: lines
       }
 
+      console.log('legend', legend)
+
       resolve({
         records: data,
         precision: 10000,
@@ -359,14 +362,14 @@ function distAllClasses(identifier) {
 
 function distAllClassesTetrad(identifier) {
 
-  console.log('symboltype', bsbiDataAccess.devel.symboltype)
+  //console.log('symboltype', bsbiDataAccess.devel.symboltype)
 
   return new Promise(function (resolve, reject) {
 
-    d3.csv(getCSV('tetrad/' + identifier), function (r) {
-      if (r.gr ) {
+    d3.csv(getCSV(identifier, 'tetrads'), function (r) {
+      if (r.tetrad ) {
         return {
-          gr: r.gr,
+          gr: r.tetrad,
           //shape: bsbiDataAccess.devel.symboltype, //'circle' dev only,
           shape: 'square',
           colour: 'black',
@@ -401,7 +404,7 @@ function distAllClassesMonad(identifier) {
 
   return new Promise(function (resolve, reject) {
 
-    d3.csv(getCSV('monad/' + identifier), function (r) {
+    d3.csv(getCSV(identifier, 'monads'), function (r) {
       if (r.gr ) {
         return {
           gr: r.gr,
@@ -489,9 +492,9 @@ function nativeSpeciesStatus(identifier, period) {
         })
         if (occurs || prior) {
           // if (bsbiDataAccess.showStatus) {
-          //   const atlasstatus = r.atlasstatus ? r.atlasstatus : 'missing'
+          //   const hectadstatus = r.hectadstatus ? r.hectadstatus : 'missing'
           //   let capText
-          //   switch (atlasstatus) {
+          //   switch (hectadstatus) {
           //     case 'missing':
           //       capText = 'missing'
           //       break
@@ -514,16 +517,16 @@ function nativeSpeciesStatus(identifier, period) {
           //   }
             
           //   if (occurs) {
-          //     counts.occurs[atlasstatus] = counts.occurs[atlasstatus] + 1
+          //     counts.occurs[hectadstatus] = counts.occurs[hectadstatus] + 1
           //   } else {
-          //     counts.prior[atlasstatus] = counts.prior[atlasstatus] + 1
+          //     counts.prior[hectadstatus] = counts.prior[hectadstatus] + 1
           //   }
             
           //   return {
           //     gr: r.hectad,
-          //     shape: atlasstatus === "w" ? 'bullseye' : bsbiDataAccess.displayedMapType === 'static' ? 'circle' : 'circlerad',
+          //     shape: hectadstatus === "w" ? 'bullseye' : bsbiDataAccess.displayedMapType === 'static' ? 'circle' : 'circlerad',
           //     size: 1,
-          //     colour: colours[atlasstatus],
+          //     colour: colours[hectadstatus],
           //     colour2: colours.bullseye,
           //     opacity: occurs ? 1 : 0.5,
           //     caption: "Hectad: <b>".concat(r.hectad, "</b></br>Status: <b>").concat(capText, "</b>")
@@ -543,67 +546,67 @@ function nativeSpeciesStatus(identifier, period) {
       }
     }).then(function (data) {
       let legend
-      if (bsbiDataAccess.showStatus) {
-        legend = {
-          title: 'Native status',
-          precision: 10000,
-          size: 1,
-          lines: []
-        }
-        if (counts.occurs.n) {
-          legend.lines.push({
-            colour: 'blue',
-            opacity: 1,
-            text: 'Native (' + (period === "to 1929" ? "pre-1930" : period.replace(" - ", "-")) + ')',
-            shape: 'circle'
-          })
-        }
-        //if (period != 'to 1929') {
-        if (counts.prior.n) {
-          legend.lines.push({
-            colour: 'blue',
-            opacity: 0.5,
-            text: 'Native (earlier)',
-            shape: 'circle'
-          })
-        }
-        if (counts.occurs.a) {
-          legend.lines.push({
-            colour: 'red',
-            opacity: 1,
-            text: 'Alien (' + (period === "to 1929" ? "pre-1930" : period.replace(" - ", "-")) + ')',
-            shape: 'circle'
-          })
-        }
-        //if (period != 'to 1929') {
-        if (counts.prior.a) {
-          legend.lines.push({
-            colour: 'red',
-            opacity: 0.5,
-            text: 'Alien (earlier)',
-            shape: 'circle'
-          })
-        }
-        // If no reintroductions, remove legend item
-        if (counts.occurs.bullseye) {
-          legend.lines.push({
-            colour: 'blue',
-            colour2: 'red',
-            opacity: 1,
-            text: 'Reintroduced (' + (period === "to-1929" ? "pre 1930" : period.replace(" - ", "-")) + ')',
-            shape: 'bullseye'
-          })
-        }
-        if (counts.prior.bullseye) {
-          legend.lines.push({
-            colour: 'blue',
-            colour2: 'red',
-            opacity: 0.5,
-            text: 'Reintroduced (earlier)',
-            shape: 'bullseye'
-          })
-        }
-      } else {
+      // if (bsbiDataAccess.showStatus) {
+      //   legend = {
+      //     title: 'Native status',
+      //     precision: 10000,
+      //     size: 1,
+      //     lines: []
+      //   }
+      //   if (counts.occurs.n) {
+      //     legend.lines.push({
+      //       colour: 'blue',
+      //       opacity: 1,
+      //       text: 'Native (' + (period === "to 1929" ? "pre-1930" : period.replace(" - ", "-")) + ')',
+      //       shape: 'circle'
+      //     })
+      //   }
+      //   //if (period != 'to 1929') {
+      //   if (counts.prior.n) {
+      //     legend.lines.push({
+      //       colour: 'blue',
+      //       opacity: 0.5,
+      //       text: 'Native (earlier)',
+      //       shape: 'circle'
+      //     })
+      //   }
+      //   if (counts.occurs.a) {
+      //     legend.lines.push({
+      //       colour: 'red',
+      //       opacity: 1,
+      //       text: 'Alien (' + (period === "to 1929" ? "pre-1930" : period.replace(" - ", "-")) + ')',
+      //       shape: 'circle'
+      //     })
+      //   }
+      //   //if (period != 'to 1929') {
+      //   if (counts.prior.a) {
+      //     legend.lines.push({
+      //       colour: 'red',
+      //       opacity: 0.5,
+      //       text: 'Alien (earlier)',
+      //       shape: 'circle'
+      //     })
+      //   }
+      //   // If no reintroductions, remove legend item
+      //   if (counts.occurs.bullseye) {
+      //     legend.lines.push({
+      //       colour: 'blue',
+      //       colour2: 'red',
+      //       opacity: 1,
+      //       text: 'Reintroduced (' + (period === "to-1929" ? "pre 1930" : period.replace(" - ", "-")) + ')',
+      //       shape: 'bullseye'
+      //     })
+      //   }
+      //   if (counts.prior.bullseye) {
+      //     legend.lines.push({
+      //       colour: 'blue',
+      //       colour2: 'red',
+      //       opacity: 0.5,
+      //       text: 'Reintroduced (earlier)',
+      //       shape: 'bullseye'
+      //     })
+      //   }
+      // } else {
         legend = {
           precision: 10000,
           size: 1,
@@ -623,7 +626,7 @@ function nativeSpeciesStatus(identifier, period) {
         if (period == 'to 1929') {
           legend.lines.pop()
         }
-      }
+      //}
       resolve({
         records: data,
         precision: 10000,
@@ -713,22 +716,21 @@ function change(identifier, early, late, legendTitle) {
 }
 
 bsbiDataAccess.bsbiHectadDateTetFreq = function(identifier) {
-  const fields = ["to 1929", "1930 - 1949", "1950 - 1969", "1970 - 1986", "1987 - 1999", "2000 - 2009", "2010 - 2019"]
+
+  const fields = ["to 1929", "1930 - 1969", "1970 - 1986", "1987 - 1999", "2000 - 2009", "2010 - 2019"]
   const legendSizeFact = 0.5
   //const colour = d3.scaleLinear().domain([1, 13, 25]).range(['#edf8b1', '#7fcdbb', '#2c7fb8'])
   return new Promise(function (resolve, reject) {
     d3.csv(getCSV(identifier), function (r) {
-      let fake = fields.reduce(function (t, f) {
-        return t + Number(r[f])
-      }, 1)
-      fake = fake ? fake / 7 * 25 : 0
 
-      if (r.hectad) {
+      const tetrads = Number(r['distinct tetrads'])
+      const tetround = Math.ceil(tetrads/5)*5
+
+      if (r.hectad && tetrads) {
         return {
           gr: r.hectad,
-          size: Math.sqrt(fake)/5,
-          //colour: colour(fake),
-          caption: "Hectad: <b>".concat(r.hectad, "</b></br>Tetrads where present: <b>").concat(Math.floor(fake), "</b>")
+          size: Math.sqrt(tetround)/5,
+          caption: "Hectad: <b>".concat(r.hectad, "</b></br>Tetrads where present: <b>").concat(tetrads, "</b>")
         }
       }
     }).then(function (data) {

@@ -1,7 +1,9 @@
 import { bsbiDataAccess } from './dataAccessAtlas'
 import { setCookie, getCookie} from './utils'
 
-const $ = jQuery
+const $ = jQuery // eslint-disable-line no-undef
+const ds = drupalSettings // eslint-disable-line no-undef
+
 let currentTaxon 
 let gridStyle = getCookie('gridstyle') ? getCookie('gridstyle') : 'solid'
 let slippyMap, staticMap
@@ -189,20 +191,20 @@ export function setControlState() {
   if (displayedMapType === "slippy" && mapType === 'allclass') {
     // Reset resolution if currently set to a value that is not
     // appropriate for the taxon
-    if (resolution === 'tetrad' && !currentTaxon.tetrad) {
-      resolution = 'hectad'
-    }
+    // if (resolution === 'tetrad' && !currentTaxon.tetrad) {
+    //   resolution = 'hectad'
+    // }
     bsbiDataAccess.resolution = resolution
 
     // Ensure right option is selected
     $('.bsbi-resolution-' + resolution).prop('checked', true)
 
     // Enable/disable tetrad option as appropriate
-    if (currentTaxon.tetrad) {
-      $('.bsbi-resolution-tetrad').attr('disabled', false)
-    } else {
-      $('.bsbi-resolution-tetrad').attr('disabled', true)
-    }
+    // if (currentTaxon.tetrad) {
+    //   $('.bsbi-resolution-tetrad').attr('disabled', false)
+    // } else {
+    //   $('.bsbi-resolution-tetrad').attr('disabled', true)
+    // }
   } else {
     bsbiDataAccess.resolution = 'hectad'
   }
@@ -345,7 +347,7 @@ function mapTypeSelector($parent) {
 
 function backdropSelector($parent) {
 
-  const rasterRoot = drupalSettings.bsbi_atlas.dataRoot + 'rasters/'
+  const rasterRoot = ds.bsbi_atlas.dataRoot + 'rasters/'
 
   // Backdrops
   const backdrops = [
@@ -723,7 +725,7 @@ export function createMaps(selector) {
   transOptsSel.BI4.bounds.xmin = -240000,
 
   // Init
-  bsbiDataAccess.bsbiDataRoot = drupalSettings.bsbi_atlas.dataRoot + 'bsbi/atlas_taxa_2020_08_25/hectad-dateclass-status/'
+  bsbiDataAccess.bsbiDataRoot = ds.bsbi_atlas.dataRoot + 'bsbi/20210923/'
   bsbiDataAccess.showStatus = false
 
   // Data access 
@@ -821,7 +823,7 @@ export function createMaps(selector) {
     boundaryColour: '#7C7CD3',
   })
   // Initial backgrop image
-  const rasterRoot = drupalSettings.bsbi_atlas.dataRoot + 'rasters/'
+  const rasterRoot = ds.bsbi_atlas.dataRoot + 'rasters/'
   staticMap.basemapImage('colour_elevation', true, rasterRoot + 'colour_elevation.png', rasterRoot + 'colour_elevation.pgw')
 
   // Callbacks for slippy maps

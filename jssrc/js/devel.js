@@ -1,5 +1,5 @@
 let t1
-const $ = jQuery
+const $ = jQuery // eslint-disable-line no-undef
 
 export function develChangeMapColours(selector, changeMap, bsbiDataAccess) {
 
