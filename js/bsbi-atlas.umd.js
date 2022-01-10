@@ -520,12 +520,8 @@
             }).map(function (v, i) {
               return {
                 src: "https://atlasimages.bsbi.org/processed/".concat(ddbid, "/").concat(ddbid, "-").concat(i + 1, "/").concat(ddbid, "-").concat(i + 1, "-1920w.webp"),
-                thumb: "https://atlasimages.bsbi.org/processed/".concat(ddbid, "/").concat(ddbid, "-").concat(i + 1, "/").concat(ddbid, "-").concat(i + 1, "-192w.webp") // subHtml: `
-                //   <div class="lightGallery-captions">
-                //     <h4>Caption 1</h4>
-                //     <p>Description of the slide 1</p>
-                //   </div>`
-
+                thumb: "https://atlasimages.bsbi.org/processed/".concat(ddbid, "/").concat(ddbid, "-").concat(i + 1, "/").concat(ddbid, "-").concat(i + 1, "-192w.webp"),
+                subHtml: "\n              <div class=\"lightGallery-captions\">\n                <div style=\"background-color: black; opacity: 0.7\">\n                <p style=\"margin: 0.3em\">TODO - Copyright text to acknowledge Rob Still and Chris Gibson</p>\n                <div>\n              </div>"
               };
             }); // After https://www.lightgalleryjs.com/demos/inline/ & https://codepen.io/sachinchoolur/pen/zYZqaGm
 
@@ -557,9 +553,11 @@
 
             setTimeout(function () {
               inlineGallery.openGallery();
+              $$2('#bsbi-gallery-copyright').show();
             }, 200);
           } else {
             lgContainer.innerHTML = "<i>No images are available for this taxon.</i>";
+            $$2('#bsbi-gallery-copyright').hide();
           }
         });
       })();
@@ -2439,7 +2437,10 @@
 
     function sectionGallery(id) {
       var $sect = $('#bsbi-atlas-section-' + id);
-      $sect.append('<div id="bsbi-gallery" class="inline-gallery-container"></div>'); //createGallery('bsbi-gallery')
+      $sect.append('<div id="bsbi-gallery" class="inline-gallery-container"></div>');
+      var $copyright = $('<div id="bsbi-gallery-copyright"></div>').appendTo($sect);
+      $copyright.text("TODO - Copyright text to acknowledge Rob Still and Chris Gibson");
+      $('#bsbi-gallery-copyright').hide();
     }
 
     function postProcessCaptionText(txt) {

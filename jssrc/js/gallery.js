@@ -60,6 +60,7 @@ export function createGallery(id, ddbid) {
     Promise.all(pThumbs).then(() => {
 
       const lgContainer = document.getElementById(id)
+
       const imagesFound = iThumbs.some(thumbFound => thumbFound)
 
       if (imagesFound) {
@@ -67,11 +68,12 @@ export function createGallery(id, ddbid) {
           return {
             src: `https://atlasimages.bsbi.org/processed/${ddbid}/${ddbid}-${i+1}/${ddbid}-${i+1}-1920w.webp`,
             thumb: `https://atlasimages.bsbi.org/processed/${ddbid}/${ddbid}-${i+1}/${ddbid}-${i+1}-192w.webp`,
-            // subHtml: `
-            //   <div class="lightGallery-captions">
-            //     <h4>Caption 1</h4>
-            //     <p>Description of the slide 1</p>
-            //   </div>`
+            subHtml: `
+              <div class="lightGallery-captions">
+                <div style="background-color: black; opacity: 0.7">
+                <p style="margin: 0.3em">TODO - Copyright text to acknowledge Rob Still and Chris Gibson</p>
+                <div>
+              </div>`
           }
         })
         // After https://www.lightgalleryjs.com/demos/inline/ & https://codepen.io/sachinchoolur/pen/zYZqaGm
@@ -101,9 +103,11 @@ export function createGallery(id, ddbid) {
         // Since we are using dynamic mode, we need to programmatically open lightGallery
         setTimeout(() => {
           inlineGallery.openGallery()
+          $('#bsbi-gallery-copyright').show()
         }, 200)
       } else {
         lgContainer.innerHTML = `<i>No images are available for this taxon.</i>`
+        $('#bsbi-gallery-copyright').hide()
       }
     })
   }

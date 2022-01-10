@@ -334,8 +334,9 @@ export function main() {
   function sectionGallery(id) {
     const $sect = $('#bsbi-atlas-section-' + id)
     $sect.append('<div id="bsbi-gallery" class="inline-gallery-container"></div>')
-
-    //createGallery('bsbi-gallery')
+    const $copyright = $('<div id="bsbi-gallery-copyright"></div>').appendTo($sect)
+    $copyright.text("TODO - Copyright text to acknowledge Rob Still and Chris Gibson")
+    $('#bsbi-gallery-copyright').hide()
   }
 
   function postProcessCaptionText(txt) {
