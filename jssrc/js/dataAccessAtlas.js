@@ -78,8 +78,6 @@ bsbiDataAccess.hybrid = function(identifier) {
 
   const hybridInfo = bsbiDataAccess.taxaHybridList.find(function(h){return h.taxon === identifier})
 
-  //console.log("hybridInfo", hybridInfo)
-
   function markup(text) {
     // Look for ' x ' and replace either size with '</i> x <i>'
     const textOut = text.replace(/ x /g, '</i> x <i>')
@@ -253,7 +251,7 @@ function distAllClasses(identifier) {
         // Status (can be n for native, a for alien, or bullseye for reintroduced)
         const hectadstatus = r.hectadstatus ? r.hectadstatus : 'missing'
 
-        // Count the occurrences in each date category
+        // Count the occurrences in each date category for legend
         // (not just the last one recorded in)
         let occurs = false
         let period, recent
@@ -272,29 +270,51 @@ function distAllClasses(identifier) {
           }
         }
 
+        // Presence attrs - required for data download
+        const attrs = {}
+        for (let iPeriod = 0; iPeriod < periods.length; iPeriod++) {
+          period = periods[iPeriod]
+          attrs[period] = 0
+          const csvperiods = periodMappings[period].csvperiods
+          for (let iCsvperiod = 0; iCsvperiod < csvperiods.length; iCsvperiod++) {
+            const csvperiod = csvperiods[iCsvperiod]
+            if (r[csvperiod] === '1') {
+              attrs[period] = 1
+              break
+            }
+          }
+        }
+
         if (occurs) {
+          let point
           if (bsbiDataAccess.showStatus) {
-            const capText = statusText[hectadstatus]
-            return {
+            //const capText = statusText[hectadstatus]
+            point = {
               gr: r.hectad,
               //shape: bsbiDataAccess.displayedMapType === 'static' ? 'circle' : 'circlerad',
               shape: 'circle',
               colour: statusColour[hectadstatus],
               size: hectadstatus === 'missing' ? 0.5 : 1,
               opacity: opacities[recent],
-              caption: "Hectad: <b>".concat(r.hectad, "</b></br>Status: <b>").concat(capText, "</b>")
+              //caption: "Hectad: <b>".concat(r.hectad, "</b></br>Status: <b>").concat(capText, "</b>"),
             }
           } else {
-            return {
+            point = {
               gr: r.hectad,
               //shape: bsbiDataAccess.displayedMapType === 'static' ? 'circle' : 'circlerad',
               shape: 'circle',
               colour: 'black',
               size: 1,
               opacity: opacities[recent],
-              caption: "Hectad: <b>".concat(r.hectad, "</b>")
+              //caption: "Hectad: <b>".concat(r.hectad, "</b>"),
             }
           }
+          // Add attributes required for download
+          // Use the legend keys as the attr names
+          Object.keys(attrs).forEach(k => {
+            point[legendText[k]] = attrs[k]
+          })
+          return point
         }
       }
     }).then(function (data) {
@@ -346,8 +366,6 @@ function distAllClasses(identifier) {
         lines: lines
       }
 
-      console.log('legend', legend)
-
       resolve({
         records: data,
         precision: 10000,
@@ -361,8 +379,6 @@ function distAllClasses(identifier) {
 }
 
 function distAllClassesTetrad(identifier) {
-
-  //console.log('symboltype', bsbiDataAccess.devel.symboltype)
 
   return new Promise(function (resolve, reject) {
 
@@ -438,23 +454,6 @@ function distAllClassesMonad(identifier) {
 
 function nativeSpeciesStatus(identifier, period) {
 
-  //Native (n)
-  //Alien (a)
-  //Present (y) - I'm not sure if this should be labelled as 'present' or 'native or alien' (not intermediate) 
-  //Reintroduced (w) - this will be very rarely used
-  //There may also be Casual (c) or that might be treated as Present or Native - I'll check with Kevin
-  // const colours = {
-  //   missing: '#F2CC35',
-  //   //no value yet
-  //   n: 'blue',
-  //   //native
-  //   a: 'red',
-  //   //non-native (alien),
-  //   y: 'grey',
-  //   w: 'blue',
-  //   bullseye: 'red'
-  // }
-
   const counts = {
     occurs: {
       missing: 0,
@@ -491,142 +490,37 @@ function nativeSpeciesStatus(identifier, period) {
           }
         })
         if (occurs || prior) {
-          // if (bsbiDataAccess.showStatus) {
-          //   const hectadstatus = r.hectadstatus ? r.hectadstatus : 'missing'
-          //   let capText
-          //   switch (hectadstatus) {
-          //     case 'missing':
-          //       capText = 'missing'
-          //       break
-
-          //     case 'n':
-          //       capText = 'native'
-          //       break
-
-          //     case 'a':
-          //       capText = 'alien (non-native)'
-          //       break
-
-          //     case 'y':
-          //       capText = 'present'
-          //       break
-
-          //     case 'bullseye':
-          //       capText = 'reintroduced'
-          //       break
-          //   }
-            
-          //   if (occurs) {
-          //     counts.occurs[hectadstatus] = counts.occurs[hectadstatus] + 1
-          //   } else {
-          //     counts.prior[hectadstatus] = counts.prior[hectadstatus] + 1
-          //   }
-            
-          //   return {
-          //     gr: r.hectad,
-          //     shape: hectadstatus === "w" ? 'bullseye' : bsbiDataAccess.displayedMapType === 'static' ? 'circle' : 'circlerad',
-          //     size: 1,
-          //     colour: colours[hectadstatus],
-          //     colour2: colours.bullseye,
-          //     opacity: occurs ? 1 : 0.5,
-          //     caption: "Hectad: <b>".concat(r.hectad, "</b></br>Status: <b>").concat(capText, "</b>")
-          //   }
-          // } else {
-            return {
-              gr: r.hectad,
-              //shape: bsbiDataAccess.displayedMapType === 'static' ? 'circle' : 'circlerad',
-              shape: 'circle',
-              size: 1,
-              colour: 'black',
-              opacity: occurs ? 1 : 0.5,
-              caption: "Hectad: <b>".concat(r.hectad, "</b>")
-            }
-          //}
+          return {
+            gr: r.hectad,
+            shape: 'circle',
+            size: 1,
+            colour: 'black',
+            opacity: occurs ? 1 : 0.5,
+            //caption: "Hectad: <b>".concat(r.hectad, "</b>")
+          }
         }
       }
     }).then(function (data) {
-      let legend
-      // if (bsbiDataAccess.showStatus) {
-      //   legend = {
-      //     title: 'Native status',
-      //     precision: 10000,
-      //     size: 1,
-      //     lines: []
-      //   }
-      //   if (counts.occurs.n) {
-      //     legend.lines.push({
-      //       colour: 'blue',
-      //       opacity: 1,
-      //       text: 'Native (' + (period === "to 1929" ? "pre-1930" : period.replace(" - ", "-")) + ')',
-      //       shape: 'circle'
-      //     })
-      //   }
-      //   //if (period != 'to 1929') {
-      //   if (counts.prior.n) {
-      //     legend.lines.push({
-      //       colour: 'blue',
-      //       opacity: 0.5,
-      //       text: 'Native (earlier)',
-      //       shape: 'circle'
-      //     })
-      //   }
-      //   if (counts.occurs.a) {
-      //     legend.lines.push({
-      //       colour: 'red',
-      //       opacity: 1,
-      //       text: 'Alien (' + (period === "to 1929" ? "pre-1930" : period.replace(" - ", "-")) + ')',
-      //       shape: 'circle'
-      //     })
-      //   }
-      //   //if (period != 'to 1929') {
-      //   if (counts.prior.a) {
-      //     legend.lines.push({
-      //       colour: 'red',
-      //       opacity: 0.5,
-      //       text: 'Alien (earlier)',
-      //       shape: 'circle'
-      //     })
-      //   }
-      //   // If no reintroductions, remove legend item
-      //   if (counts.occurs.bullseye) {
-      //     legend.lines.push({
-      //       colour: 'blue',
-      //       colour2: 'red',
-      //       opacity: 1,
-      //       text: 'Reintroduced (' + (period === "to-1929" ? "pre 1930" : period.replace(" - ", "-")) + ')',
-      //       shape: 'bullseye'
-      //     })
-      //   }
-      //   if (counts.prior.bullseye) {
-      //     legend.lines.push({
-      //       colour: 'blue',
-      //       colour2: 'red',
-      //       opacity: 0.5,
-      //       text: 'Reintroduced (earlier)',
-      //       shape: 'bullseye'
-      //     })
-      //   }
-      // } else {
-        legend = {
-          precision: 10000,
-          size: 1,
-          lines: [{
-            colour: 'black',
-            opacity: 1,
-            text: period === "to 1929" ? "pre-1930" : period.replace(" - ", "-"),
-            shape: 'circle'
-          }, {
-            colour: 'black',
-            opacity: 0.5,
-            text: 'Earlier',
-            shape: 'circle'
-          }]
-        }
-        // If period is 'to 1929' remove the 'earlier' line
-        if (period == 'to 1929') {
-          legend.lines.pop()
-        }
-      //}
+      const legend = {
+        precision: 10000,
+        size: 1,
+        lines: [{
+          colour: 'black',
+          opacity: 1,
+          text: period === "to 1929" ? "pre-1930" : period.replace(" - ", "-"),
+          shape: 'circle'
+        }, {
+          colour: 'black',
+          opacity: 0.5,
+          text: 'Earlier',
+          shape: 'circle'
+        }]
+      }
+      // If period is 'to 1929' remove the 'earlier' line
+      if (period == 'to 1929') {
+        legend.lines.pop()
+      }
+
       resolve({
         records: data,
         precision: 10000,
@@ -680,7 +574,7 @@ function change(identifier, early, late, legendTitle) {
           gr: r.hectad,
           colour: colours[i],
           shape: shapes[i],
-          caption: "Hectad: <b>".concat(r.hectad, "</b></br>Change: <b>").concat(capText, "</b>")
+          //caption: "Hectad: <b>".concat(r.hectad, "</b></br>Change: <b>").concat(capText, "</b>")
         }
       }
     }).then(function (data) {
@@ -730,7 +624,7 @@ bsbiDataAccess.bsbiHectadDateTetFreq = function(identifier) {
         return {
           gr: r.hectad,
           size: Math.sqrt(tetround)/5,
-          caption: "Hectad: <b>".concat(r.hectad, "</b></br>Tetrads where present: <b>").concat(tetrads, "</b>")
+          //caption: "Hectad: <b>".concat(r.hectad, "</b></br>Tetrads where present: <b>").concat(tetrads, "</b>")
         }
       }
     }).then(function (data) {
@@ -772,6 +666,3 @@ bsbiDataAccess.bsbiHectadDateTetFreq = function(identifier) {
     })
   })
 }
-
-
-

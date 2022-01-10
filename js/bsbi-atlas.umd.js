@@ -616,6 +616,13 @@
 
     return "";
   }
+  function getCitation(currentTaxon, forImageDownload) {
+    if (forImageDownload) {
+      return "<i>".concat(currentTaxon.shortName.replace(/\s/g, '</i> <i>'), "</i> in <i>BSBI</i> <i>Online</i> <i>Atlas</i> <i>2020</i>, eds P.A. Stroh, T. Humphrey, R.J. Burkmar, O.L. Pescott, D.B. Roy, & K.J. Walker. ").concat(location.origin, "/atlas/").concat(currentTaxon.identifier, " [Accessed ").concat(new Date().toLocaleDateString('en-GB'), "]");
+    } else {
+      return "<i>".concat(currentTaxon.shortName, "</i> in <i>BSBI Online Atlas 2020</i>, eds P.A. Stroh, T. Humphrey, R.J. Burkmar, O.L. Pescott, D.B. Roy, & K.J. Walker. ").concat(location.origin, "/atlas/").concat(currentTaxon.identifier, " [Accessed ").concat(new Date().toLocaleDateString('en-GB'), "]");
+    }
+  }
 
   // access structure. All the data access functions
   // are members of this structure.
@@ -691,7 +698,7 @@
   bsbiDataAccess.hybrid = function (identifier) {
     var hybridInfo = bsbiDataAccess.taxaHybridList.find(function (h) {
       return h.taxon === identifier;
-    }); //console.log("hybridInfo", hybridInfo)
+    });
 
     function markup(text) {
       // Look for ' x ' and replace either size with '</i> x <i>'
@@ -795,15 +802,6 @@
   }
 
   function distAllClasses(identifier) {
-    var statusText = {
-      n: 'Native',
-      //inative
-      a: 'Non-native (alien)',
-      //non-native (alien),
-      bullseye: 'Introduced',
-      missing: 'missing' //no value yet
-
-    };
     var statusColour = {
       n: 'blue',
       a: 'red',
@@ -857,7 +855,7 @@
           } // Status (can be n for native, a for alien, or bullseye for reintroduced)
 
 
-          var hectadstatus = r.hectadstatus ? r.hectadstatus : 'missing'; // Count the occurrences in each date category
+          var hectadstatus = r.hectadstatus ? r.hectadstatus : 'missing'; // Count the occurrences in each date category for legend
           // (not just the last one recorded in)
 
           var occurs = false;
@@ -879,31 +877,58 @@
                 break;
               }
             }
+          } // Presence attrs - required for data download
+
+
+          var attrs = {};
+
+          for (var _iPeriod = 0; _iPeriod < periods.length; _iPeriod++) {
+            period = periods[_iPeriod];
+            attrs[period] = 0;
+            var _csvperiods = periodMappings[period].csvperiods;
+
+            for (var _iCsvperiod = 0; _iCsvperiod < _csvperiods.length; _iCsvperiod++) {
+              var _csvperiod = _csvperiods[_iCsvperiod];
+
+              if (r[_csvperiod] === '1') {
+                attrs[period] = 1;
+                break;
+              }
+            }
           }
 
           if (occurs) {
+            var point;
+
             if (bsbiDataAccess.showStatus) {
-              var capText = statusText[hectadstatus];
-              return {
+              //const capText = statusText[hectadstatus]
+              point = {
                 gr: r.hectad,
                 //shape: bsbiDataAccess.displayedMapType === 'static' ? 'circle' : 'circlerad',
                 shape: 'circle',
                 colour: statusColour[hectadstatus],
                 size: hectadstatus === 'missing' ? 0.5 : 1,
-                opacity: opacities[recent],
-                caption: "Hectad: <b>".concat(r.hectad, "</b></br>Status: <b>").concat(capText, "</b>")
+                opacity: opacities[recent] //caption: "Hectad: <b>".concat(r.hectad, "</b></br>Status: <b>").concat(capText, "</b>"),
+
               };
             } else {
-              return {
+              point = {
                 gr: r.hectad,
                 //shape: bsbiDataAccess.displayedMapType === 'static' ? 'circle' : 'circlerad',
                 shape: 'circle',
                 colour: 'black',
                 size: 1,
-                opacity: opacities[recent],
-                caption: "Hectad: <b>".concat(r.hectad, "</b>")
+                opacity: opacities[recent] //caption: "Hectad: <b>".concat(r.hectad, "</b>"),
+
               };
-            }
+            } // Add attributes required for download
+            // Use the legend keys as the attr names
+
+
+            Object.keys(attrs).forEach(function (k) {
+              point[legendText[k]] = attrs[k];
+            });
+            return point;
           }
         }
       }).then(function (data) {
@@ -973,7 +998,6 @@
           padding: 5,
           lines: lines
         };
-        console.log('legend', legend);
         resolve({
           records: data,
           precision: 10000,
@@ -987,7 +1011,6 @@
   }
 
   function distAllClassesTetrad(identifier) {
-    //console.log('symboltype', bsbiDataAccess.devel.symboltype)
     return new Promise(function (resolve, reject) {
       d3__namespace.csv(getCSV(identifier, 'tetrads'), function (r) {
         if (r.tetrad) {
@@ -1071,116 +1094,18 @@
           });
 
           if (occurs || prior) {
-            // if (bsbiDataAccess.showStatus) {
-            //   const hectadstatus = r.hectadstatus ? r.hectadstatus : 'missing'
-            //   let capText
-            //   switch (hectadstatus) {
-            //     case 'missing':
-            //       capText = 'missing'
-            //       break
-            //     case 'n':
-            //       capText = 'native'
-            //       break
-            //     case 'a':
-            //       capText = 'alien (non-native)'
-            //       break
-            //     case 'y':
-            //       capText = 'present'
-            //       break
-            //     case 'bullseye':
-            //       capText = 'reintroduced'
-            //       break
-            //   }
-            //   if (occurs) {
-            //     counts.occurs[hectadstatus] = counts.occurs[hectadstatus] + 1
-            //   } else {
-            //     counts.prior[hectadstatus] = counts.prior[hectadstatus] + 1
-            //   }
-            //   return {
-            //     gr: r.hectad,
-            //     shape: hectadstatus === "w" ? 'bullseye' : bsbiDataAccess.displayedMapType === 'static' ? 'circle' : 'circlerad',
-            //     size: 1,
-            //     colour: colours[hectadstatus],
-            //     colour2: colours.bullseye,
-            //     opacity: occurs ? 1 : 0.5,
-            //     caption: "Hectad: <b>".concat(r.hectad, "</b></br>Status: <b>").concat(capText, "</b>")
-            //   }
-            // } else {
             return {
               gr: r.hectad,
-              //shape: bsbiDataAccess.displayedMapType === 'static' ? 'circle' : 'circlerad',
               shape: 'circle',
               size: 1,
               colour: 'black',
-              opacity: occurs ? 1 : 0.5,
-              caption: "Hectad: <b>".concat(r.hectad, "</b>")
-            }; //}
+              opacity: occurs ? 1 : 0.5 //caption: "Hectad: <b>".concat(r.hectad, "</b>")
+
+            };
           }
         }
       }).then(function (data) {
-        var legend; // if (bsbiDataAccess.showStatus) {
-        //   legend = {
-        //     title: 'Native status',
-        //     precision: 10000,
-        //     size: 1,
-        //     lines: []
-        //   }
-        //   if (counts.occurs.n) {
-        //     legend.lines.push({
-        //       colour: 'blue',
-        //       opacity: 1,
-        //       text: 'Native (' + (period === "to 1929" ? "pre-1930" : period.replace(" - ", "-")) + ')',
-        //       shape: 'circle'
-        //     })
-        //   }
-        //   //if (period != 'to 1929') {
-        //   if (counts.prior.n) {
-        //     legend.lines.push({
-        //       colour: 'blue',
-        //       opacity: 0.5,
-        //       text: 'Native (earlier)',
-        //       shape: 'circle'
-        //     })
-        //   }
-        //   if (counts.occurs.a) {
-        //     legend.lines.push({
-        //       colour: 'red',
-        //       opacity: 1,
-        //       text: 'Alien (' + (period === "to 1929" ? "pre-1930" : period.replace(" - ", "-")) + ')',
-        //       shape: 'circle'
-        //     })
-        //   }
-        //   //if (period != 'to 1929') {
-        //   if (counts.prior.a) {
-        //     legend.lines.push({
-        //       colour: 'red',
-        //       opacity: 0.5,
-        //       text: 'Alien (earlier)',
-        //       shape: 'circle'
-        //     })
-        //   }
-        //   // If no reintroductions, remove legend item
-        //   if (counts.occurs.bullseye) {
-        //     legend.lines.push({
-        //       colour: 'blue',
-        //       colour2: 'red',
-        //       opacity: 1,
-        //       text: 'Reintroduced (' + (period === "to-1929" ? "pre 1930" : period.replace(" - ", "-")) + ')',
-        //       shape: 'bullseye'
-        //     })
-        //   }
-        //   if (counts.prior.bullseye) {
-        //     legend.lines.push({
-        //       colour: 'blue',
-        //       colour2: 'red',
-        //       opacity: 0.5,
-        //       text: 'Reintroduced (earlier)',
-        //       shape: 'bullseye'
-        //     })
-        //   }
-        // } else {
-
-        legend = {
+        var legend = {
           precision: 10000,
           size: 1,
           lines: [{
@@ -1198,8 +1123,7 @@
 
         if (period == 'to 1929') {
           legend.lines.pop();
-        } //}
-
+        }
 
         resolve({
           records: data,
@@ -1234,20 +1158,14 @@
         var presentLate = late.some(function (f) {
           return r[f] === '1';
         });
-        var i, capText;
+        var i;
 
         if (presentEarly && presentLate) {
           i = 0; //present
-
-          capText = 'present in both periods';
         } else if (!presentEarly && presentLate) {
           i = 1; //gain
-
-          capText = 'gain';
         } else if (presentEarly && !presentLate) {
           i = 2; //loss
-
-          capText = 'loss';
         } else {
           i = 100; //not present in either period
         }
@@ -1256,8 +1174,8 @@
           return {
             gr: r.hectad,
             colour: colours[i],
-            shape: shapes[i],
-            caption: "Hectad: <b>".concat(r.hectad, "</b></br>Change: <b>").concat(capText, "</b>")
+            shape: shapes[i] //caption: "Hectad: <b>".concat(r.hectad, "</b></br>Change: <b>").concat(capText, "</b>")
+
           };
         }
       }).then(function (data) {
@@ -1303,8 +1221,8 @@
         if (r.hectad && tetrads) {
           return {
             gr: r.hectad,
-            size: Math.sqrt(tetround) / 5,
-            caption: "Hectad: <b>".concat(r.hectad, "</b></br>Tetrads where present: <b>").concat(tetrads, "</b>")
+            size: Math.sqrt(tetround) / 5 //caption: "Hectad: <b>".concat(r.hectad, "</b></br>Tetrads where present: <b>").concat(tetrads, "</b>")
+
           };
         }
       }).then(function (data) {
@@ -1721,11 +1639,22 @@
     var $container = $$1('<div>').appendTo($parent);
     $container.addClass('atlas-save-map-image');
     $container.hide();
+    var $svg = $$1('<svg>').appendTo($container);
+    var $t = $$1('<text>').appendTo($svg);
+    $t.attr('x', '10');
+    $t.attr('y', '20');
+    $$1('<br>').appendTo($container);
     var $button = $$1('<button>').appendTo($container);
     $button.addClass('btn btn-default');
     $button.text('Download image');
     $button.on('click', function () {
-      staticMap.saveMap(imageType === 'svg');
+      var info = {
+        text: getCitation(currentTaxon, true),
+        margin: 10,
+        fontSize: 10,
+        img: "".concat(ds$1.bsbi_atlas.dataRoot, "combined-logos.png")
+      };
+      staticMap.saveMap(imageType === 'svg', info);
     });
     makeRadio('PNG', 'png', true);
     makeRadio('SVG', 'svg', false);
@@ -2215,6 +2144,7 @@
     var currentTaxon = {
       identifier: null,
       name: null,
+      shortName: null,
       tetrad: null,
       parent1: '',
       parent2: ''
@@ -2360,6 +2290,7 @@
           $opt.attr('data-content', name);
           $opt.attr('value', d['ddb id']);
           $opt.attr('data-canonical', d['canonical']);
+          $opt.attr('data-taxon-name', d['taxon name']);
           $opt.attr('data-qualifier', d['qualifier']);
           $opt.attr('data-vernacular', d['vernacular']);
           $opt.attr('data-tetrad', d['tetrad']); //$opt.attr('data-monad', d['monad'])
@@ -2376,6 +2307,7 @@
           console.log('Identifier:', $(this).val());
           currentTaxon.identifier = $(this).val();
           currentTaxon.name = $(this).find(":selected").attr("data-content");
+          currentTaxon.shortName = $(this).find(":selected").attr("data-taxon-name");
           mapSetCurrentTaxon(currentTaxon);
           setControlState();
           changeMap();
@@ -2607,10 +2539,11 @@
         $caption.append('<h4>Recommended citation <span id="bsbi-citation-toggle">[show]</span></h4>');
         var $div = $('<div id="bsbi-citation-div">').appendTo($caption);
         $p = $('<p id="bsbi-citation-text">').appendTo($div);
-        $p.append('<i>' + d[0].taxonName + ',</i> ');
-        $p.append('in <i>BSBI Online Atlas 2020</i>, eds P.A. Stroh, T. Humphrey, R.J. Burkmar, O.L. Pescott, D.B. Roy, & K.J. Walker. ');
-        $p.append(location.origin + '/atlas/' + currentTaxon.identifier);
-        $p.append(' [Accessed ' + new Date().toLocaleDateString('en-GB') + ']');
+        $p.append(getCitation(currentTaxon)); // $p.append('<i>' + d[0].taxonName + ',</i> ')
+        // $p.append('in <i>BSBI Online Atlas 2020</i>, eds P.A. Stroh, T. Humphrey, R.J. Burkmar, O.L. Pescott, D.B. Roy, & K.J. Walker. ')
+        // $p.append(location.origin + '/atlas/' + currentTaxon.identifier)
+        // $p.append(' [Accessed ' + new Date().toLocaleDateString('en-GB') + ']')
+
         var $but1 = $('<button id="bsbi-citation-copy-text">Copy as text</button>').appendTo($div);
         $but1.addClass('btn btn-default');
         var $but2 = $('<button id="bsbi-citation-copy-html">Copy as HTML</button>').appendTo($div);

@@ -1,5 +1,5 @@
 import { bsbiDataAccess } from './dataAccessAtlas'
-import { setCookie, getCookie} from './utils'
+import { setCookie, getCookie, getCitation} from './utils'
 
 const $ = jQuery // eslint-disable-line no-undef
 const ds = drupalSettings // eslint-disable-line no-undef
@@ -404,11 +404,23 @@ function mapImageButton($parent, i) {
   $container.addClass('atlas-save-map-image')
   $container.hide()
 
+  const $svg = $('<svg>').appendTo($container)
+  const $t = $('<text>').appendTo($svg)
+  $t.attr('x', '10')
+  $t.attr('y', '20')
+  $('<br>').appendTo($container)
+
   const $button = $('<button>').appendTo($container)
   $button.addClass('btn btn-default')
   $button.text('Download image')
   $button.on('click', function(){
-    staticMap.saveMap(imageType === 'svg')
+    const info = {
+      text: getCitation(currentTaxon, true),
+      margin: 10,
+      fontSize: 10,
+      img: `${ds.bsbi_atlas.dataRoot}combined-logos.png`
+    }
+    staticMap.saveMap(imageType === 'svg', info)
   })
 
   makeRadio('PNG', 'png', true)

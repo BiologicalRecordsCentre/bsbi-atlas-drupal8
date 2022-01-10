@@ -3,7 +3,7 @@ import * as d3 from 'd3'
 import { setBaseMetaTags, addMetaTags } from './metaTags'
 import { createEcology, changeEcology } from './ecology'
 import { createGallery } from './gallery'
-import { copyToClipboard } from './utils'
+import { copyToClipboard,  getCitation } from './utils'
 import { mapSetCurrentTaxon, createMaps, changeMap, createMapControls, setControlState, updateBsbiDataAccess} from './mapping'
 // import { develChangeMapColours } from './devel'
 
@@ -16,6 +16,7 @@ export function main() {
   const currentTaxon = {
     identifier: null,
     name: null,
+    shortName: null,
     tetrad: null,
     parent1: '',
     parent2: ''
@@ -183,6 +184,7 @@ export function main() {
         $opt.attr('data-content', name)
         $opt.attr('value', d['ddb id'])
         $opt.attr('data-canonical', d['canonical'])
+        $opt.attr('data-taxon-name', d['taxon name'])
         $opt.attr('data-qualifier', d['qualifier'])
         $opt.attr('data-vernacular', d['vernacular'])
 
@@ -203,7 +205,7 @@ export function main() {
         console.log('Identifier:', $(this).val())
         currentTaxon.identifier = $(this).val()
         currentTaxon.name =  $(this).find(":selected").attr("data-content")
-        
+        currentTaxon.shortName =  $(this).find(":selected").attr("data-taxon-name")
         mapSetCurrentTaxon(currentTaxon)
         setControlState()
         changeMap()
@@ -430,10 +432,13 @@ export function main() {
         $caption.append('<h4>Recommended citation <span id="bsbi-citation-toggle">[show]</span></h4>')
         const $div = $('<div id="bsbi-citation-div">').appendTo($caption)
         $p = $('<p id="bsbi-citation-text">').appendTo($div)
-        $p.append('<i>' + d[0].taxonName + ',</i> ')
-        $p.append('in <i>BSBI Online Atlas 2020</i>, eds P.A. Stroh, T. Humphrey, R.J. Burkmar, O.L. Pescott, D.B. Roy, & K.J. Walker. ')
-        $p.append(location.origin + '/atlas/' + currentTaxon.identifier)
-        $p.append(' [Accessed ' + new Date().toLocaleDateString('en-GB') + ']')
+        $p.append(getCitation(currentTaxon))
+
+        // $p.append('<i>' + d[0].taxonName + ',</i> ')
+        // $p.append('in <i>BSBI Online Atlas 2020</i>, eds P.A. Stroh, T. Humphrey, R.J. Burkmar, O.L. Pescott, D.B. Roy, & K.J. Walker. ')
+        // $p.append(location.origin + '/atlas/' + currentTaxon.identifier)
+        // $p.append(' [Accessed ' + new Date().toLocaleDateString('en-GB') + ']')
+
         const $but1 = $('<button id="bsbi-citation-copy-text">Copy as text</button>').appendTo($div)
         $but1.addClass('btn btn-default')
         const $but2 = $('<button id="bsbi-citation-copy-html">Copy as HTML</button>').appendTo($div)
