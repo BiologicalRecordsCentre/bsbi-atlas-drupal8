@@ -219,3 +219,20 @@ taxon {
   height: 0;
   padding-bottom: 65%;
 }
+@media print {
+  .nav-tabs {
+    display: none;
+  }
+  .bsbi-atlas-map-controls {
+    display: none;
+  }
+  .bsbi-atlas-taxon-selector {
+    display: none;
+  }
+  #bsbi-atlas-section-summary .bsbi-selected-taxon-name { 
+    page-break-before: always; 
+  }
+  a[href]:after {
+    content: none !important;
+  }
+}

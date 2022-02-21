@@ -418,7 +418,7 @@ function mapImageButton($parent, i) {
       text: getCitation(currentTaxon, true),
       margin: 10,
       fontSize: 10,
-      img: `${ds.bsbi_atlas.dataRoot}combined-logos.png`
+      //img: `${ds.bsbi_atlas.dataRoot}combined-logos.png`
     }
     staticMap.saveMap(imageType === 'svg', info)
   })

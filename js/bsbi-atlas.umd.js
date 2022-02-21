@@ -25,7 +25,7 @@
   var d3__namespace = /*#__PURE__*/_interopNamespace(d3);
 
   var name = "bsbi-atlas";
-  var version = "0.1.0";
+  var version = "0.1.2";
   var description = "Javscript code for BSBI atlas.";
   var type = "module";
   var main$1 = "../js/bsbi-atlas.umd.js";
@@ -1156,7 +1156,8 @@
   };
 
   bsbiDataAccess.change_1930_1969_vs_2000_2019 = function (identifier) {
-    return change(identifier, ['1930 - 1949', '1950 - 1969'], ['2000 - 2009', '2010 - 2019'], 'Change from 1930-1969 to 2000-2019');
+    //return change(identifier, ['1930 - 1949', '1950 - 1969'], ['2000 - 2009', '2010 - 2019'], 'Change from 1930-1969 to 2000-2019')
+    return change(identifier, ['to 1929', '1930 - 1969'], ['2000 - 2009', '2010 - 2019'], 'Change from 1930-1969 to 2000-2019');
   };
 
   function change(identifier, early, late, legendTitle) {
@@ -1664,8 +1665,8 @@
       var info = {
         text: getCitation(currentTaxon, true),
         margin: 10,
-        fontSize: 10,
-        img: "".concat(ds$1.bsbi_atlas.dataRoot, "combined-logos.png")
+        fontSize: 10 //img: `${ds.bsbi_atlas.dataRoot}combined-logos.png`
+
       };
       staticMap.saveMap(imageType === 'svg', info);
     });
