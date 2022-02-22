@@ -5,9 +5,24 @@
   .bsbi-atlas-map-controls {
     display: none;
   }
-  .bsbi-atlas-taxon-selector {
+
+  #bsbi-citation-div {
+    display: block;
+  }
+  #bsbi-citation-div button {
     display: none;
   }
+  #bsbi-citation-toggle {
+    display: none;
+  }
+
+  #bsbi-taxa-covered-list {
+    display: block;
+  }
+  #bsbi-taxa-covered-toggle {
+    display: none;
+  }
+
   #bsbi-atlas-section-summary .bsbi-selected-taxon-name { 
     page-break-before: always; 
   }
