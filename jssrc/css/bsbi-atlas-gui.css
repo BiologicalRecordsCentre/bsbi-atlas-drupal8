@@ -192,7 +192,16 @@ taxon {
   font-size: 14px;
 }
 
+#bsbi-reference-toggle {
+  cursor: pointer;
+  font-size: 14px;
+}
+
 #bsbi-citation-div {
+  display: none;
+}
+
+#bsbi-reference-div {
   display: none;
 }
 

@@ -8,7 +8,8 @@ let currentTaxon
 let gridStyle = getCookie('gridstyle') ? getCookie('gridstyle') : 'solid'
 let slippyMap, staticMap
 let mapType = 'allclass'
-let insetType = 'BI4'
+let insetType = getCookie('inset') ? getCookie('inset') : 'BI4'
+let boundaryType = getCookie('boundaries') ? getCookie('boundaries') : 'none'
 let showStatus = false
 let displayedMapType = 'static'
 let resolution = 'hectad'
@@ -131,6 +132,13 @@ export function setControlState() {
     $('.atlas-grid-type-control').hide()
   }
 
+  // boundary type control
+  if (displayedMapType === "static") {
+    $('.atlas-boundaries-control').show()
+  } else {
+    $('.atlas-boundaries-control').hide()
+  }
+
   // period slider visibility
   if (mapType === 'status') {
     $('.atlas-period-slider-control').show()
@@ -226,39 +234,136 @@ export function setControlState() {
   $('.atlas-map-type-selector').selectpicker('refresh')
 }
 
-function gridStyleRadios($parent, i) {
-  // Overall control container
-  const $container = $('<div>').appendTo($parent)
+function gridStyleSelector($parent) {
 
-  function makeRadio(label, val, checked) {
-    //$('<div class="radio"><label><input type="radio" name="atlas-grid-type" value="'+ val + '" ' + checked + '>' + label + '</label></div>').appendTo($container)
+  const gridStyles = [
+    {
+      caption: 'Solid grid lines',
+      val: 'solid'
+    },
+    {
+      caption: 'Dashed grid lines',
+      val: 'dashed'
+    },
+    {
+      caption: 'No grid lines',
+      val: 'none'
+    }
+  ]
+
+  // Main type selector
+  const $sel = $('<select>').appendTo($parent)
+  $sel.addClass('selectpicker')
+  $sel.addClass('atlas-grid-type-control')
+  $sel.attr('data-width', '100%')
+  $sel.on('changed.bs.select', function () {
+
+    gridStyle = $(this).val()
+    setCookie('gridstyle', gridStyle, 30)
+    staticMap.setGridLineStyle(gridStyle)
+  })
+
+  gridStyles.forEach(function(s){
+    const $opt = s.selected  ? $('<option>') : $('<option>')
+    $opt.attr('value', s.val)
+    $opt.html(s.caption).appendTo($sel)
+  })
+ 
+  $sel.val(gridStyle)
+
+  // This seems to be necessary if interface regenerated,
+  // e.g. changing from tabbed to non-tabbed display.
+  $sel.selectpicker()
+}
+
+// function gridStyleRadios($parent, i) {
+//   // Overall control container
+//   const $container = $('<div>').appendTo($parent)
+
+//   function makeRadio(label, val, checked) {
+//     //$('<div class="radio"><label><input type="radio" name="atlas-grid-type" value="'+ val + '" ' + checked + '>' + label + '</label></div>').appendTo($container)
   
-    const $div = $('<div>').appendTo($container)
-    $div.attr('class', 'radio')
-    const $label = $('<label>').appendTo($div)
-    $label.css('padding-left', '0')
-    const $radio = $('<input>').appendTo($label)
-    const $span = $('<span>').appendTo($label)
-    $span.text(label)
-    $span.css('padding-left', '20px')
-    $radio.attr('type', 'radio')
-    $radio.attr('name', 'atlas-grid-type-' + i)
-    $radio.attr('class', 'atlas-grid-type-' + val)
-    $radio.attr('value', val)
-    $radio.css('margin-left', 0)
-    if (checked) $radio.prop('checked', true)
+//     const $div = $('<div>').appendTo($container)
+//     $div.attr('class', 'radio')
+//     const $label = $('<label>').appendTo($div)
+//     $label.css('padding-left', '0')
+//     const $radio = $('<input>').appendTo($label)
+//     const $span = $('<span>').appendTo($label)
+//     $span.text(label)
+//     $span.css('padding-left', '20px')
+//     $radio.attr('type', 'radio')
+//     $radio.attr('name', 'atlas-grid-type-' + i)
+//     $radio.attr('class', 'atlas-grid-type-' + val)
+//     $radio.attr('value', val)
+//     $radio.css('margin-left', 0)
+//     if (checked) $radio.prop('checked', true)
 
-    $radio.change(function () {
-      gridStyle = $(this).val()
-      setCookie('gridstyle', gridStyle, 30)
-      staticMap.setGridLineStyle(gridStyle)
-      // Update controls mirrored in other blocks
-      $('.atlas-grid-type-' + val).prop("checked", true)
-    })
-  }
-  makeRadio('Solid grid lines', 'solid', gridStyle === 'solid' ? 'checked' : '')
-  makeRadio('Dashed grid lines', 'dashed', gridStyle === 'dashed' ? 'checked' : '')
-  makeRadio('No grid lines', 'none', gridStyle === 'none' ? 'checked' : '')
+//     $radio.change(function () {
+//       gridStyle = $(this).val()
+//       setCookie('gridstyle', gridStyle, 30)
+//       staticMap.setGridLineStyle(gridStyle)
+//       // Update controls mirrored in other blocks
+//       $('.atlas-grid-type-' + val).prop("checked", true)
+//     })
+//   }
+//   makeRadio('Solid grid lines', 'solid', gridStyle === 'solid' ? 'checked' : '')
+//   makeRadio('Dashed grid lines', 'dashed', gridStyle === 'dashed' ? 'checked' : '')
+//   makeRadio('No grid lines', 'none', gridStyle === 'none' ? 'checked' : '')
+// }
+
+function boundarySelector($parent) {
+
+  const boundaries = [
+    // {
+    //   caption: 'Country boundaries',
+    //   val: 'country'
+    // },
+    {
+      caption: 'Vice county boundaries',
+      val: 'vc'
+    },
+    {
+      caption: 'No boundaries',
+      val: 'none'
+    }
+  ]
+
+  // Main type selector
+  const $sel = $('<select>').appendTo($parent)
+  $sel.addClass('selectpicker')
+  $sel.addClass('atlas-boundaries-control')
+  $sel.attr('data-width', '100%')
+  $sel.on('changed.bs.select', function () {
+
+    boundaryType = $(this).val()
+    setCookie('boundaries', boundaryType, 30)
+
+    if (boundaryType === 'none') {
+      staticMap.setVcLineStyle('none')
+      //staticMap.setCountryLineStyle('none')
+      staticMap.setBoundaryColour('#7C7CD3')
+    } else if (boundaryType === 'vc') {
+      staticMap.setVcLineStyle('')
+      //staticMap.setCountryLineStyle('none')
+      staticMap.setBoundaryColour('white')
+    } else if (boundaryType === 'country') {
+      staticMap.setVcLineStyle('none')
+      //staticMap.setCountryLineStyle('')
+      staticMap.setBoundaryColour('white')
+    }
+  })
+
+  boundaries.forEach(function(b){
+    const $opt = b.selected  ? $('<option>') : $('<option>')
+    $opt.attr('value', b.val)
+    $opt.html(b.caption).appendTo($sel)
+  })
+ 
+  $sel.val(boundaryType)
+
+  // This seems to be necessary if interface regenerated,
+  // e.g. changing from tabbed to non-tabbed display.
+  $sel.selectpicker()
 }
 
 function mapInterfaceToggle($parent) {
@@ -679,6 +784,51 @@ function trendControl($parent) {
 
 }
 
+function insetSelector($parent) {
+
+  const inserts = [
+    {
+      caption: 'No insets',
+      val: 'BI1'
+    },
+    {
+      caption: 'Channel Isles inset',
+      val: 'BI2'
+    },
+    {
+      caption: 'Northern and Channel Isles inset',
+      val: 'BI4'
+    },
+  ]
+
+  // Main type selector
+  const $sel = $('<select>').appendTo($parent)
+  $sel.addClass('selectpicker')
+  $sel.addClass('atlas-inset-control')
+  
+  //$sel.addClass('atlas-backdrop-selector')
+  $sel.attr('data-width', '100%')
+  $sel.on('changed.bs.select', function () {
+
+    insetType = $(this).val()
+    staticMap.setTransform(insetType)
+    setCookie('inset', insetType, 30)
+    changeMap()
+  })
+
+  inserts.forEach(function(i){
+    const $opt = i.selected  ? $('<option>') : $('<option>')
+    $opt.attr('value', i.val)
+    $opt.html(i.caption).appendTo($sel)
+  })
+
+  $sel.val(insetType)
+
+  // This seems to be necessary if interface regenerated,
+  // e.g. changing from tabbed to non-tabbed display.
+  $sel.selectpicker()
+}
+
 function insetRadios($parent, i) { 
   
   // Overall control container
@@ -726,7 +876,6 @@ export function mapSetCurrentTaxon(taxon) {
 }
 
 export function createMaps(selector) {
-
 
   // Modify standard UK opts to remove any without CI
   const transOptsSel =  JSON.parse(JSON.stringify(brcatlas.namedTransOpts))
@@ -833,6 +982,8 @@ export function createMaps(selector) {
     gridLineColour: '#7C7CD3',
     gridLineStyle: gridStyle,
     boundaryColour: '#7C7CD3',
+    vcColour: '#7C7CD3',
+    vcLineStyle: boundaryType === 'vc' ? '' : 'none'
   })
   // Initial backgrop image
   const rasterRoot = ds.bsbi_atlas.dataRoot + 'rasters/'
@@ -924,6 +1075,9 @@ export function createMapControls(selector) {
   opacitySlider(mapControlRow(selector))
   trendControl(mapControlRow(selector))
   backdropSelector(mapControlRow(selector, 'atlas-backdrop-selector'))
+  insetSelector(mapControlRow(selector))
+  gridStyleSelector(mapControlRow(selector))
+  boundarySelector(mapControlRow(selector))
 
   $(selector).each(function(i) {
 
@@ -942,8 +1096,8 @@ export function createMapControls(selector) {
     // if user might switch between blocks during use - but this
     // is very unlikely. (But nevertheless has been implemented
     // for the radio buttons below.)
-    insetRadios(mapControlRow(sel,'atlas-inset-control'), i)
-    gridStyleRadios(mapControlRow(sel, 'atlas-grid-type-control'), i)
+    //insetRadios(mapControlRow(sel,'atlas-inset-control'), i)
+    //gridStyleRadios(mapControlRow(sel, 'atlas-grid-type-control'), i)
     resolutionControl(mapControlRow(sel, 'atlas-resolution-control'), i)
     mapImageButton(mapControlRow(sel, 'atlas-image-button'), i)
     mapDownloadButton(mapControlRow(sel, 'atlas-download-button'), i)

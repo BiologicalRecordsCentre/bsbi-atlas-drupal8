@@ -192,7 +192,16 @@ taxon {
   font-size: 14px;
 }
 
+#bsbi-reference-toggle {
+  cursor: pointer;
+  font-size: 14px;
+}
+
 #bsbi-citation-div {
+  display: none;
+}
+
+#bsbi-reference-div {
   display: none;
 }
 
@@ -226,6 +235,9 @@ taxon {
   .bsbi-atlas-map-controls {
     display: none;
   }
+  .bsbi-atlas-taxon-selector {
+    display: none;
+  }
 
   #bsbi-citation-div {
     display: block;
@@ -234,6 +246,16 @@ taxon {
     display: none;
   }
   #bsbi-citation-toggle {
+    display: none;
+  }
+
+  #bsbi-reference-div {
+    display: block;
+  }
+  #bsbi-reference-div button {
+    display: none;
+  }
+  #bsbi-reference-toggle {
     display: none;
   }
 

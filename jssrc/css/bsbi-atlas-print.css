@@ -5,6 +5,9 @@
   .bsbi-atlas-map-controls {
     display: none;
   }
+  .bsbi-atlas-taxon-selector {
+    display: none;
+  }
 
   #bsbi-citation-div {
     display: block;
@@ -13,6 +16,16 @@
     display: none;
   }
   #bsbi-citation-toggle {
+    display: none;
+  }
+
+  #bsbi-reference-div {
+    display: block;
+  }
+  #bsbi-reference-div button {
+    display: none;
+  }
+  #bsbi-reference-toggle {
     display: none;
   }
 

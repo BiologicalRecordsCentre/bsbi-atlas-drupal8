@@ -1157,7 +1157,8 @@
 
   bsbiDataAccess.change_1930_1969_vs_2000_2019 = function (identifier) {
     //return change(identifier, ['1930 - 1949', '1950 - 1969'], ['2000 - 2009', '2010 - 2019'], 'Change from 1930-1969 to 2000-2019')
-    return change(identifier, ['to 1929', '1930 - 1969'], ['2000 - 2009', '2010 - 2019'], 'Change from 1930-1969 to 2000-2019');
+    //return change(identifier, ['to 1929', '1930 - 1969'], ['2000 - 2009', '2010 - 2019'], 'Change from 1930-1969 to 2000-2019')
+    return change(identifier, ['1930 - 1969'], ['2000 - 2009', '2010 - 2019'], 'Change from 1930-1969 to 2000-2019');
   };
 
   function change(identifier, early, late, legendTitle) {
@@ -1287,7 +1288,8 @@
   var gridStyle = getCookie('gridstyle') ? getCookie('gridstyle') : 'solid';
   var slippyMap, staticMap;
   var mapType = 'allclass';
-  var insetType = 'BI4';
+  var insetType = getCookie('inset') ? getCookie('inset') : 'BI4';
+  var boundaryType = getCookie('boundaries') ? getCookie('boundaries') : 'none';
   var showStatus = false;
   var displayedMapType = 'static';
   var resolution = 'hectad';
@@ -1401,6 +1403,13 @@
       $$1('.atlas-grid-type-control').show();
     } else {
       $$1('.atlas-grid-type-control').hide();
+    } // boundary type control
+
+
+    if (displayedMapType === "static") {
+      $$1('.atlas-boundaries-control').show();
+    } else {
+      $$1('.atlas-boundaries-control').hide();
     } // period slider visibility
 
 
@@ -1499,38 +1508,113 @@
     $$1('.atlas-map-type-selector').selectpicker('refresh');
   }
 
-  function gridStyleRadios($parent, i) {
-    // Overall control container
-    var $container = $$1('<div>').appendTo($parent);
+  function gridStyleSelector($parent) {
+    var gridStyles = [{
+      caption: 'Solid grid lines',
+      val: 'solid'
+    }, {
+      caption: 'Dashed grid lines',
+      val: 'dashed'
+    }, {
+      caption: 'No grid lines',
+      val: 'none'
+    }]; // Main type selector
 
-    function makeRadio(label, val, checked) {
-      //$('<div class="radio"><label><input type="radio" name="atlas-grid-type" value="'+ val + '" ' + checked + '>' + label + '</label></div>').appendTo($container)
-      var $div = $$1('<div>').appendTo($container);
-      $div.attr('class', 'radio');
-      var $label = $$1('<label>').appendTo($div);
-      $label.css('padding-left', '0');
-      var $radio = $$1('<input>').appendTo($label);
-      var $span = $$1('<span>').appendTo($label);
-      $span.text(label);
-      $span.css('padding-left', '20px');
-      $radio.attr('type', 'radio');
-      $radio.attr('name', 'atlas-grid-type-' + i);
-      $radio.attr('class', 'atlas-grid-type-' + val);
-      $radio.attr('value', val);
-      $radio.css('margin-left', 0);
-      if (checked) $radio.prop('checked', true);
-      $radio.change(function () {
-        gridStyle = $$1(this).val();
-        setCookie('gridstyle', gridStyle, 30);
-        staticMap.setGridLineStyle(gridStyle); // Update controls mirrored in other blocks
+    var $sel = $$1('<select>').appendTo($parent);
+    $sel.addClass('selectpicker');
+    $sel.addClass('atlas-grid-type-control');
+    $sel.attr('data-width', '100%');
+    $sel.on('changed.bs.select', function () {
+      gridStyle = $$1(this).val();
+      setCookie('gridstyle', gridStyle, 30);
+      staticMap.setGridLineStyle(gridStyle);
+    });
+    gridStyles.forEach(function (s) {
+      var $opt = s.selected ? $$1('<option>') : $$1('<option>');
+      $opt.attr('value', s.val);
+      $opt.html(s.caption).appendTo($sel);
+    });
+    $sel.val(gridStyle); // This seems to be necessary if interface regenerated,
+    // e.g. changing from tabbed to non-tabbed display.
 
-        $$1('.atlas-grid-type-' + val).prop("checked", true);
-      });
-    }
+    $sel.selectpicker();
+  } // function gridStyleRadios($parent, i) {
+  //   // Overall control container
+  //   const $container = $('<div>').appendTo($parent)
+  //   function makeRadio(label, val, checked) {
+  //     //$('<div class="radio"><label><input type="radio" name="atlas-grid-type" value="'+ val + '" ' + checked + '>' + label + '</label></div>').appendTo($container)
+  //     const $div = $('<div>').appendTo($container)
+  //     $div.attr('class', 'radio')
+  //     const $label = $('<label>').appendTo($div)
+  //     $label.css('padding-left', '0')
+  //     const $radio = $('<input>').appendTo($label)
+  //     const $span = $('<span>').appendTo($label)
+  //     $span.text(label)
+  //     $span.css('padding-left', '20px')
+  //     $radio.attr('type', 'radio')
+  //     $radio.attr('name', 'atlas-grid-type-' + i)
+  //     $radio.attr('class', 'atlas-grid-type-' + val)
+  //     $radio.attr('value', val)
+  //     $radio.css('margin-left', 0)
+  //     if (checked) $radio.prop('checked', true)
+  //     $radio.change(function () {
+  //       gridStyle = $(this).val()
+  //       setCookie('gridstyle', gridStyle, 30)
+  //       staticMap.setGridLineStyle(gridStyle)
+  //       // Update controls mirrored in other blocks
+  //       $('.atlas-grid-type-' + val).prop("checked", true)
+  //     })
+  //   }
+  //   makeRadio('Solid grid lines', 'solid', gridStyle === 'solid' ? 'checked' : '')
+  //   makeRadio('Dashed grid lines', 'dashed', gridStyle === 'dashed' ? 'checked' : '')
+  //   makeRadio('No grid lines', 'none', gridStyle === 'none' ? 'checked' : '')
+  // }
 
-    makeRadio('Solid grid lines', 'solid', gridStyle === 'solid' ? 'checked' : '');
-    makeRadio('Dashed grid lines', 'dashed', gridStyle === 'dashed' ? 'checked' : '');
-    makeRadio('No grid lines', 'none', gridStyle === 'none' ? 'checked' : '');
+
+  function boundarySelector($parent) {
+    var boundaries = [// {
+    //   caption: 'Country boundaries',
+    //   val: 'country'
+    // },
+    {
+      caption: 'Vice county boundaries',
+      val: 'vc'
+    }, {
+      caption: 'No boundaries',
+      val: 'none'
+    }]; // Main type selector
+
+    var $sel = $$1('<select>').appendTo($parent);
+    $sel.addClass('selectpicker');
+    $sel.addClass('atlas-boundaries-control');
+    $sel.attr('data-width', '100%');
+    $sel.on('changed.bs.select', function () {
+      boundaryType = $$1(this).val();
+      setCookie('boundaries', boundaryType, 30);
+
+      if (boundaryType === 'none') {
+        staticMap.setVcLineStyle('none'); //staticMap.setCountryLineStyle('none')
+
+        staticMap.setBoundaryColour('#7C7CD3');
+      } else if (boundaryType === 'vc') {
+        staticMap.setVcLineStyle(''); //staticMap.setCountryLineStyle('none')
+
+        staticMap.setBoundaryColour('white');
+      } else if (boundaryType === 'country') {
+        staticMap.setVcLineStyle('none'); //staticMap.setCountryLineStyle('')
+
+        staticMap.setBoundaryColour('white');
+      }
+    });
+    boundaries.forEach(function (b) {
+      var $opt = b.selected ? $$1('<option>') : $$1('<option>');
+      $opt.attr('value', b.val);
+      $opt.html(b.caption).appendTo($sel);
+    });
+    $sel.val(boundaryType); // This seems to be necessary if interface regenerated,
+    // e.g. changing from tabbed to non-tabbed display.
+
+    $sel.selectpicker();
   }
 
   function mapInterfaceToggle($parent) {
@@ -1896,39 +1980,38 @@
     $container.css('margin-bottom', '5.3em');
   }
 
-  function insetRadios($parent, i) {
-    // Overall control container
-    var $container = $$1('<div>').appendTo($parent); //$container.attr('id', 'atlas-inset-control')
+  function insetSelector($parent) {
+    var inserts = [{
+      caption: 'No insets',
+      val: 'BI1'
+    }, {
+      caption: 'Channel Isles inset',
+      val: 'BI2'
+    }, {
+      caption: 'Northern and Channel Isles inset',
+      val: 'BI4'
+    }]; // Main type selector
 
-    function makeRadio(label, val, checked) {
-      var $div = $$1('<div>').appendTo($container);
-      $div.attr('class', 'radio');
-      var $label = $$1('<label>').appendTo($div);
-      $label.css('padding-left', '0');
-      var $radio = $$1('<input>').appendTo($label);
-      var $span = $$1('<span>').appendTo($label);
-      $span.text(label);
-      $span.css('padding-left', '20px');
-      $radio.attr('type', 'radio');
-      $radio.attr('name', 'bsbi-inset-type-' + i);
-      $radio.attr('class', 'bsbi-inset-type-' + val);
-      $radio.attr('value', val);
-      $radio.css('margin-left', 0);
-      if (checked) $radio.prop('checked', true);
-      $radio.change(function () {
-        insetType = $$1(this).val(); // Update controls mirrored in other blocks
+    var $sel = $$1('<select>').appendTo($parent);
+    $sel.addClass('selectpicker');
+    $sel.addClass('atlas-inset-control'); //$sel.addClass('atlas-backdrop-selector')
 
-        $$1('.bsbi-inset-type-' + insetType).prop("checked", true);
-        staticMap.setTransform(insetType);
-        setCookie('inset', insetType, 30);
-        changeMap();
-      });
-    }
+    $sel.attr('data-width', '100%');
+    $sel.on('changed.bs.select', function () {
+      insetType = $$1(this).val();
+      staticMap.setTransform(insetType);
+      setCookie('inset', insetType, 30);
+      changeMap();
+    });
+    inserts.forEach(function (i) {
+      var $opt = i.selected ? $$1('<option>') : $$1('<option>');
+      $opt.attr('value', i.val);
+      $opt.html(i.caption).appendTo($sel);
+    });
+    $sel.val(insetType); // This seems to be necessary if interface regenerated,
+    // e.g. changing from tabbed to non-tabbed display.
 
-    var selectedInset = getCookie('inset') ? getCookie('inset') : insetType;
-    makeRadio('No insets', 'BI1', selectedInset === 'BI1' ? 'checked' : '');
-    makeRadio('Channel Isles inset', 'BI2', selectedInset === 'BI2' ? 'checked' : '');
-    makeRadio('Northern and Channel Isles inset', 'BI4', selectedInset === 'BI4' ? 'checked' : '');
+    $sel.selectpicker();
   }
 
   function mapSetCurrentTaxon(taxon) {
@@ -2033,7 +2116,9 @@
       seaFill: 'white',
       gridLineColour: '#7C7CD3',
       gridLineStyle: gridStyle,
-      boundaryColour: '#7C7CD3'
+      boundaryColour: '#7C7CD3',
+      vcColour: '#7C7CD3',
+      vcLineStyle: boundaryType === 'vc' ? '' : 'none'
     }); // Initial backgrop image
 
     var rasterRoot = ds$1.bsbi_atlas.dataRoot + 'rasters/';
@@ -2123,6 +2208,9 @@
     opacitySlider(mapControlRow(selector));
     trendControl(mapControlRow(selector));
     backdropSelector(mapControlRow(selector, 'atlas-backdrop-selector'));
+    insetSelector(mapControlRow(selector));
+    gridStyleSelector(mapControlRow(selector));
+    boundarySelector(mapControlRow(selector));
     $$1(selector).each(function (i) {
       // We loop through the selection so that we can use the
       // index value to differentiate the equivalent controls
@@ -2137,9 +2225,9 @@
       // if user might switch between blocks during use - but this
       // is very unlikely. (But nevertheless has been implemented
       // for the radio buttons below.)
+      //insetRadios(mapControlRow(sel,'atlas-inset-control'), i)
+      //gridStyleRadios(mapControlRow(sel, 'atlas-grid-type-control'), i)
 
-      insetRadios(mapControlRow(sel, 'atlas-inset-control'), i);
-      gridStyleRadios(mapControlRow(sel, 'atlas-grid-type-control'), i);
       resolutionControl(mapControlRow(sel, 'atlas-resolution-control'), i);
       mapImageButton(mapControlRow(sel, 'atlas-image-button'), i);
       mapDownloadButton(mapControlRow(sel, 'atlas-download-button'), i);
@@ -2484,7 +2572,8 @@
       $caption.html('');
       var captionRoot = ds.bsbi_atlas.dataRoot + 'bsbi/captions/';
       d3__namespace.csv(captionRoot + currentTaxon.identifier.replace(/\./g, "_") + '.csv?prevent-cache=09092021').then(function (d) {
-        // Set taxon name
+        console.log('caption file', d); // Set taxon name
+
         $('.bsbi-selected-taxon-name').html(getFormattedTaxonName(d[0].vernacular, d[0].taxonName, d[0].authority)); // For caption, set the various sections
         // Description
 
@@ -2525,13 +2614,6 @@
               $('#bsbi-taxa-covered-toggle').html('[show]');
             }
           });
-        } // Biogeography
-
-
-        if (d[0].atlasSpeciesBiogeography) {
-          $caption.append('<h4>Biogeography</h4>');
-          $p = $('<p>').appendTo($caption);
-          $p.append(postProcessCaptionText(d[0].atlasSpeciesBiogeography));
         } // Trends
 
 
@@ -2539,7 +2621,34 @@
           $caption.append('<h4>Trends</h4>');
           $p = $('<p>').appendTo($caption);
           $p.append(postProcessCaptionText(d[0].atlasSpeciesTrends));
-        }
+        } // Biogeography
+
+
+        if (d[0].atlasSpeciesBiogeography) {
+          $caption.append('<h4>Biogeography</h4>');
+          $p = $('<p>').appendTo($caption);
+          $p.append(postProcessCaptionText(d[0].atlasSpeciesBiogeography));
+        } // References
+
+
+        $caption.append('<h4>References <span id="bsbi-reference-toggle">[show]</span></h4>');
+        var $divref = $('<div id="bsbi-reference-div">').appendTo($caption);
+        $p = $('<p id="bsbi-reference-text">').appendTo($divref);
+        $p.text('TODO - references');
+        var taxaReferenceShown = false;
+        $('#bsbi-reference-toggle').click(function () {
+          taxaReferenceShown = !taxaReferenceShown;
+
+          if (taxaReferenceShown) {
+            $('#bsbi-reference-div').show();
+            $('#bsbi-reference-toggle').html('[hide]');
+          }
+
+          if (!taxaReferenceShown) {
+            $('#bsbi-reference-div').hide();
+            $('#bsbi-reference-toggle').html('[show]');
+          }
+        }); // Authors
 
         if (d[0].captionAuthors) {
           $caption.append('<h4>Authors</h4>');

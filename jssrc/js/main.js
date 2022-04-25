@@ -367,6 +367,8 @@ export function main() {
     const captionRoot = ds.bsbi_atlas.dataRoot + 'bsbi/captions/'
     d3.csv(captionRoot + currentTaxon.identifier.replace(/\./g, "_") + '.csv?prevent-cache=09092021')
       .then(function(d) {
+
+        console.log('caption file', d)
         
         // Set taxon name
         $('.bsbi-selected-taxon-name').html(getFormattedTaxonName(d[0].vernacular, d[0].taxonName, d[0].authority))
@@ -407,6 +409,13 @@ export function main() {
           })
         }
         
+        // Trends
+        if (d[0].atlasSpeciesTrends) {
+          $caption.append('<h4>Trends</h4>')
+          $p = $('<p>').appendTo($caption)
+          $p.append(postProcessCaptionText(d[0].atlasSpeciesTrends))
+        }
+
         // Biogeography
         if (d[0].atlasSpeciesBiogeography) {
           $caption.append('<h4>Biogeography</h4>')
@@ -414,12 +423,26 @@ export function main() {
           $p.append(postProcessCaptionText(d[0].atlasSpeciesBiogeography))
         }
 
-        // Trends
-        if (d[0].atlasSpeciesTrends) {
-          $caption.append('<h4>Trends</h4>')
-          $p = $('<p>').appendTo($caption)
-          $p.append(postProcessCaptionText(d[0].atlasSpeciesTrends))
-        }
+        // References
+        $caption.append('<h4>References <span id="bsbi-reference-toggle">[show]</span></h4>')
+        const $divref = $('<div id="bsbi-reference-div">').appendTo($caption)
+        $p = $('<p id="bsbi-reference-text">').appendTo($divref)
+        $p.text('TODO - references')
+
+        let taxaReferenceShown = false
+        $('#bsbi-reference-toggle').click(function() {
+          taxaReferenceShown = !taxaReferenceShown
+          if (taxaReferenceShown) {
+            $('#bsbi-reference-div').show()
+            $('#bsbi-reference-toggle').html('[hide]')
+          }
+          if (!taxaReferenceShown) {
+            $('#bsbi-reference-div').hide()
+            $('#bsbi-reference-toggle').html('[show]')
+          }
+        })
+
+        // Authors
         if (d[0].captionAuthors) {
           $caption.append('<h4>Authors</h4>')
           const $ul = $('<ul>').appendTo($caption)

@@ -540,7 +540,8 @@ bsbiDataAccess.change_1987_1999_vs_2000_2019 = function(identifier) {
 
 bsbiDataAccess.change_1930_1969_vs_2000_2019 = function(identifier) {
   //return change(identifier, ['1930 - 1949', '1950 - 1969'], ['2000 - 2009', '2010 - 2019'], 'Change from 1930-1969 to 2000-2019')
-  return change(identifier, ['to 1929', '1930 - 1969'], ['2000 - 2009', '2010 - 2019'], 'Change from 1930-1969 to 2000-2019')
+  //return change(identifier, ['to 1929', '1930 - 1969'], ['2000 - 2009', '2010 - 2019'], 'Change from 1930-1969 to 2000-2019')
+  return change(identifier, ['1930 - 1969'], ['2000 - 2009', '2010 - 2019'], 'Change from 1930-1969 to 2000-2019')
 }
 
 function change(identifier, early, late, legendTitle) {
