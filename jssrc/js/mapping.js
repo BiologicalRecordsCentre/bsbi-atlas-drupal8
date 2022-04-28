@@ -133,11 +133,11 @@ export function setControlState() {
   }
 
   // boundary type control
-  if (displayedMapType === "static") {
-    $('.atlas-boundaries-control').show()
-  } else {
-    $('.atlas-boundaries-control').hide()
-  }
+  // if (displayedMapType === "static") {
+  //   $('.atlas-boundaries-control').show()
+  // } else {
+  //   $('.atlas-boundaries-control').hide()
+  // }
 
   // period slider visibility
   if (mapType === 'status') {
@@ -314,10 +314,10 @@ function gridStyleSelector($parent) {
 function boundarySelector($parent) {
 
   const boundaries = [
-    // {
-    //   caption: 'Country boundaries',
-    //   val: 'country'
-    // },
+    {
+      caption: 'Country boundaries',
+      val: 'country'
+    },
     {
       caption: 'Vice county boundaries',
       val: 'vc'
@@ -340,16 +340,22 @@ function boundarySelector($parent) {
 
     if (boundaryType === 'none') {
       staticMap.setVcLineStyle('none')
-      //staticMap.setCountryLineStyle('none')
+      staticMap.setCountryLineStyle('none')
       staticMap.setBoundaryColour('#7C7CD3')
+      slippyMap.setShowVcs(false)
+      slippyMap.setShowCountries(false)
     } else if (boundaryType === 'vc') {
       staticMap.setVcLineStyle('')
-      //staticMap.setCountryLineStyle('none')
+      staticMap.setCountryLineStyle('none')
       staticMap.setBoundaryColour('white')
+      slippyMap.setShowVcs(true)
+      slippyMap.setShowCountries(false)
     } else if (boundaryType === 'country') {
       staticMap.setVcLineStyle('none')
-      //staticMap.setCountryLineStyle('')
+      staticMap.setCountryLineStyle('')
       staticMap.setBoundaryColour('white')
+      slippyMap.setShowVcs(false)
+      slippyMap.setShowCountries(true)
     }
   })
 
@@ -983,8 +989,11 @@ export function createMaps(selector) {
     gridLineStyle: gridStyle,
     boundaryColour: '#7C7CD3',
     vcColour: '#7C7CD3',
-    vcLineStyle: boundaryType === 'vc' ? '' : 'none'
+    vcLineStyle: boundaryType === 'vc' ? '' : 'none',
+    countryColour: '#7C7CD3',
+    countryLineStyle: boundaryType === 'country' ? '' : 'none'
   })
+
   // Initial backgrop image
   const rasterRoot = ds.bsbi_atlas.dataRoot + 'rasters/'
   staticMap.basemapImage('colour_elevation', true, rasterRoot + 'colour_elevation.png', rasterRoot + 'colour_elevation.pgw')
@@ -1019,7 +1028,8 @@ export function createMaps(selector) {
     legendOpts: slippyLegendOpts,
     basemapConfigs: basemapConfigs,
     callbacks: [startDraw, endDraw, startLoad, endLoad],
-    showVcs: true
+    showVcs: boundaryType === 'vc',
+    showCountries: boundaryType === 'country'
   })
   $('#slippyAtlasMain').hide()
 }
@@ -1072,15 +1082,15 @@ export function createMapControls(selector) {
   mapTypeSelector(mapControlRow(selector))
   statusControl(mapControlRow(selector))
   statusCheckbox(mapControlRow(selector))
-  opacitySlider(mapControlRow(selector))
   trendControl(mapControlRow(selector))
   backdropSelector(mapControlRow(selector, 'atlas-backdrop-selector'))
   insetSelector(mapControlRow(selector))
   gridStyleSelector(mapControlRow(selector))
   boundarySelector(mapControlRow(selector))
 
-  $(selector).each(function(i) {
+  opacitySlider(mapControlRow(selector))
 
+  $(selector).each(function(i) {
     // We loop through the selection so that we can use the
     // index value to differentiate the equivalent controls
     // from different blocks. This is vital for radio controls
@@ -1090,7 +1100,6 @@ export function createMapControls(selector) {
     const $div = $('<div>').appendTo($(this))
     $div.addClass(sel)
     sel = '.' + sel
-
     // Potentially we can also use this to ensure that selection
     // in one block is mirrored in the other. This is only important
     // if user might switch between blocks during use - but this

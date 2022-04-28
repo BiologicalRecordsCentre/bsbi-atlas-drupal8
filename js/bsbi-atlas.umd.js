@@ -1404,13 +1404,12 @@
     } else {
       $$1('.atlas-grid-type-control').hide();
     } // boundary type control
-
-
-    if (displayedMapType === "static") {
-      $$1('.atlas-boundaries-control').show();
-    } else {
-      $$1('.atlas-boundaries-control').hide();
-    } // period slider visibility
+    // if (displayedMapType === "static") {
+    //   $('.atlas-boundaries-control').show()
+    // } else {
+    //   $('.atlas-boundaries-control').hide()
+    // }
+    // period slider visibility
 
 
     if (mapType === 'status') {
@@ -1572,11 +1571,10 @@
 
 
   function boundarySelector($parent) {
-    var boundaries = [// {
-    //   caption: 'Country boundaries',
-    //   val: 'country'
-    // },
-    {
+    var boundaries = [{
+      caption: 'Country boundaries',
+      val: 'country'
+    }, {
       caption: 'Vice county boundaries',
       val: 'vc'
     }, {
@@ -1593,17 +1591,23 @@
       setCookie('boundaries', boundaryType, 30);
 
       if (boundaryType === 'none') {
-        staticMap.setVcLineStyle('none'); //staticMap.setCountryLineStyle('none')
-
+        staticMap.setVcLineStyle('none');
+        staticMap.setCountryLineStyle('none');
         staticMap.setBoundaryColour('#7C7CD3');
+        slippyMap.setShowVcs(false);
+        slippyMap.setShowCountries(false);
       } else if (boundaryType === 'vc') {
-        staticMap.setVcLineStyle(''); //staticMap.setCountryLineStyle('none')
-
+        staticMap.setVcLineStyle('');
+        staticMap.setCountryLineStyle('none');
         staticMap.setBoundaryColour('white');
+        slippyMap.setShowVcs(true);
+        slippyMap.setShowCountries(false);
       } else if (boundaryType === 'country') {
-        staticMap.setVcLineStyle('none'); //staticMap.setCountryLineStyle('')
-
+        staticMap.setVcLineStyle('none');
+        staticMap.setCountryLineStyle('');
         staticMap.setBoundaryColour('white');
+        slippyMap.setShowVcs(false);
+        slippyMap.setShowCountries(true);
       }
     });
     boundaries.forEach(function (b) {
@@ -2118,7 +2122,9 @@
       gridLineStyle: gridStyle,
       boundaryColour: '#7C7CD3',
       vcColour: '#7C7CD3',
-      vcLineStyle: boundaryType === 'vc' ? '' : 'none'
+      vcLineStyle: boundaryType === 'vc' ? '' : 'none',
+      countryColour: '#7C7CD3',
+      countryLineStyle: boundaryType === 'country' ? '' : 'none'
     }); // Initial backgrop image
 
     var rasterRoot = ds$1.bsbi_atlas.dataRoot + 'rasters/';
@@ -2152,7 +2158,8 @@
       legendOpts: slippyLegendOpts,
       basemapConfigs: basemapConfigs,
       callbacks: [startDraw, endDraw, startLoad, endLoad],
-      showVcs: true
+      showVcs: boundaryType === 'vc',
+      showCountries: boundaryType === 'country'
     });
     $$1('#slippyAtlasMain').hide();
   }
@@ -2205,12 +2212,12 @@
     mapTypeSelector(mapControlRow(selector));
     statusControl(mapControlRow(selector));
     statusCheckbox(mapControlRow(selector));
-    opacitySlider(mapControlRow(selector));
     trendControl(mapControlRow(selector));
     backdropSelector(mapControlRow(selector, 'atlas-backdrop-selector'));
     insetSelector(mapControlRow(selector));
     gridStyleSelector(mapControlRow(selector));
     boundarySelector(mapControlRow(selector));
+    opacitySlider(mapControlRow(selector));
     $$1(selector).each(function (i) {
       // We loop through the selection so that we can use the
       // index value to differentiate the equivalent controls
