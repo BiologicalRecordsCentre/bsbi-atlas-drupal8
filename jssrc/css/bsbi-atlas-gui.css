@@ -36,21 +36,22 @@
 
 .atlas-taxon-selector-div {
   display: flex;
-  flex-direction: row;
-  flex-wrap: nowrap;
+  /* flex-direction: row;
+  flex-wrap: nowrap; */
   width: 100%;
 }
 
 .atlas-taxon-selector-sel {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
+  /* display: flex; */
+  /* flex-direction: column; */
+  flex: 10;
 }
 
 .atlas-taxon-selector-link {
-  display: flex;
-  flex-direction: column;
+  /* display: flex; */
+  /* flex-direction: column; */
   margin-left: 0.5em;
+  flex: 1;
 }
 
 .bsbi-atlas-taxon-selector {
@@ -158,8 +159,12 @@
   margin-top: 1em;
 }
 
-#bsbi-atlas-map-controls {
+/* #bsbi-atlas-map-controls {
   margin-top: 1em;
+} */
+
+.bsbi-atlas-map-controls label {
+  padding: 0.5em;
 }
 
 taxon {

@@ -815,11 +815,42 @@
   }
 
   function distAllClasses(identifier) {
-    var statusColour = {
-      n: 'blue',
-      a: 'red',
-      bullseye: 'black',
-      missing: 'black'
+    var statusColour2 = {
+      x: {
+        "to 1929": '#f7f7f7',
+        "1930 - 1969": '#cccccc',
+        "1970 - 1986": '#969696',
+        "1987 - 1999": '#636363',
+        "2000 - 2019": '#252525'
+      },
+      n: {
+        "to 1929": '#eff3ff',
+        "1930 - 1969": '#bdd7e7',
+        "1970 - 1986": '#6baed6',
+        "1987 - 1999": '#3182bd',
+        "2000 - 2019": '#08519c'
+      },
+      a: {
+        "to 1929": '#fee5d9',
+        "1930 - 1969": '#fcae91',
+        "1970 - 1986": '#fb6a4a',
+        "1987 - 1999": '#de2d26',
+        "2000 - 2019": '#a50f15'
+      },
+      bullseye: {
+        "to 1929": 'black',
+        "1930 - 1969": 'black',
+        "1970 - 1986": 'black',
+        "1987 - 1999": 'black',
+        "2000 - 2019": 'black'
+      },
+      missing: {
+        "to 1929": 'black',
+        "1930 - 1969": 'black',
+        "1970 - 1986": 'black',
+        "1987 - 1999": 'black',
+        "2000 - 2019": 'black'
+      }
     };
     var legendText = {
       "to 1929": "pre-1930",
@@ -827,12 +858,19 @@
       "1970 - 1986": "1970-86",
       "1987 - 1999": "1987-99",
       "2000 - 2019": "2000-19"
-    };
+    }; // const opacities = {
+    //   "to 1929": 0.3,
+    //   "1930 - 1969": 0.4,
+    //   "1970 - 1986": 0.6,
+    //   "1987 - 1999": 0.8,
+    //   "2000 - 2019": 1
+    // }
+
     var opacities = {
-      "to 1929": 0.3,
-      "1930 - 1969": 0.4,
-      "1970 - 1986": 0.6,
-      "1987 - 1999": 0.8,
+      "to 1929": 1,
+      "1930 - 1969": 1,
+      "1970 - 1986": 1,
+      "1987 - 1999": 1,
       "2000 - 2019": 1
     };
     var periods = Object.keys(periodMappings).reverse();
@@ -919,7 +957,8 @@
                 gr: r.hectad,
                 //shape: bsbiDataAccess.displayedMapType === 'static' ? 'circle' : 'circlerad',
                 shape: 'circle',
-                colour: statusColour[hectadstatus],
+                colour: statusColour2[hectadstatus][recent],
+                stroke: 'black',
                 size: hectadstatus === 'missing' ? 0.5 : 1,
                 opacity: opacities[recent] //caption: "Hectad: <b>".concat(r.hectad, "</b></br>Status: <b>").concat(capText, "</b>"),
 
@@ -929,7 +968,8 @@
                 gr: r.hectad,
                 //shape: bsbiDataAccess.displayedMapType === 'static' ? 'circle' : 'circlerad',
                 shape: 'circle',
-                colour: 'black',
+                colour: statusColour2.x[recent],
+                stroke: 'black',
                 size: 1,
                 opacity: opacities[recent] //caption: "Hectad: <b>".concat(r.hectad, "</b>"),
 
@@ -962,7 +1002,8 @@
             });
             periods.forEach(function (p) {
               lines.push({
-                colour: statusColour.n,
+                colour: statusColour2.n[p],
+                stroke: 'black',
                 opacity: opacities[p],
                 text: [legendText[p], 'symbol', counts[p].gb.n, counts[p].ire.n],
                 shape: 'circle'
@@ -983,7 +1024,8 @@
             });
             periods.forEach(function (p) {
               lines.push({
-                colour: statusColour.a,
+                colour: statusColour2.a[p],
+                stroke: 'black',
                 opacity: opacities[p],
                 text: [legendText[p], 'symbol', counts[p].gb.a, counts[p].ire.a],
                 shape: 'circle'
@@ -997,7 +1039,8 @@
           }];
           periods.forEach(function (p) {
             lines.push({
-              colour: 'black',
+              colour: statusColour2.x[p],
+              stroke: 'black',
               opacity: opacities[p],
               text: [legendText[p], 'symbol', counts[p].gb.total, counts[p].ire.total],
               shape: 'circle'
@@ -1111,8 +1154,11 @@
               gr: r.hectad,
               shape: 'circle',
               size: 1,
-              colour: 'black',
-              opacity: occurs ? 1 : 0.5 //caption: "Hectad: <b>".concat(r.hectad, "</b>")
+              //colour: 'black',
+              colour: occurs ? '#636363' : '#bdbdbd',
+              //opacity: occurs ? 1 : 0.5,
+              opacity: 1,
+              stroke: 'black' //caption: "Hectad: <b>".concat(r.hectad, "</b>")
 
             };
           }
@@ -1122,13 +1168,18 @@
           precision: 10000,
           size: 1,
           lines: [{
-            colour: 'black',
+            //colour: 'black',
+            colour: '#636363',
             opacity: 1,
+            stroke: 'black',
             text: period === "to 1929" ? "pre-1930" : period.replace(" - ", "-"),
             shape: 'circle'
           }, {
-            colour: 'black',
-            opacity: 0.5,
+            //colour: 'black',
+            colour: '#bdbdbd',
+            //opacity: 0.5,
+            opacity: 1,
+            stroke: 'black',
             text: 'Earlier',
             shape: 'circle'
           }]
@@ -2409,7 +2460,7 @@
         $sel.attr('data-size', '10');
         $sel.attr('data-live-search', 'true');
         $sel.attr('data-header', 'Start typing the name of a taxon');
-        $sel.attr('title', 'Select a taxon to display');
+        $sel.attr('title', 'Select a taxon');
         $sel.selectpicker(); //$sel.on('changed.bs.select', function (e, clickedIndex, isSelected, previousValue) {
 
         $sel.on('changed.bs.select', function () {

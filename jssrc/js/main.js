@@ -197,7 +197,7 @@ export function main() {
       $sel.attr('data-size', '10')
       $sel.attr('data-live-search', 'true')
       $sel.attr('data-header', 'Start typing the name of a taxon')
-      $sel.attr('title', 'Select a taxon to display')
+      $sel.attr('title', 'Select a taxon')
       $sel.selectpicker()
       //$sel.on('changed.bs.select', function (e, clickedIndex, isSelected, previousValue) {
       $sel.on('changed.bs.select', function () {
