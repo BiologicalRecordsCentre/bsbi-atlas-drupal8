@@ -11,9 +11,82 @@ bsbiDataAccess.resolution = 'hectad'
 bsbiDataAccess.displayedMapType = 'static'
 bsbiDataAccess.taxaHybridList = []
 bsbiDataAccess.taxaNoStatusList = []
-bsbiDataAccess.devel = {
-  changeColours: ['#FAD0C8', '#DD5A2F', '#525252'],
-  symboltype: 'circle'
+bsbiDataAccess.changeColours = ['#FAD0C8', '#DD5A2F', '#525252']
+bsbiDataAccess.symboltype ='circle'
+bsbiDataAccess.periodColours = {
+  x: {
+    "to 1929": '#f7f7f7',
+    "1930 - 1969": '#cccccc',
+    "1970 - 1986": '#969696',
+    "1987 - 1999": '#636363',
+    "2000 - 2019": '#252525'
+  },
+  n: {
+    "to 1929": '#eff3ff',
+    "1930 - 1969": '#bdd7e7',
+    "1970 - 1986": '#6baed6',
+    "1987 - 1999": '#3182bd',
+    "2000 - 2019": '#08519c'
+  },
+  a: {
+    "to 1929": '#fee5d9',
+    "1930 - 1969": '#fcae91',
+    "1970 - 1986": '#fb6a4a',
+    "1987 - 1999": '#de2d26',
+    "2000 - 2019": '#a50f15'
+  },
+  bullseye: {
+    "to 1929": 'black',
+    "1930 - 1969": 'black',
+    "1970 - 1986": 'black',
+    "1987 - 1999": 'black',
+    "2000 - 2019": 'black'
+  },
+  missing: {
+    "to 1929": 'black',
+    "1930 - 1969": 'black',
+    "1970 - 1986": 'black',
+    "1987 - 1999": 'black',
+    "2000 - 2019": 'black'
+  }
+}
+
+bsbiDataAccess.periodStroke = {
+  x: {
+    "to 1929": 'black',
+    "1930 - 1969": 'black',
+    "1970 - 1986": 'black',
+    "1987 - 1999": 'black',
+    "2000 - 2019": 'black'
+  },
+  n: {
+    "to 1929": 'black',
+    "1930 - 1969": 'black',
+    "1970 - 1986": 'black',
+    "1987 - 1999": 'black',
+    "2000 - 2019": 'black'
+  },
+  a: {
+    "to 1929": 'black',
+    "1930 - 1969": 'black',
+    "1970 - 1986": 'black',
+    "1987 - 1999": 'black',
+    "2000 - 2019": 'black'
+  },
+  bullseye: {
+    "to 1929": 'black',
+    "1930 - 1969": 'black',
+    "1970 - 1986": 'black',
+    "1987 - 1999": 'black',
+    "2000 - 2019": 'black'
+  },
+  missing: {
+    "to 1929": 'black',
+    "1930 - 1969": 'black',
+    "1970 - 1986": 'black',
+    "1987 - 1999": 'black',
+    "2000 - 2019": 'black'
+  }
 }
 
 // The periodMappsing code added 19/01/2020 to deal with mapping periods required in app
@@ -191,51 +264,6 @@ function distAllClasses(identifier) {
     missing: 'missing' //no value yet
   }
 
-  const statusColour = {
-    n: 'blue',
-    a: 'red',
-    bullseye: 'black',
-    missing: 'black'
-  }
-
-  const statusColour2 = {
-    x: {
-      "to 1929": '#f7f7f7',
-      "1930 - 1969": '#cccccc',
-      "1970 - 1986": '#969696',
-      "1987 - 1999": '#636363',
-      "2000 - 2019": '#252525'
-    },
-    n: {
-      "to 1929": '#eff3ff',
-      "1930 - 1969": '#bdd7e7',
-      "1970 - 1986": '#6baed6',
-      "1987 - 1999": '#3182bd',
-      "2000 - 2019": '#08519c'
-    },
-    a: {
-      "to 1929": '#fee5d9',
-      "1930 - 1969": '#fcae91',
-      "1970 - 1986": '#fb6a4a',
-      "1987 - 1999": '#de2d26',
-      "2000 - 2019": '#a50f15'
-    },
-    bullseye: {
-      "to 1929": 'black',
-      "1930 - 1969": 'black',
-      "1970 - 1986": 'black',
-      "1987 - 1999": 'black',
-      "2000 - 2019": 'black'
-    },
-    missing: {
-      "to 1929": 'black',
-      "1930 - 1969": 'black',
-      "1970 - 1986": 'black',
-      "1987 - 1999": 'black',
-      "2000 - 2019": 'black'
-    }
-  }
-
   const legendText = {
     "to 1929": "pre-1930",
     "1930 - 1969": "1930-69",
@@ -243,14 +271,6 @@ function distAllClasses(identifier) {
     "1987 - 1999": "1987-99",
     "2000 - 2019": "2000-19"
   }
-
-  // const opacities = {
-  //   "to 1929": 0.3,
-  //   "1930 - 1969": 0.4,
-  //   "1970 - 1986": 0.6,
-  //   "1987 - 1999": 0.8,
-  //   "2000 - 2019": 1
-  // }
 
   const opacities = {
     "to 1929": 1,
@@ -339,8 +359,8 @@ function distAllClasses(identifier) {
               gr: r.hectad,
               //shape: bsbiDataAccess.displayedMapType === 'static' ? 'circle' : 'circlerad',
               shape: 'circle',
-              colour: statusColour2[hectadstatus][recent],
-              stroke: 'black',
+              colour: bsbiDataAccess.periodColours[hectadstatus][recent],
+              stroke: bsbiDataAccess.periodStroke[hectadstatus][recent],
               size: hectadstatus === 'missing' ? 0.5 : 1,
               opacity: opacities[recent],
               //caption: "Hectad: <b>".concat(r.hectad, "</b></br>Status: <b>").concat(capText, "</b>"),
@@ -350,8 +370,8 @@ function distAllClasses(identifier) {
               gr: r.hectad,
               //shape: bsbiDataAccess.displayedMapType === 'static' ? 'circle' : 'circlerad',
               shape: 'circle',
-              colour: statusColour2.x[recent],
-              stroke: 'black',
+              colour: bsbiDataAccess.periodColours.x[recent],
+              stroke: bsbiDataAccess.periodStroke.x[recent],
               size: 1,
               opacity: opacities[recent],
               //caption: "Hectad: <b>".concat(r.hectad, "</b>"),
@@ -375,8 +395,8 @@ function distAllClasses(identifier) {
           lines.push({text: ['Native', '', 'GB', 'IR'], underline: true})
           periods.forEach(function(p) {
             lines.push ({
-              colour: statusColour2.n[p],
-              stroke: 'black',
+              colour: bsbiDataAccess.periodColours.n[p],
+              stroke: bsbiDataAccess.periodStroke.n[p],
               opacity: opacities[p],
               text: [legendText[p], 'symbol', counts[p].gb.n, counts[p].ire.n],
               shape: 'circle'
@@ -390,8 +410,8 @@ function distAllClasses(identifier) {
           lines.push({text: ['Alien', '', 'GB', 'IR'], underline: true})
           periods.forEach(function(p) {
             lines.push ({
-              colour: statusColour2.a[p],
-              stroke: 'black',
+              colour: bsbiDataAccess.periodColours.a[p],
+              stroke: bsbiDataAccess.periodStroke.a[p],
               opacity: opacities[p],
               text: [legendText[p], 'symbol', counts[p].gb.a, counts[p].ire.a],
               shape: 'circle'
@@ -402,8 +422,8 @@ function distAllClasses(identifier) {
         lines = [{text: ['', '', 'GB', 'IR'], underline: true}]
         periods.forEach(function(p) {
           lines.push ({
-            colour: statusColour2.x[p],
-            stroke: 'black',
+            colour: bsbiDataAccess.periodColours.x[p],
+            stroke: bsbiDataAccess.periodStroke.x[p],
             opacity: opacities[p],
             text: [legendText[p], 'symbol', counts[p].gb.total, counts[p].ire.total],
             shape: 'circle'
@@ -437,7 +457,7 @@ function distAllClassesTetrad(identifier) {
       if (r.tetrad ) {
         return {
           gr: r.tetrad,
-          //shape: bsbiDataAccess.devel.symboltype, //'circle' dev only,
+          //shape: bsbiDataAccess.symboltype, //'circle' dev only,
           shape: 'square',
           colour: 'black',
           size: 1,
@@ -455,7 +475,7 @@ function distAllClassesTetrad(identifier) {
               colour: 'black',
               opacity: 1,
               text: 'Present in tetrad',
-              //shape: bsbiDataAccess.devel.symboltype === 'square' ? 'square' : 'circle', //'circle' dev only
+              //shape: bsbiDataAccess.symboltype === 'square' ? 'square' : 'circle', //'circle' dev only
               shape: 'square'
             }
           ]
@@ -606,7 +626,7 @@ bsbiDataAccess.change_1930_1969_vs_2000_2019 = function(identifier) {
 function change(identifier, early, late, legendTitle) {
   const shapes = ['square', 'triangle-up', 'triangle-down']
   //const colours = ['#FAD0C8', '#DD5A2F', '#525252']
-  const colours = bsbiDataAccess.devel.changeColours
+  const colours = bsbiDataAccess.changeColours
   return new Promise(function (resolve, reject) {
     d3.csv(getCSV(identifier), function (r) {
       const presentEarly = early.some(function (f) {

@@ -71,7 +71,7 @@
   	dependencies: dependencies
   };
 
-  var $$4 = jQuery; // eslint-disable-line no-undef
+  var $$5 = jQuery; // eslint-disable-line no-undef
 
   function setBaseMetaTags() {
     addMetaTags('title', 'BSBI Online Atlas 2020');
@@ -88,16 +88,16 @@
   function addMetaTags(type, value, update) {
     var addHeadTag = function addHeadTag(name, content, update) {
       if (update) {
-        $$4('meta[name="' + name + '"').attr('content', content);
+        $$5('meta[name="' + name + '"').attr('content', content);
       } else {
-        $$4('head').append('<meta name="' + name + '" content="' + content + '" />');
+        $$5('head').append('<meta name="' + name + '" content="' + content + '" />');
       }
     }; // http://div.div1.com.au/div-thoughts/div-commentaries/66-div-commentary-metadata
 
 
     switch (type) {
       case 'title':
-        $$4('title').html(value);
+        $$5('title').html(value);
         addHeadTag("citation_title", value, update);
         addHeadTag("dc.title", value, update);
         addHeadTag("dcterms.title", value, update);
@@ -142,24 +142,24 @@
     }
   }
 
-  var $$3 = jQuery; // eslint-disable-line no-undef
+  var $$4 = jQuery; // eslint-disable-line no-undef
 
   var phen1, phen2, phen3, altlat;
   function createEcology(sel) {
-    $$3('<h4>').appendTo($$3(sel)).text('Phenology & Apparency');
-    var $p1 = $$3('<p>').appendTo($$3(sel));
+    $$4('<h4>').appendTo($$4(sel)).text('Phenology & Apparency');
+    var $p1 = $$4('<p>').appendTo($$4(sel));
     $p1.text("Explanation of apparency and phenology charts. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque blandit dui vel mauris maximus interdum. Aliquam orci eros, venenatis vel purus nec, venenatis congue leo. Pellentesque rhoncus metus eros, tincidunt congue massa volutpat facilisis. Curabitur pellentesque turpis velit, quis ornare mauris ullamcorper a.");
-    var $phenFlexParent = $$3('<div>').appendTo($$3(sel));
+    var $phenFlexParent = $$4('<div>').appendTo($$4(sel));
     $phenFlexParent.attr('class', 'phenRow');
-    var $phenFlexLeft = $$3('<div>').appendTo($phenFlexParent);
+    var $phenFlexLeft = $$4('<div>').appendTo($phenFlexParent);
     $phenFlexLeft.attr('class', 'phenColumn');
-    var $phenFlexRight = $$3('<div>').appendTo($phenFlexParent);
+    var $phenFlexRight = $$4('<div>').appendTo($phenFlexParent);
     $phenFlexRight.attr('class', 'phenColumn');
-    $$3('<h4>').appendTo($$3(sel)).text('Altitude vs Latitude');
-    var $p2 = $$3('<p>').appendTo($$3(sel));
+    $$4('<h4>').appendTo($$4(sel)).text('Altitude vs Latitude');
+    var $p2 = $$4('<p>').appendTo($$4(sel));
     $p2.text("Explanation of latitude/altitude chart. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque blandit dui vel mauris maximus interdum. Aliquam orci eros, venenatis vel purus nec, venenatis congue leo. Pellentesque rhoncus metus eros, tincidunt congue massa volutpat facilisis. Curabitur pellentesque turpis velit, quis ornare mauris ullamcorper a.");
-    var $altlat = $$3('<div>').appendTo($$3(sel));
-    var $apparency = $$3('<div>').appendTo($phenFlexLeft);
+    var $altlat = $$4('<div>').appendTo($$4(sel));
+    var $apparency = $$4('<div>').appendTo($phenFlexLeft);
     $apparency.attr('id', 'bsbi-apparency-chart').css('max-width', '400px');
     phen1 = brccharts.phen1({
       selector: '#bsbi-apparency-chart',
@@ -181,7 +181,7 @@
       showLegend: false,
       interactivity: 'none'
     });
-    var $phenology = $$3('<div>').appendTo($phenFlexLeft);
+    var $phenology = $$4('<div>').appendTo($phenFlexLeft);
     $phenology.attr('id', 'bsbi-phenology-chart').css('max-width', '400px');
     phen2 = brccharts.phen2({
       selector: '#bsbi-phenology-chart',
@@ -197,12 +197,12 @@
       showTaxonLabel: false,
       interactivity: 'none'
     });
-    var $phenSource = $$3('<div>').appendTo($phenFlexLeft);
+    var $phenSource = $$4('<div>').appendTo($phenFlexLeft);
     $phenSource.attr('id', 'bsbi-phenology-source');
     $phenSource.css('font-size', '0.8em');
     $phenSource.css('padding-left', '32px');
     $phenSource.css('max-width', '400px');
-    var $apparencyByLat = $$3('<div>').appendTo($phenFlexRight);
+    var $apparencyByLat = $$4('<div>').appendTo($phenFlexRight);
     $apparencyByLat.attr('id', 'bsbi-apparency-by-lat-chart').css('max-width', '400px'); // $apparencyByLat = $('<div>').appendTo($phenFlexRight)
     // $apparencyByLat.attr('id', 'bsbi-apparency-by-lat-chart').css('max-width', '400px')
 
@@ -286,22 +286,22 @@
     };
     altlat = brccharts.altlat(opts); // Website style is overriding some charts style, so reset it
 
-    $$3('.brc-chart-phen1').css('overflow', 'visible'); // Chart line width - not currently a chart option
+    $$4('.brc-chart-phen1').css('overflow', 'visible'); // Chart line width - not currently a chart option
 
-    $$3('#bsbi-apparency-by-lat-chart .phen-path').css('stroke-width', 1);
+    $$4('#bsbi-apparency-by-lat-chart .phen-path').css('stroke-width', 1);
   }
 
   function latPhenNormalizeCheckbox($parent, phenChart) {
     // Overall control container
-    var $container = $$3('<div style="margin-left: 0px">').appendTo($parent);
+    var $container = $$4('<div style="margin-left: 0px">').appendTo($parent);
     $container.addClass('atlas-phen-normalize-checkbox-control');
     $container.css('margin-left', '35px'); // Status on/off toggle
 
-    var $checDiv = $$3('<div class="checkbox">').appendTo($container);
+    var $checDiv = $$4('<div class="checkbox">').appendTo($container);
     $checDiv.css('margin-top', '0');
-    $$3('<label><input type="checkbox" class="atlas-phen-normalize-checkbox"/><span>Normalize over latitudes</span></label>').appendTo($checDiv);
-    $$3('.atlas-phen-normalize-checkbox').change(function () {
-      var normalize = $$3(this).is(':checked');
+    $$4('<label><input type="checkbox" class="atlas-phen-normalize-checkbox"/><span>Normalize over latitudes</span></label>').appendTo($checDiv);
+    $$4('.atlas-phen-normalize-checkbox').change(function () {
+      var normalize = $$4(this).is(':checked');
       phenChart.setChartOpts({
         ytype: normalize ? 'normalized' : 'count'
       });
@@ -437,7 +437,7 @@
       }); // Source
 
       var source = "Data for flower phenology from <i>" + data[0].flowerSource + "</i>. Data for leafing phenology from <i>" + data[0].leafSource + "</i>.";
-      $$3('#bsbi-phenology-source').html(source);
+      $$4('#bsbi-phenology-source').html(source);
     } // Alt/Lat
     // Using raw tetrad mapping data
     // const tetrads = `${mapRoot}tetrads/${identifier.replace(/\./g, "_")}.csv`
@@ -466,7 +466,7 @@
     });
   }
 
-  var $$2 = jQuery; // eslint-disable-line no-undef
+  var $$3 = jQuery; // eslint-disable-line no-undef
 
   function createGallery(id, ddbid) {
     // DO I NEED TO HAVE SEPARATE FUNCTIONS FOR CREATE AND UPDATED GALLERY
@@ -506,7 +506,7 @@
         var iThumbs = [];
 
         var _loop = function _loop(i) {
-          var $thumb = $$2('<img>').attr('src', "https://atlasimages.bsbi.org/processed/".concat(ddbid, "/").concat(ddbid, "-").concat(i, "/").concat(ddbid, "-").concat(i, "-192w.webp"));
+          var $thumb = $$3('<img>').attr('src', "https://atlasimages.bsbi.org/processed/".concat(ddbid, "/").concat(ddbid, "-").concat(i, "/").concat(ddbid, "-").concat(i, "-192w.webp"));
           var p = new Promise(function (resolve) {
             $thumb.on('load', function () {
               iThumbs[i] = true;
@@ -568,11 +568,11 @@
 
             setTimeout(function () {
               inlineGallery.openGallery();
-              $$2('#bsbi-gallery-copyright').show();
+              $$3('#bsbi-gallery-copyright').show();
             }, 200);
           } else {
             lgContainer.innerHTML = "<i>No images are available for this taxon.</i>";
-            $$2('#bsbi-gallery-copyright').hide();
+            $$3('#bsbi-gallery-copyright').hide();
           }
         });
       })();
@@ -647,9 +647,81 @@
   bsbiDataAccess.displayedMapType = 'static';
   bsbiDataAccess.taxaHybridList = [];
   bsbiDataAccess.taxaNoStatusList = [];
-  bsbiDataAccess.devel = {
-    changeColours: ['#FAD0C8', '#DD5A2F', '#525252'],
-    symboltype: 'circle'
+  bsbiDataAccess.changeColours = ['#FAD0C8', '#DD5A2F', '#525252'];
+  bsbiDataAccess.symboltype = 'circle';
+  bsbiDataAccess.periodColours = {
+    x: {
+      "to 1929": '#f7f7f7',
+      "1930 - 1969": '#cccccc',
+      "1970 - 1986": '#969696',
+      "1987 - 1999": '#636363',
+      "2000 - 2019": '#252525'
+    },
+    n: {
+      "to 1929": '#eff3ff',
+      "1930 - 1969": '#bdd7e7',
+      "1970 - 1986": '#6baed6',
+      "1987 - 1999": '#3182bd',
+      "2000 - 2019": '#08519c'
+    },
+    a: {
+      "to 1929": '#fee5d9',
+      "1930 - 1969": '#fcae91',
+      "1970 - 1986": '#fb6a4a',
+      "1987 - 1999": '#de2d26',
+      "2000 - 2019": '#a50f15'
+    },
+    bullseye: {
+      "to 1929": 'black',
+      "1930 - 1969": 'black',
+      "1970 - 1986": 'black',
+      "1987 - 1999": 'black',
+      "2000 - 2019": 'black'
+    },
+    missing: {
+      "to 1929": 'black',
+      "1930 - 1969": 'black',
+      "1970 - 1986": 'black',
+      "1987 - 1999": 'black',
+      "2000 - 2019": 'black'
+    }
+  };
+  bsbiDataAccess.periodStroke = {
+    x: {
+      "to 1929": 'black',
+      "1930 - 1969": 'black',
+      "1970 - 1986": 'black',
+      "1987 - 1999": 'black',
+      "2000 - 2019": 'black'
+    },
+    n: {
+      "to 1929": 'black',
+      "1930 - 1969": 'black',
+      "1970 - 1986": 'black',
+      "1987 - 1999": 'black',
+      "2000 - 2019": 'black'
+    },
+    a: {
+      "to 1929": 'black',
+      "1930 - 1969": 'black',
+      "1970 - 1986": 'black',
+      "1987 - 1999": 'black',
+      "2000 - 2019": 'black'
+    },
+    bullseye: {
+      "to 1929": 'black',
+      "1930 - 1969": 'black',
+      "1970 - 1986": 'black',
+      "1987 - 1999": 'black',
+      "2000 - 2019": 'black'
+    },
+    missing: {
+      "to 1929": 'black',
+      "1930 - 1969": 'black',
+      "1970 - 1986": 'black',
+      "1987 - 1999": 'black',
+      "2000 - 2019": 'black'
+    }
   }; // The periodMappsing code added 19/01/2020 to deal with mapping periods required in app
   // that are different from those expressed in CSV files that I have available at that time.
   // Was extended to meet the requirement of showing faded symbols for hectads where recorded
@@ -815,57 +887,13 @@
   }
 
   function distAllClasses(identifier) {
-    var statusColour2 = {
-      x: {
-        "to 1929": '#f7f7f7',
-        "1930 - 1969": '#cccccc',
-        "1970 - 1986": '#969696',
-        "1987 - 1999": '#636363',
-        "2000 - 2019": '#252525'
-      },
-      n: {
-        "to 1929": '#eff3ff',
-        "1930 - 1969": '#bdd7e7',
-        "1970 - 1986": '#6baed6',
-        "1987 - 1999": '#3182bd',
-        "2000 - 2019": '#08519c'
-      },
-      a: {
-        "to 1929": '#fee5d9',
-        "1930 - 1969": '#fcae91',
-        "1970 - 1986": '#fb6a4a',
-        "1987 - 1999": '#de2d26',
-        "2000 - 2019": '#a50f15'
-      },
-      bullseye: {
-        "to 1929": 'black',
-        "1930 - 1969": 'black',
-        "1970 - 1986": 'black',
-        "1987 - 1999": 'black',
-        "2000 - 2019": 'black'
-      },
-      missing: {
-        "to 1929": 'black',
-        "1930 - 1969": 'black',
-        "1970 - 1986": 'black',
-        "1987 - 1999": 'black',
-        "2000 - 2019": 'black'
-      }
-    };
     var legendText = {
       "to 1929": "pre-1930",
       "1930 - 1969": "1930-69",
       "1970 - 1986": "1970-86",
       "1987 - 1999": "1987-99",
       "2000 - 2019": "2000-19"
-    }; // const opacities = {
-    //   "to 1929": 0.3,
-    //   "1930 - 1969": 0.4,
-    //   "1970 - 1986": 0.6,
-    //   "1987 - 1999": 0.8,
-    //   "2000 - 2019": 1
-    // }
-
+    };
     var opacities = {
       "to 1929": 1,
       "1930 - 1969": 1,
@@ -957,8 +985,8 @@
                 gr: r.hectad,
                 //shape: bsbiDataAccess.displayedMapType === 'static' ? 'circle' : 'circlerad',
                 shape: 'circle',
-                colour: statusColour2[hectadstatus][recent],
-                stroke: 'black',
+                colour: bsbiDataAccess.periodColours[hectadstatus][recent],
+                stroke: bsbiDataAccess.periodStroke[hectadstatus][recent],
                 size: hectadstatus === 'missing' ? 0.5 : 1,
                 opacity: opacities[recent] //caption: "Hectad: <b>".concat(r.hectad, "</b></br>Status: <b>").concat(capText, "</b>"),
 
@@ -968,8 +996,8 @@
                 gr: r.hectad,
                 //shape: bsbiDataAccess.displayedMapType === 'static' ? 'circle' : 'circlerad',
                 shape: 'circle',
-                colour: statusColour2.x[recent],
-                stroke: 'black',
+                colour: bsbiDataAccess.periodColours.x[recent],
+                stroke: bsbiDataAccess.periodStroke.x[recent],
                 size: 1,
                 opacity: opacities[recent] //caption: "Hectad: <b>".concat(r.hectad, "</b>"),
 
@@ -1002,8 +1030,8 @@
             });
             periods.forEach(function (p) {
               lines.push({
-                colour: statusColour2.n[p],
-                stroke: 'black',
+                colour: bsbiDataAccess.periodColours.n[p],
+                stroke: bsbiDataAccess.periodStroke.n[p],
                 opacity: opacities[p],
                 text: [legendText[p], 'symbol', counts[p].gb.n, counts[p].ire.n],
                 shape: 'circle'
@@ -1024,8 +1052,8 @@
             });
             periods.forEach(function (p) {
               lines.push({
-                colour: statusColour2.a[p],
-                stroke: 'black',
+                colour: bsbiDataAccess.periodColours.a[p],
+                stroke: bsbiDataAccess.periodStroke.a[p],
                 opacity: opacities[p],
                 text: [legendText[p], 'symbol', counts[p].gb.a, counts[p].ire.a],
                 shape: 'circle'
@@ -1039,8 +1067,8 @@
           }];
           periods.forEach(function (p) {
             lines.push({
-              colour: statusColour2.x[p],
-              stroke: 'black',
+              colour: bsbiDataAccess.periodColours.x[p],
+              stroke: bsbiDataAccess.periodStroke.x[p],
               opacity: opacities[p],
               text: [legendText[p], 'symbol', counts[p].gb.total, counts[p].ire.total],
               shape: 'circle'
@@ -1072,7 +1100,7 @@
         if (r.tetrad) {
           return {
             gr: r.tetrad,
-            //shape: bsbiDataAccess.devel.symboltype, //'circle' dev only,
+            //shape: bsbiDataAccess.symboltype, //'circle' dev only,
             shape: 'square',
             colour: 'black',
             size: 1,
@@ -1089,7 +1117,7 @@
               colour: 'black',
               opacity: 1,
               text: 'Present in tetrad',
-              //shape: bsbiDataAccess.devel.symboltype === 'square' ? 'square' : 'circle', //'circle' dev only
+              //shape: bsbiDataAccess.symboltype === 'square' ? 'square' : 'circle', //'circle' dev only
               shape: 'square'
             }]
           }
@@ -1215,7 +1243,7 @@
   function change(identifier, early, late, legendTitle) {
     var shapes = ['square', 'triangle-up', 'triangle-down']; //const colours = ['#FAD0C8', '#DD5A2F', '#525252']
 
-    var colours = bsbiDataAccess.devel.changeColours;
+    var colours = bsbiDataAccess.changeColours;
     return new Promise(function (resolve, reject) {
       d3__namespace.csv(getCSV(identifier), function (r) {
         var presentEarly = early.some(function (f) {
@@ -1331,7 +1359,7 @@
     });
   };
 
-  var $$1 = jQuery; // eslint-disable-line no-undef
+  var $$2 = jQuery; // eslint-disable-line no-undef
 
   var ds$1 = drupalSettings; // eslint-disable-line no-undef
 
@@ -1399,7 +1427,7 @@
   }];
 
   function mapControlRow(selector, classname) {
-    var $div = $$1('<div>').appendTo($$1(selector));
+    var $div = $$2('<div>').appendTo($$2(selector));
     $div.addClass('atlas-map-control-row');
 
     if (classname) {
@@ -1412,48 +1440,48 @@
   function setControlState() {
     // map display
     if (displayedMapType === "static") {
-      $$1('#slippyAtlasMain').hide();
-      $$1('#staticAtlasMain').show();
+      $$2('#slippyAtlasMain').hide();
+      $$2('#staticAtlasMain').show();
     } else {
-      $$1('#staticAtlasMain').hide();
-      $$1('#slippyAtlasMain').show();
+      $$2('#staticAtlasMain').hide();
+      $$2('#slippyAtlasMain').show();
     } // save map image button
 
 
     if (displayedMapType === 'static') {
-      $$1('.atlas-save-map-image').show();
+      $$2('.atlas-save-map-image').show();
     } else {
-      $$1('.atlas-save-map-image').hide();
+      $$2('.atlas-save-map-image').hide();
     } // download map data button
 
 
-    $$1('.atlas-download-map-data').show();
+    $$2('.atlas-download-map-data').show();
 
     if (mapType === 'allclass' && resolution === 'hectad') {
-      $$1('.atlas-download-map-data input, .atlas-download-map-data button').attr('disabled', false);
+      $$2('.atlas-download-map-data input, .atlas-download-map-data button').attr('disabled', false);
     } else {
-      $$1('.atlas-download-map-data input, .atlas-download-map-data button').attr('disabled', true);
+      $$2('.atlas-download-map-data input, .atlas-download-map-data button').attr('disabled', true);
     } // backdrop selector
 
 
     if (displayedMapType === "static") {
-      $$1('.atlas-backdrop-selector').show();
+      $$2('.atlas-backdrop-selector').show();
     } else {
-      $$1('.atlas-backdrop-selector').hide();
+      $$2('.atlas-backdrop-selector').hide();
     } // inset control
 
 
     if (displayedMapType === "static") {
-      $$1('.atlas-inset-control').show();
+      $$2('.atlas-inset-control').show();
     } else {
-      $$1('.atlas-inset-control').hide();
+      $$2('.atlas-inset-control').hide();
     } // grid type control
 
 
     if (displayedMapType === "static") {
-      $$1('.atlas-grid-type-control').show();
+      $$2('.atlas-grid-type-control').show();
     } else {
-      $$1('.atlas-grid-type-control').hide();
+      $$2('.atlas-grid-type-control').hide();
     } // boundary type control
     // if (displayedMapType === "static") {
     //   $('.atlas-boundaries-control').show()
@@ -1464,30 +1492,30 @@
 
 
     if (mapType === 'status') {
-      $$1('.atlas-period-slider-control').show();
+      $$2('.atlas-period-slider-control').show();
     } else {
-      $$1('.atlas-period-slider-control').hide();
+      $$2('.atlas-period-slider-control').hide();
     } // trend slider control
 
 
     if (mapType === 'trends') {
-      $$1('.atlas-trend-slider-control').show();
+      $$2('.atlas-trend-slider-control').show();
     } else {
-      $$1('.atlas-trend-slider-control').hide();
+      $$2('.atlas-trend-slider-control').hide();
     } // show status checkbox
 
 
     if (mapType === 'allclass' || mapType === 'slippy') {
-      $$1('.atlas-status-checkbox-control').show();
+      $$2('.atlas-status-checkbox-control').show();
     } else {
-      $$1('.atlas-status-checkbox-control').hide();
+      $$2('.atlas-status-checkbox-control').hide();
     } // show opacity slider
 
 
     if (displayedMapType === 'slippy') {
-      $$1('.atlas-opacity-slider-control').show();
+      $$2('.atlas-opacity-slider-control').show();
     } else {
-      $$1('.atlas-opacity-slider-control').hide();
+      $$2('.atlas-opacity-slider-control').hide();
     } // status checkbox enabled and checked value
 
 
@@ -1496,28 +1524,28 @@
     if (disableStatus) {
       showStatus = false;
       bsbiDataAccess.showStatus = false;
-      $$1('.atlas-status-checkbox-control span').text('No status info for this taxon');
-      $$1('.atlas-status-checkbox-control span').css('color', 'silver');
+      $$2('.atlas-status-checkbox-control span').text('No status info for this taxon');
+      $$2('.atlas-status-checkbox-control span').css('color', 'silver');
     } else {
-      $$1('.atlas-status-checkbox-control span').text('Show status');
-      $$1('.atlas-status-checkbox-control span').css('color', 'black');
+      $$2('.atlas-status-checkbox-control span').text('Show status');
+      $$2('.atlas-status-checkbox-control span').css('color', 'black');
     }
 
     if (disableStatus || displayedMapType === 'slippy' && mapType === 'allclass' && resolution !== 'hectad') {
       // Uncheck and disable status checkbutton if not hectad resolution or no status info
-      $$1('.atlas-status-checkbox').prop('checked', false);
-      $$1('.atlas-status-checkbox').attr('disabled', true);
+      $$2('.atlas-status-checkbox').prop('checked', false);
+      $$2('.atlas-status-checkbox').attr('disabled', true);
     } else {
       // Display and set checked status to current value of showStatus global
-      $$1('.atlas-status-checkbox').attr('disabled', false);
-      $$1('.atlas-status-checkbox').prop('checked', showStatus);
+      $$2('.atlas-status-checkbox').attr('disabled', false);
+      $$2('.atlas-status-checkbox').prop('checked', showStatus);
     } // atlas resolution control visibility
 
 
     if (displayedMapType === "slippy" && mapType === 'allclass') {
-      $$1('.atlas-resolution-control').show();
+      $$2('.atlas-resolution-control').show();
     } else {
-      $$1('.atlas-resolution-control').hide();
+      $$2('.atlas-resolution-control').hide();
     } // atlas resolution control value and global variables
 
 
@@ -1529,7 +1557,7 @@
       // }
       bsbiDataAccess.resolution = resolution; // Ensure right option is selected
 
-      $$1('.bsbi-resolution-' + resolution).prop('checked', true); // Enable/disable tetrad option as appropriate
+      $$2('.bsbi-resolution-' + resolution).prop('checked', true); // Enable/disable tetrad option as appropriate
       // if (currentTaxon.tetrad) {
       //   $('.bsbi-resolution-tetrad').attr('disabled', false)
       // } else {
@@ -1541,7 +1569,7 @@
 
 
     var isHybrid = currentTaxon.parent1 !== '';
-    var $hybridopts = $$1('.atlas-map-type-selector option[value="hybrid"]');
+    var $hybridopts = $$2('.atlas-map-type-selector option[value="hybrid"]');
 
     if (isHybrid) {
       $hybridopts.show();
@@ -1550,12 +1578,12 @@
 
       if (mapType === 'hybrid') {
         $hybridopts.prop('selected', false);
-        $$1('.atlas-map-type-selector option[value="allclass"]').prop('selected', true);
+        $$2('.atlas-map-type-selector option[value="allclass"]').prop('selected', true);
         mapType = 'allclass';
       }
     }
 
-    $$1('.atlas-map-type-selector').selectpicker('refresh');
+    $$2('.atlas-map-type-selector').selectpicker('refresh');
   }
 
   function gridStyleSelector($parent) {
@@ -1570,17 +1598,17 @@
       val: 'none'
     }]; // Main type selector
 
-    var $sel = $$1('<select>').appendTo($parent);
+    var $sel = $$2('<select>').appendTo($parent);
     $sel.addClass('selectpicker');
     $sel.addClass('atlas-grid-type-control');
     $sel.attr('data-width', '100%');
     $sel.on('changed.bs.select', function () {
-      gridStyle = $$1(this).val();
+      gridStyle = $$2(this).val();
       setCookie('gridstyle', gridStyle, 30);
       staticMap.setGridLineStyle(gridStyle);
     });
     gridStyles.forEach(function (s) {
-      var $opt = s.selected ? $$1('<option>') : $$1('<option>');
+      var $opt = s.selected ? $$2('<option>') : $$2('<option>');
       $opt.attr('value', s.val);
       $opt.html(s.caption).appendTo($sel);
     });
@@ -1633,12 +1661,12 @@
       val: 'none'
     }]; // Main type selector
 
-    var $sel = $$1('<select>').appendTo($parent);
+    var $sel = $$2('<select>').appendTo($parent);
     $sel.addClass('selectpicker');
     $sel.addClass('atlas-boundaries-control');
     $sel.attr('data-width', '100%');
     $sel.on('changed.bs.select', function () {
-      boundaryType = $$1(this).val();
+      boundaryType = $$2(this).val();
       setCookie('boundaries', boundaryType, 30);
 
       if (boundaryType === 'none') {
@@ -1662,7 +1690,7 @@
       }
     });
     boundaries.forEach(function (b) {
-      var $opt = b.selected ? $$1('<option>') : $$1('<option>');
+      var $opt = b.selected ? $$2('<option>') : $$2('<option>');
       $opt.attr('value', b.val);
       $opt.html(b.caption).appendTo($sel);
     });
@@ -1673,25 +1701,25 @@
   }
 
   function mapInterfaceToggle($parent) {
-    var $container = $$1('<div style="display: flex">').appendTo($parent); // Buttons
+    var $container = $$2('<div style="display: flex">').appendTo($parent); // Buttons
 
-    var $bgrp = $$1('<div class="btn-group" data-toggle="buttons">').appendTo($container);
-    var $staticLabel = $$1('<label class="btn btn-primary active">').appendTo($bgrp);
-    $$1('<input type="radio" name="mapType" value="static" checked>').appendTo($staticLabel);
+    var $bgrp = $$2('<div class="btn-group" data-toggle="buttons">').appendTo($container);
+    var $staticLabel = $$2('<label class="btn btn-primary active">').appendTo($bgrp);
+    $$2('<input type="radio" name="mapType" value="static" checked>').appendTo($staticLabel);
     $staticLabel.append("Overview");
-    var $slippyLabel = $$1('<label class="btn btn-primary">').appendTo($bgrp);
-    $$1('<input type="radio" name="mapType" value="slippy">').appendTo($slippyLabel);
+    var $slippyLabel = $$2('<label class="btn btn-primary">').appendTo($bgrp);
+    $$2('<input type="radio" name="mapType" value="slippy">').appendTo($slippyLabel);
     $slippyLabel.append("Zoomable"); // Busy indicator
 
-    var $loader = $$1('<div id="atlas-loader" style="display: none">').appendTo($container);
-    $$1('<div class="atlas-loader">').appendTo($loader);
-    $$1('input[type=radio][name="mapType"]').change(function () {
-      displayedMapType = $$1(this).val();
+    var $loader = $$2('<div id="atlas-loader" style="display: none">').appendTo($container);
+    $$2('<div class="atlas-loader">').appendTo($loader);
+    $$2('input[type=radio][name="mapType"]').change(function () {
+      displayedMapType = $$2(this).val();
       bsbiDataAccess.displayedMapType = displayedMapType;
 
       if (displayedMapType === "slippy") {
         // Get current width of static map
-        var $svg = $$1('#staticAtlasMain svg');
+        var $svg = $$2('#staticAtlasMain svg');
         var w = $svg.width();
         var h = $svg.height();
         slippyMap.setSize(w, h);
@@ -1708,12 +1736,12 @@
 
   function mapTypeSelector($parent) {
     // Main type selector
-    var $sel = $$1('<select>').appendTo($parent);
+    var $sel = $$2('<select>').appendTo($parent);
     $sel.addClass('selectpicker');
     $sel.addClass('atlas-map-type-selector');
     $sel.attr('data-width', '100%');
     $sel.on('changed.bs.select', function () {
-      mapType = $$1(this).val();
+      mapType = $$2(this).val();
       setControlState();
       changeMap();
     });
@@ -1734,7 +1762,7 @@
       val: 'hybrid'
     }];
     types.forEach(function (t) {
-      var $opt = $$1('<option>');
+      var $opt = $$2('<option>');
       $opt.attr('value', t.val);
       $opt.html(t.caption).appendTo($sel);
     }); // This seems to be necessary if interface regenerated,
@@ -1757,7 +1785,7 @@
       val: 'grey_elevation_300'
     }]; // Main type selector
 
-    var $sel = $$1('<select>').appendTo($parent);
+    var $sel = $$2('<select>').appendTo($parent);
     $sel.addClass('selectpicker'); //$sel.addClass('atlas-backdrop-selector')
 
     $sel.attr('data-width', '100%');
@@ -1769,14 +1797,14 @@
         }
       }); // Display selected backdrop
 
-      var val = $$1(this).val();
+      var val = $$2(this).val();
 
       if (val) {
         staticMap.basemapImage(val, true, rasterRoot + val + '.png', rasterRoot + val + '.pgw');
       }
     });
     backdrops.forEach(function (b) {
-      var $opt = b.selected ? $$1('<option>') : $$1('<option>');
+      var $opt = b.selected ? $$2('<option>') : $$2('<option>');
       $opt.attr('value', b.val);
       $opt.html(b.caption).appendTo($sel);
     });
@@ -1789,15 +1817,15 @@
   function mapImageButton($parent, i) {
     var imageType = 'png'; // Overall control container
 
-    var $container = $$1('<div>').appendTo($parent);
+    var $container = $$2('<div>').appendTo($parent);
     $container.addClass('atlas-save-map-image');
     $container.hide();
-    var $svg = $$1('<svg>').appendTo($container);
-    var $t = $$1('<text>').appendTo($svg);
+    var $svg = $$2('<svg>').appendTo($container);
+    var $t = $$2('<text>').appendTo($svg);
     $t.attr('x', '10');
     $t.attr('y', '20');
-    $$1('<br>').appendTo($container);
-    var $button = $$1('<button>').appendTo($container);
+    $$2('<br>').appendTo($container);
+    var $button = $$2('<button>').appendTo($container);
     $button.addClass('btn btn-default');
     $button.text('Download image');
     $button.on('click', function () {
@@ -1813,14 +1841,14 @@
     makeRadio('SVG', 'svg', false);
 
     function makeRadio(label, val, checked) {
-      var $div = $$1('<div>').appendTo($container);
+      var $div = $$2('<div>').appendTo($container);
       $div.css('display', 'inline-block');
       $div.css('margin-left', '0.5em');
       $div.attr('class', 'radio');
-      var $label = $$1('<label>').appendTo($div);
+      var $label = $$2('<label>').appendTo($div);
       $label.css('padding-left', '0');
-      var $radio = $$1('<input>').appendTo($label);
-      var $span = $$1('<span>').appendTo($label);
+      var $radio = $$2('<input>').appendTo($label);
+      var $span = $$2('<span>').appendTo($label);
       $span.text(label);
       $span.css('padding-left', '20px');
       $radio.attr('type', 'radio');
@@ -1831,7 +1859,7 @@
       if (checked) $radio.prop('checked', true);
       $radio.change(function () {
         // Update controls mirrored in other blocks
-        $$1('.img-download-type-' + val).prop("checked", true);
+        $$2('.img-download-type-' + val).prop("checked", true);
         imageType = val;
       });
     }
@@ -1840,10 +1868,10 @@
   function mapDownloadButton($parent, i) {
     var downloadType = 'csv'; // Overall control container
 
-    var $container = $$1('<div>').appendTo($parent);
+    var $container = $$2('<div>').appendTo($parent);
     $container.addClass('atlas-download-map-data');
     $container.hide();
-    var $button = $$1('<button>').appendTo($container);
+    var $button = $$2('<button>').appendTo($container);
     $button.addClass('btn btn-default');
     $button.text('Download data');
     $button.on('click', function () {
@@ -1861,14 +1889,14 @@
     makeRadio('GeoJson', 'geojson', false);
 
     function makeRadio(label, val, checked) {
-      var $div = $$1('<div>').appendTo($container);
+      var $div = $$2('<div>').appendTo($container);
       $div.css('display', 'inline-block');
       $div.css('margin-left', '0.5em');
       $div.attr('class', 'radio');
-      var $label = $$1('<label>').appendTo($div);
+      var $label = $$2('<label>').appendTo($div);
       $label.css('padding-left', '0');
-      var $radio = $$1('<input>').appendTo($label);
-      var $span = $$1('<span>').appendTo($label);
+      var $radio = $$2('<input>').appendTo($label);
+      var $span = $$2('<span>').appendTo($label);
       $span.text(label);
       $span.css('padding-left', '20px');
       $radio.attr('type', 'radio');
@@ -1879,7 +1907,7 @@
       if (checked) $radio.prop('checked', true);
       $radio.change(function () {
         // Update controls mirrored in other blocks
-        $$1('.download-type-' + val).prop("checked", true);
+        $$2('.download-type-' + val).prop("checked", true);
         downloadType = val;
       });
     }
@@ -1887,37 +1915,37 @@
 
   function opacitySlider($parent) {
     var initOpacity = 70;
-    $$1('#atlas-leaflet-svg').css('opacity', initOpacity / 100); // Overall control container
+    $$2('#atlas-leaflet-svg').css('opacity', initOpacity / 100); // Overall control container
 
-    var $container = $$1('<div>').appendTo($parent);
+    var $container = $$2('<div>').appendTo($parent);
     $container.addClass('atlas-opacity-slider-control');
     $container.hide(); // Label
 
-    var $sliderLabel = $$1('<div>').appendTo($container);
+    var $sliderLabel = $$2('<div>').appendTo($container);
     $sliderLabel.addClass('atlas-opacity-slider-label');
     $sliderLabel.text('Opacity:'); // Slider
 
-    var $sliderContainer = $$1('<div>').appendTo($container);
+    var $sliderContainer = $$2('<div>').appendTo($container);
     $sliderContainer.addClass('slidecontainer');
     $sliderContainer.addClass('atlas-opacity-slider-slider');
-    var $slider = $$1('<input>').appendTo($sliderContainer);
+    var $slider = $$2('<input>').appendTo($sliderContainer);
     $slider.addClass('slider');
     $slider.attr('type', 'range').attr('min', '1').attr('max', '100').attr('value', initOpacity).attr('id', 'atlas-opacity-slider');
     $slider.change(function () {
-      $$1('#atlas-leaflet-svg').css('opacity', $$1(this).val() / 100);
+      $$2('#atlas-leaflet-svg').css('opacity', $$2(this).val() / 100);
     });
   }
 
   function statusCheckbox($parent) {
     // Overall control container
-    var $container = $$1('<div>').appendTo($parent);
+    var $container = $$2('<div>').appendTo($parent);
     $container.addClass('atlas-status-checkbox-control'); // Status on/off toggle
 
-    var $checDiv = $$1('<div class="checkbox">').appendTo($container); //$checDiv.css('margin-top', '4.3em')
+    var $checDiv = $$2('<div class="checkbox">').appendTo($container); //$checDiv.css('margin-top', '4.3em')
 
-    $$1('<label><input type="checkbox" class="atlas-status-checkbox"/><span>Show status</span></label>').appendTo($checDiv);
-    $$1('.atlas-status-checkbox').change(function () {
-      showStatus = $$1(this).is(':checked');
+    $$2('<label><input type="checkbox" class="atlas-status-checkbox"/><span>Show status</span></label>').appendTo($checDiv);
+    $$2('.atlas-status-checkbox').change(function () {
+      showStatus = $$2(this).is(':checked');
       bsbiDataAccess.showStatus = showStatus;
       changeMap();
     });
@@ -1925,7 +1953,7 @@
 
   function statusControl($parent) {
     // Overall control container
-    var $container = $$1('<div>').appendTo($parent);
+    var $container = $$2('<div>').appendTo($parent);
     $container.addClass('atlas-period-slider-control');
     $container.hide(); // Period display
     // const $indicator = $('<div>').appendTo($container)
@@ -1934,26 +1962,26 @@
     // $indicator.text(periods[periods.length - 1].caption)
     // Slider
 
-    var $sliderContainer = $$1('<div>').appendTo($container);
+    var $sliderContainer = $$2('<div>').appendTo($container);
     $sliderContainer.addClass('slidecontainer');
-    var $slider = $$1('<input>').appendTo($sliderContainer);
+    var $slider = $$2('<input>').appendTo($sliderContainer);
     $slider.addClass('slider');
     $slider.attr('type', 'range').attr('min', '1').attr('max', periods.length).attr('id', 'atlas-range-select');
     $slider.change(function () {
-      atlasRangeIndex = $$1(this).val();
+      atlasRangeIndex = $$2(this).val();
       changeMap();
     });
-    var $scaleContainer = $$1('<div>').appendTo($sliderContainer);
+    var $scaleContainer = $$2('<div>').appendTo($sliderContainer);
     $scaleContainer.addClass('atlas-range-tick-container');
     $scaleContainer.css('margin-bottom', '4.3em');
     periods.forEach(function (p, i) {
-      var $tick = $$1('<span>').appendTo($scaleContainer);
+      var $tick = $$2('<span>').appendTo($scaleContainer);
       $tick.addClass('atlas-range-tick');
       var percent = i / (periods.length - 1) * 100;
       $tick.css('left', percent.toString() + '%');
       $tick.text('|');
       $tick.append('<br>');
-      var $tickText = $$1('<span>').appendTo($tick);
+      var $tickText = $$2('<span>').appendTo($tick);
       $tickText.addClass('atlas-range-tick-text');
       $tickText.html((p.min ? p.min : 'pre') + '<br>' + (p.max === 1929 ? 1930 : p.max)); //$tickText.html(p.min + '<br>' + p.max)
     }); // // Status on/off toggle
@@ -1969,25 +1997,25 @@
 
   function resolutionControl($parent, i) {
     // Overall control container
-    var $container = $$1('<div>').appendTo($parent);
+    var $container = $$2('<div>').appendTo($parent);
 
     function makeRadio(label, val, checked) {
-      var $div = $$1('<div>').appendTo($container);
+      var $div = $$2('<div>').appendTo($container);
       $div.attr('class', 'radio');
-      var $radio = $$1('<input>').appendTo($div);
+      var $radio = $$2('<input>').appendTo($div);
       $radio.attr('type', 'radio');
       $radio.attr('name', 'bsbi-resolution-' + i);
       $radio.attr('class', 'bsbi-resolution-' + val);
       $radio.attr('value', val);
       $radio.css('margin-left', 0);
       if (checked) $radio.prop('checked', true);
-      var $label = $$1('<label>').appendTo($div);
+      var $label = $$2('<label>').appendTo($div);
       $label.attr('for', 'bsbi-resolution-' + val);
       $label.text(label);
       $radio.change(function () {
-        resolution = $$1(this).val(); // Update controls mirrored in other blocks
+        resolution = $$2(this).val(); // Update controls mirrored in other blocks
 
-        $$1('.bsbi-resolution-' + resolution).prop("checked", true);
+        $$2('.bsbi-resolution-' + resolution).prop("checked", true);
         setControlState();
         changeMap();
       });
@@ -1999,7 +2027,7 @@
 
   function trendControl($parent) {
     // Overall control container
-    var $container = $$1('<div>').appendTo($parent);
+    var $container = $$2('<div>').appendTo($parent);
     $container.addClass('atlas-trend-slider-control');
     $container.hide(); // Trend display
     // const $indicator = $('<div>').appendTo($container)
@@ -2008,26 +2036,26 @@
     // $indicator.text(trends[trends.length - 1].caption)
     // Slider
 
-    var $sliderContainer = $$1('<div>').appendTo($container);
+    var $sliderContainer = $$2('<div>').appendTo($container);
     $sliderContainer.addClass('slidecontainer');
     $sliderContainer.addClass('atlas-trend-select-container');
-    var $slider = $$1('<input>').appendTo($sliderContainer);
+    var $slider = $$2('<input>').appendTo($sliderContainer);
     $slider.addClass('slider');
     $slider.attr('type', 'range').attr('min', '1').attr('max', trends.length).addClass('atlas-trend-select');
     $slider.change(function () {
-      atlasTrendIndex = $$1(this).val();
+      atlasTrendIndex = $$2(this).val();
       changeMap();
     });
-    var $scaleContainer = $$1('<div>').appendTo($sliderContainer);
+    var $scaleContainer = $$2('<div>').appendTo($sliderContainer);
     $scaleContainer.addClass('atlas-trend-tick-container');
     trends.forEach(function (p, i) {
-      var $tick = $$1('<span>').appendTo($scaleContainer);
+      var $tick = $$2('<span>').appendTo($scaleContainer);
       $tick.addClass('atlas-trend-tick');
       var percent = i / (trends.length - 1) * 100;
       $tick.css('left', percent.toString() + '%');
       $tick.text('|');
       $tick.append('<br>');
-      var $tickText = $$1('<span>').appendTo($tick);
+      var $tickText = $$2('<span>').appendTo($tick);
       $tickText.addClass('atlas-trend-tick-text');
       $tickText.addClass('atlas-trend-tick-text-' + i);
       $tickText.html(p.lower + '<br>v.<br>' + p.upper);
@@ -2047,19 +2075,19 @@
       val: 'BI4'
     }]; // Main type selector
 
-    var $sel = $$1('<select>').appendTo($parent);
+    var $sel = $$2('<select>').appendTo($parent);
     $sel.addClass('selectpicker');
     $sel.addClass('atlas-inset-control'); //$sel.addClass('atlas-backdrop-selector')
 
     $sel.attr('data-width', '100%');
     $sel.on('changed.bs.select', function () {
-      insetType = $$1(this).val();
+      insetType = $$2(this).val();
       staticMap.setTransform(insetType);
       setCookie('inset', insetType, 30);
       changeMap();
     });
     inserts.forEach(function (i) {
-      var $opt = i.selected ? $$1('<option>') : $$1('<option>');
+      var $opt = i.selected ? $$2('<option>') : $$2('<option>');
       $opt.attr('value', i.val);
       $opt.html(i.caption).appendTo($sel);
     });
@@ -2212,7 +2240,7 @@
       showVcs: boundaryType === 'vc',
       showCountries: boundaryType === 'country'
     });
-    $$1('#slippyAtlasMain').hide();
+    $$2('#slippyAtlasMain').hide();
   }
   function changeMap() {
     var displayedMap;
@@ -2269,14 +2297,14 @@
     gridStyleSelector(mapControlRow(selector));
     boundarySelector(mapControlRow(selector));
     opacitySlider(mapControlRow(selector));
-    $$1(selector).each(function (i) {
+    $$2(selector).each(function (i) {
       // We loop through the selection so that we can use the
       // index value to differentiate the equivalent controls
       // from different blocks. This is vital for radio controls
       // otherwise value can only be selected in one block and
       // therefore initialisation may be wrong.
       var sel = 'bsbi-atlas-map-controls-' + i;
-      var $div = $$1('<div>').appendTo($$1(this));
+      var $div = $$2('<div>').appendTo($$2(this));
       $div.addClass(sel);
       sel = '.' + sel; // Potentially we can also use this to ensure that selection
       // in one block is mirrored in the other. This is only important
@@ -2293,6 +2321,155 @@
   }
   function updateBsbiDataAccess(key, value) {
     bsbiDataAccess[key] = value;
+  }
+
+  var $$1 = jQuery; // eslint-disable-line no-undef
+  function develMainMapStyles(selector, changeMap) {
+    var labels = {
+      '2000_19': '2000 - 2019',
+      '1987_99': '1987 - 1999',
+      '1970_86': '1970 - 1986',
+      '1930_69': '1930 - 1969',
+      'pre_1930': 'to 1929'
+    };
+    var pickers = {
+      x: {
+        '2000_19': null,
+        '1987_99': null,
+        '1970_86': null,
+        '1930_69': null,
+        'pre_1930': null
+      },
+      n: {
+        '2000_19': null,
+        '1987_99': null,
+        '1970_86': null,
+        '1930_69': null,
+        'pre_1930': null
+      },
+      a: {
+        '2000_19': null,
+        '1987_99': null,
+        '1970_86': null,
+        '1930_69': null,
+        'pre_1930': null
+      }
+    };
+    var colorbrewer = {
+      'sequential single hue Greys': ['#f7f7f7', '#cccccc', '#969696', '#636363', '#252525'],
+      'sequential single hue Greens': ['#edf8e9', '#bae4b3', '#74c476', '#31a354', '#006d2c'],
+      'sequential single hue Blues': ['#eff3ff', '#bdd7e7', '#6baed6', '#3182bd', '#08519c'],
+      'sequential single hue Oranges': ['#feedde', '#fdbe85', '#fd8d3c', '#e6550d', '#a63603'],
+      'sequential single hue Purples': ['#f2f0f7', '#cbc9e2', '#9e9ac8', '#756bb1', '#54278f'],
+      'sequential single hue Reds': ['#fee5d9', '#fcae91', '#fb6a4a', '#de2d26', '#a50f15'],
+      'sequential multi-hue BuGn': ['#edf8fb', '#b2e2e2', '#66c2a4', '#2ca25f', '#006d2c'],
+      'sequential multi-hue BuPu': ['#edf8fb', '#b3cde3', '#8c96c6', '#8856a7', '#810f7c'],
+      'sequential multi-hue GnBu': ['#f0f9e8', '#bae4bc', '#7bccc4', '#43a2ca', '#0868ac'],
+      'sequential multi-hue OrRd': ['#fef0d9', '#fdcc8a', '#fc8d59', '#e34a33', '#b30000'],
+      'sequential multi-hue PuBu': ['#f1eef6', '#bdc9e1', '#74a9cf', '#2b8cbe', '#045a8d'],
+      'sequential multi-hue PuBuGn': ['#f6eff7', '#bdc9e1', '#67a9cf', '#1c9099', '#016c59'],
+      'sequential multi-hue PuRd': ['#f1eef6', '#d7b5d8', '#df65b0', '#dd1c77', '#980043'],
+      'sequential multi-hue RdPu': ['#feebe2', '#fbb4b9', '#f768a1', '#c51b8a', '#7a0177'],
+      'sequential multi-hue YlGn': ['#ffffcc', '#c2e699', '#78c679', '#31a354', '#006837'],
+      'sequential multi-hue YlGnBu': ['#ffffcc', '#a1dab4', '#41b6c4', '#2c7fb8', '#253494'],
+      'sequential multi-hue YlOrBr': ['#ffffd4', '#fed98e', '#fe9929', '#d95f0e', '#993404'],
+      'sequential multi-hue YlOrRd': ['#ffffb2', '#fecc5c', '#fd8d3c', '#f03b20', '#bd0026'],
+      'diverging BrBG': ['#a6611a', '#dfc27d', '#f5f5f5', '#80cdc1', '#018571'],
+      'diverging PiYG': ['#d01c8b', '#f1b6da', '#f7f7f7', '#b8e186', '#4dac26'],
+      'diverging PRGn': ['#7b3294', '#c2a5cf', '#f7f7f7', '#a6dba0', '#008837'],
+      'diverging PuOr': ['#e66101', '#fdb863', '#f7f7f7', '#b2abd2', '#5e3c99'],
+      'diverging RdBu': ['#ca0020', '#f4a582', '#f7f7f7', '#92c5de', '#0571b0'],
+      'diverging RdGy': ['#ca0020', '#f4a582', '#ffffff', '#bababa', '#404040'],
+      'diverging RdYlBu': ['#d7191c', '#fdae61', '#ffffbf', '#abd9e9', '#2c7bb6'],
+      'diverging RdYlGn': ['#d7191c', '#fdae61', '#ffffbf', '#a6d96a', '#1a9641'],
+      'diverging Spectral': ['#d7191c', '#fdae61', '#ffffbf', '#abdda4', '#2b83ba']
+    }; // Colours
+
+    var $colours = $$1('<div style="margin-top: 1em">').appendTo($$1(selector));
+    var $div0 = $$1('<div style="display: flex">').appendTo($colours);
+    var $div1 = $$1('<div style="flex: 1">').appendTo($div0);
+    var $div2 = $$1('<div style="flex: 1">').appendTo($div0);
+    var $div3 = $$1('<div style="flex: 1">').appendTo($div0);
+    $$1('<h4>').appendTo($div1).text('Without status');
+    makeColourPicker('x', '2000_19', $div1);
+    makeColourPicker('x', '1987_99', $div1);
+    makeColourPicker('x', '1970_86', $div1);
+    makeColourPicker('x', '1930_69', $div1);
+    makeColourPicker('x', 'pre_1930', $div1);
+    $$1('<h4>').appendTo($div2).text('Native status');
+    makeColourPicker('n', '2000_19', $div2);
+    makeColourPicker('n', '1987_99', $div2);
+    makeColourPicker('n', '1970_86', $div2);
+    makeColourPicker('n', '1930_69', $div2);
+    makeColourPicker('n', 'pre_1930', $div2);
+    $$1('<h4>').appendTo($div3).text('Alien status');
+    makeColourPicker('a', '2000_19', $div3);
+    makeColourPicker('a', '1987_99', $div3);
+    makeColourPicker('a', '1970_86', $div3);
+    makeColourPicker('a', '1930_69', $div3);
+    makeColourPicker('a', 'pre_1930', $div3);
+    $$1('<h4>').appendTo($colours).text('Init colours from Colourbrewer');
+    var $sel = $$1('<select>').appendTo($colours);
+    Object.keys(colorbrewer).forEach(function (cs) {
+      $$1('<option>').text(cs).appendTo($sel);
+    });
+    var $cb = $$1("<input type=\"checkbox\" id=\"reverse-colours\" style=\"margin:0.5em\">").appendTo($colours);
+    $$1("<label for=\"reverse-colours\">reverse</label>").appendTo($colours);
+    var $butNoStatus = $$1('<button style="margin-left: 0.5em">').text('Without status').appendTo($colours);
+    var $butNative = $$1('<button style="margin-left: 0.5em">').text('Native').appendTo($colours);
+    var $butAlien = $$1('<button style="margin-left: 0.5em">').text('Alien').appendTo($colours);
+    $butNoStatus.click(function () {
+      initColours('x', $sel.find(":selected").text(), $cb.is(':checked'));
+    });
+    $butNative.click(function () {
+      initColours('n', $sel.find(":selected").text(), $cb.is(':checked'));
+    });
+    $butAlien.click(function () {
+      initColours('a', $sel.find(":selected").text(), $cb.is(':checked'));
+    });
+
+    function makeColourPicker(status, period, $container) {
+      var $div = $$1('<div>').appendTo($container);
+      $$1("<input type=\"text\" style=\"width: 120px\" id=\"colour".concat(period, "_").concat(status, "\">")).appendTo($div);
+      var $cb = $$1("<input type=\"checkbox\" id=\"stroke".concat(period, "_").concat(status, "\" style=\"margin-left: 1em\">")).appendTo($div);
+      $$1("<label for=\"colour".concat(period, "_").concat(status, "\" style=\"margin-left: 1em\">").concat(period.replace('_', '-'), "</label>")).appendTo($div);
+      var col = new JSColor("#colour".concat(period, "_").concat(status));
+      col.option({
+        onChange: function onChange() {
+          colourChange(col, $cb, status, period);
+        }
+      });
+      $cb.change(function () {
+        colourChange(col, $cb, status, period);
+      });
+      col.fromString(bsbiDataAccess.periodColours[status][labels[period]]);
+      $cb.prop('checked', bsbiDataAccess.periodStroke[status][labels[period]] === 'black');
+      pickers[status][labels[period]] = col;
+    }
+
+    function colourChange(col, $cb, status, period) {
+      console.log('checkbox', $cb.is(':checked'));
+      console.log('colour', col.toHEXString());
+      bsbiDataAccess.periodColours[status][labels[period]] = col.toHEXString();
+      bsbiDataAccess.periodStroke[status][labels[period]] = $cb.is(':checked') ? 'black' : null;
+      changeMap();
+    }
+
+    function initColours(status, key, reverse) {
+      console.log('init', status, key);
+      var colours = colorbrewer[key];
+      var periods = ['2000_19', '1987_99', '1970_86', '1930_69', 'pre_1930'].reverse();
+
+      if (reverse) {
+        periods.reverse();
+      }
+
+      periods.forEach(function (period, i) {
+        bsbiDataAccess.periodColours[status][labels[period]] = colours[i];
+        pickers[status][labels[period]].fromString(colours[i]);
+      });
+      changeMap();
+    }
   }
 
   var $ = jQuery; // eslint-disable-line no-undef
@@ -2315,7 +2492,9 @@
       setBaseMetaTags(); // Initialise main content
 
       mainAtlasContent(); // Devel block
-      // develChangeMapColours('#bsbi-atlas-development', changeMap, bsbiDataAccess)
+      //develChangeMapColours('#bsbi-atlas-development', changeMap)
+
+      develMainMapStyles('#bsbi-atlas-development', changeMap);
     });
 
     function mainAtlasContent() {

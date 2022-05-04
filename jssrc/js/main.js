@@ -5,7 +5,7 @@ import { createEcology, changeEcology } from './ecology'
 import { createGallery } from './gallery'
 import { copyToClipboard,  getCitation } from './utils'
 import { mapSetCurrentTaxon, createMaps, changeMap, createMapControls, setControlState, updateBsbiDataAccess} from './mapping'
-// import { develChangeMapColours } from './devel'
+import { develMainMapStyles } from './devel'
 
 const $ = jQuery // eslint-disable-line no-undef
 const ds = drupalSettings // eslint-disable-line no-undef
@@ -32,7 +32,8 @@ export function main() {
     mainAtlasContent()
 
     // Devel block
-    // develChangeMapColours('#bsbi-atlas-development', changeMap, bsbiDataAccess)
+    //develChangeMapColours('#bsbi-atlas-development', changeMap)
+    develMainMapStyles('#bsbi-atlas-development', changeMap)
   })
 
   function mainAtlasContent() {
