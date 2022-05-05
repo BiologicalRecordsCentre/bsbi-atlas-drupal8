@@ -2530,12 +2530,13 @@
         title: 'World Flora Online',
         fn: worldFloraOnline,
         external: true
-      }, {
-        group: 'BIBLIOGRAPHY',
-        id: 'references',
-        title: 'References',
-        fn: sectionEmpty
-      }]; // Taxon selection controls
+      } // {
+      //   group: 'BIBLIOGRAPHY',
+      //   id: 'references',
+      //   title: 'References',
+      //   fn: sectionEmpty,
+      // },
+      ]; // Taxon selection controls
 
       taxonSelectors(); // Select summary (map) tab initially
 

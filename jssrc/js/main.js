@@ -77,12 +77,12 @@ export function main() {
         fn: worldFloraOnline,
         external: true,
       },
-      {
-        group: 'BIBLIOGRAPHY',
-        id: 'references',
-        title: 'References',
-        fn: sectionEmpty,
-      },
+      // {
+      //   group: 'BIBLIOGRAPHY',
+      //   id: 'references',
+      //   title: 'References',
+      //   fn: sectionEmpty,
+      // },
     ]
 
     // Taxon selection controls
