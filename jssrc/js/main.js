@@ -6,6 +6,7 @@ import { createGallery } from './gallery'
 import { copyToClipboard,  getCitation } from './utils'
 import { mapSetCurrentTaxon, createMaps, changeMap, createMapControls, setControlState, updateBsbiDataAccess} from './mapping'
 import { develMainMapStyles } from './devel'
+import { downloadPage } from './download'
 
 const $ = jQuery // eslint-disable-line no-undef
 const ds = drupalSettings // eslint-disable-line no-undef
@@ -25,15 +26,24 @@ export function main() {
 
   $(document).ready(function () {
 
-    // Set meta tags
-    setBaseMetaTags()
+    if(location.pathname === '/download') {
+      // Download page
 
-    // Initialise main content
-    mainAtlasContent()
+      downloadPage()
 
-    // Devel block
-    //develChangeMapColours('#bsbi-atlas-development', changeMap)
-    develMainMapStyles('#bsbi-atlas-development', changeMap)
+    } else {
+      // Main atlas page
+
+      // Set meta tags
+      setBaseMetaTags()
+
+      // Initialise main content
+      mainAtlasContent()
+
+      // Devel block
+      //develChangeMapColours('#bsbi-atlas-development', changeMap)
+      develMainMapStyles('#bsbi-atlas-development', changeMap)
+    }
   })
 
   function mainAtlasContent() {

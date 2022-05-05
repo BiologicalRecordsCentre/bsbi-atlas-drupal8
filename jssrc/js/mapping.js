@@ -1118,3 +1118,11 @@ export function createMapControls(selector) {
 export function updateBsbiDataAccess(key, value) {
   bsbiDataAccess[key]=value
 }
+
+export function getStaticMap() {
+  return staticMap
+}
+
+// export function setMapType(type) {
+//   mapType = type
+// }

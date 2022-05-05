@@ -5,6 +5,13 @@ bsbi-atlas.content:
   requirements:
     _permission: 'access content'
 
+bsbi-atlas.download:
+  path: '/download'
+  defaults:
+    _controller: '\Drupal\bsbi_atlas\Controller\BsbiAtlasDownloadController::content'
+  requirements:
+    _permission: 'access content'
+
 bsbi-atlas.content.distribution:
   path: '/atlas/{identifier}'
   defaults:
