@@ -315,7 +315,12 @@ function distAllClasses(identifier) {
         }
 
         // Status (can be n for native, a for alien, or bullseye for reintroduced)
-        const hectadstatus = r.hectadstatus ? r.hectadstatus : 'missing'
+        let hectadstatus = r.hectadstatus ? r.hectadstatus : 'missing'
+        const statusValid = ['n', 'a', 'bullseye', 'missing']
+        if (statusValid.indexOf(hectadstatus) === -1) {
+          // If status not valid, consider missing
+          hectadstatus = 'missing'
+        }
 
         // Count the occurrences in each date category for legend
         // (not just the last one recorded in)

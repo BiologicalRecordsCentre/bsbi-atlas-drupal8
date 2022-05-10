@@ -1,6 +1,6 @@
 {
   "name": "bsbi-atlas",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "Javscript code for BSBI atlas.",
   "type": "module",
   "main": "../js/bsbi-atlas.umd.js",
