@@ -70,6 +70,30 @@ export function develMainMapStyles(selector, changeMap) {
     }
   }
 
+  const checkboxes = {
+    x: {
+      '2000_19': null,
+      '1987_99': null,
+      '1970_86': null,
+      '1930_69': null,
+      'pre_1930': null
+    },
+    n: {
+      '2000_19': null,
+      '1987_99': null,
+      '1970_86': null,
+      '1930_69': null,
+      'pre_1930': null
+    },
+    a: {
+      '2000_19': null,
+      '1987_99': null,
+      '1970_86': null,
+      '1930_69': null,
+      'pre_1930': null
+    }
+  }
+
   const colorbrewer = {
     'sequential single hue Greys': ['#f7f7f7','#cccccc','#969696','#636363','#252525'],
     'sequential single hue Greens': ['#edf8e9','#bae4b3','#74c476','#31a354','#006d2c'],
@@ -100,8 +124,11 @@ export function develMainMapStyles(selector, changeMap) {
     'diverging Spectral': ['#d7191c','#fdae61','#ffffbf','#abdda4','#2b83ba']
   }
 
+  let colStroke
+
   // Colours
   const $colours = $('<div style="margin-top: 1em">').appendTo($(selector))
+
 
   const $div0 =  $('<div style="display: flex">').appendTo($colours)
   const $div1 =  $('<div style="flex: 1">').appendTo($div0)
@@ -128,6 +155,9 @@ export function develMainMapStyles(selector, changeMap) {
   makeColourPicker('a', '1970_86', $div3)
   makeColourPicker('a', '1930_69', $div3)
   makeColourPicker('a', 'pre_1930', $div3)
+
+  $('<h4>').appendTo($colours).text('Borders')
+  makeStrokeColourPicker($colours)
 
   $('<h4>').appendTo($colours).text('Init colours from Colourbrewer')
   const $sel =  $('<select>').appendTo($colours)
@@ -158,9 +188,33 @@ export function develMainMapStyles(selector, changeMap) {
     $cb.change(function() {colourChange(col, $cb, status, period)})
 
     col.fromString(bsbiDataAccess.periodColours[status][labels[period]])
-    $cb.prop('checked', bsbiDataAccess.periodStroke[status][labels[period]] === 'black')
+    //$cb.prop('checked', bsbiDataAccess.periodStroke[status][labels[period]] === 'black')
+    $cb.prop('checked', bsbiDataAccess.periodStroke[status][labels[period]] !== '')
 
     pickers[status][labels[period]]=col
+    checkboxes[status][labels[period]]=$cb
+  }
+
+  function makeStrokeColourPicker($container) {
+
+    const $div = $('<div>').appendTo($container)
+    $(`<input type="text" style="width: 120px" id="colour_stroke">`).appendTo($div)
+    $(`<label for="colour_stroke" style="margin-left: 1em">Border colour</label>`).appendTo($div)
+    colStroke = new JSColor(`#colour_stroke`)
+    colStroke.fromString('#000000')
+
+    const status = ['x','n','a']
+    const period =  ['2000_19','1987_99','1970_86','1930_69','pre_1930']
+
+    colStroke.option({onChange: function() {
+      status.forEach(s => {
+        period.forEach(p => {
+          const $cb = checkboxes[s][labels[p]]
+          bsbiDataAccess.periodStroke[s][labels[p]] = $cb.is(':checked') ? colStroke.toHEXString() : null
+        })
+      })
+      changeMap()
+    }})
   }
 
   function colourChange(col, $cb, status, period) {
@@ -169,7 +223,7 @@ export function develMainMapStyles(selector, changeMap) {
     console.log('colour', col.toHEXString())
 
     bsbiDataAccess.periodColours[status][labels[period]] = col.toHEXString()
-    bsbiDataAccess.periodStroke[status][labels[period]] = $cb.is(':checked') ? 'black' : null
+    bsbiDataAccess.periodStroke[status][labels[period]] = $cb.is(':checked') ? colStroke.toHEXString() : null
 
     changeMap()
   }

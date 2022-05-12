@@ -2367,6 +2367,29 @@
         'pre_1930': null
       }
     };
+    var checkboxes = {
+      x: {
+        '2000_19': null,
+        '1987_99': null,
+        '1970_86': null,
+        '1930_69': null,
+        'pre_1930': null
+      },
+      n: {
+        '2000_19': null,
+        '1987_99': null,
+        '1970_86': null,
+        '1930_69': null,
+        'pre_1930': null
+      },
+      a: {
+        '2000_19': null,
+        '1987_99': null,
+        '1970_86': null,
+        '1930_69': null,
+        'pre_1930': null
+      }
+    };
     var colorbrewer = {
       'sequential single hue Greys': ['#f7f7f7', '#cccccc', '#969696', '#636363', '#252525'],
       'sequential single hue Greens': ['#edf8e9', '#bae4b3', '#74c476', '#31a354', '#006d2c'],
@@ -2395,7 +2418,8 @@
       'diverging RdYlBu': ['#d7191c', '#fdae61', '#ffffbf', '#abd9e9', '#2c7bb6'],
       'diverging RdYlGn': ['#d7191c', '#fdae61', '#ffffbf', '#a6d96a', '#1a9641'],
       'diverging Spectral': ['#d7191c', '#fdae61', '#ffffbf', '#abdda4', '#2b83ba']
-    }; // Colours
+    };
+    var colStroke; // Colours
 
     var $colours = $$2('<div style="margin-top: 1em">').appendTo($$2(selector));
     var $div0 = $$2('<div style="display: flex">').appendTo($colours);
@@ -2420,6 +2444,8 @@
     makeColourPicker('a', '1970_86', $div3);
     makeColourPicker('a', '1930_69', $div3);
     makeColourPicker('a', 'pre_1930', $div3);
+    $$2('<h4>').appendTo($colours).text('Borders');
+    makeStrokeColourPicker($colours);
     $$2('<h4>').appendTo($colours).text('Init colours from Colourbrewer');
     var $sel = $$2('<select>').appendTo($colours);
     Object.keys(colorbrewer).forEach(function (cs) {
@@ -2454,16 +2480,39 @@
       $cb.change(function () {
         colourChange(col, $cb, status, period);
       });
-      col.fromString(bsbiDataAccess.periodColours[status][labels[period]]);
-      $cb.prop('checked', bsbiDataAccess.periodStroke[status][labels[period]] === 'black');
+      col.fromString(bsbiDataAccess.periodColours[status][labels[period]]); //$cb.prop('checked', bsbiDataAccess.periodStroke[status][labels[period]] === 'black')
+
+      $cb.prop('checked', bsbiDataAccess.periodStroke[status][labels[period]] !== '');
       pickers[status][labels[period]] = col;
+      checkboxes[status][labels[period]] = $cb;
+    }
+
+    function makeStrokeColourPicker($container) {
+      var $div = $$2('<div>').appendTo($container);
+      $$2("<input type=\"text\" style=\"width: 120px\" id=\"colour_stroke\">").appendTo($div);
+      $$2("<label for=\"colour_stroke\" style=\"margin-left: 1em\">Border colour</label>").appendTo($div);
+      colStroke = new JSColor("#colour_stroke");
+      colStroke.fromString('#000000');
+      var status = ['x', 'n', 'a'];
+      var period = ['2000_19', '1987_99', '1970_86', '1930_69', 'pre_1930'];
+      colStroke.option({
+        onChange: function onChange() {
+          status.forEach(function (s) {
+            period.forEach(function (p) {
+              var $cb = checkboxes[s][labels[p]];
+              bsbiDataAccess.periodStroke[s][labels[p]] = $cb.is(':checked') ? colStroke.toHEXString() : null;
+            });
+          });
+          changeMap();
+        }
+      });
     }
 
     function colourChange(col, $cb, status, period) {
       console.log('checkbox', $cb.is(':checked'));
       console.log('colour', col.toHEXString());
       bsbiDataAccess.periodColours[status][labels[period]] = col.toHEXString();
-      bsbiDataAccess.periodStroke[status][labels[period]] = $cb.is(':checked') ? 'black' : null;
+      bsbiDataAccess.periodStroke[status][labels[period]] = $cb.is(':checked') ? colStroke.toHEXString() : null;
       changeMap();
     }
 
