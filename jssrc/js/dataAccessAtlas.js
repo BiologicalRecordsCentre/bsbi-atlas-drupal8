@@ -6,6 +6,7 @@ import * as d3 from 'd3'
 export const bsbiDataAccess = {}
 
 bsbiDataAccess.bsbiDataRoot = ''
+bsbiDataAccess.periodClasses = 'standard'
 bsbiDataAccess.showStatus = true
 bsbiDataAccess.resolution = 'hectad'
 bsbiDataAccess.displayedMapType = 'static'
@@ -13,24 +14,26 @@ bsbiDataAccess.taxaHybridList = []
 bsbiDataAccess.taxaNoStatusList = []
 bsbiDataAccess.changeColours = ['#FAD0C8', '#DD5A2F', '#525252']
 bsbiDataAccess.symboltype ='circle'
-bsbiDataAccess.periodColours = {
+bsbiDataAccess.periodColours = {}
+
+bsbiDataAccess.periodColours.standard = {
   x: {
     "to 1929": '#f7f7f7',
-    "1930 - 1969": '#cccccc',
-    "1970 - 1986": '#969696',
-    "1987 - 1999": '#636363',
-    "2000 - 2019": '#252525'
+    "1930 - 1969": '#c6c6c6',
+    "1970 - 1986": '#909090',
+    "1987 - 1999": '#4e4e4e',
+    "2000 - 2019": '#000000'
   },
   n: {
     "to 1929": '#eff3ff',
     "1930 - 1969": '#bdd7e7',
     "1970 - 1986": '#6baed6',
-    "1987 - 1999": '#3182bd',
-    "2000 - 2019": '#08519c'
+    "1987 - 1999": '#2b71a5',
+    "2000 - 2019": '#004d99'
   },
   a: {
     "to 1929": '#fee5d9',
-    "1930 - 1969": '#fcae91',
+    "1930 - 1969": '#fcbcb4',
     "1970 - 1986": '#fb6a4a',
     "1987 - 1999": '#de2d26',
     "2000 - 2019": '#a50f15'
@@ -51,41 +54,109 @@ bsbiDataAccess.periodColours = {
   }
 }
 
-bsbiDataAccess.periodStroke = {
+bsbiDataAccess.periodColours.print = {
   x: {
-    "to 1929": 'black',
-    "1930 - 1969": 'black',
-    "1970 - 1986": 'black',
-    "1987 - 1999": 'black',
-    "2000 - 2019": 'black'
+    "prior 1970": '#f7f7f7',
+    "1970 - 1986": '#b9b9b9',
+    "1987 - 1999": '#6f6f6f',
+    "2000 - 2019": '#000000'
   },
   n: {
-    "to 1929": 'black',
-    "1930 - 1969": 'black',
-    "1970 - 1986": 'black',
-    "1987 - 1999": 'black',
-    "2000 - 2019": 'black'
+    "prior 1970": '#eff3ff',
+    "1970 - 1986": '#bdd7e7',
+    "1987 - 1999": '#368dcd',
+    "2000 - 2019": '#004d99'
   },
   a: {
-    "to 1929": 'black',
-    "1930 - 1969": 'black',
-    "1970 - 1986": 'black',
-    "1987 - 1999": 'black',
-    "2000 - 2019": 'black'
+    "prior 1970": '#fee5d9',
+    "1970 - 1986": '#fc9898',
+    "1987 - 1999": '#ff4646',
+    "2000 - 2019": '#b30000'
   },
   bullseye: {
-    "to 1929": 'black',
-    "1930 - 1969": 'black',
+    "prior 1970": 'black',
     "1970 - 1986": 'black',
     "1987 - 1999": 'black',
     "2000 - 2019": 'black'
   },
   missing: {
-    "to 1929": 'black',
-    "1930 - 1969": 'black',
+    "prior 1970": 'black',
     "1970 - 1986": 'black',
     "1987 - 1999": 'black',
     "2000 - 2019": 'black'
+  }
+}
+
+bsbiDataAccess.periodStroke = {}
+
+bsbiDataAccess.periodStroke.standard = {
+  x: {
+    "to 1929": '#808080',
+    "1930 - 1969": '#808080',
+    "1970 - 1986": '#808080',
+    "1987 - 1999": '#808080',
+    "2000 - 2019": '#808080'
+  },
+  n: {
+    "to 1929": '#808080',
+    "1930 - 1969": '#808080',
+    "1970 - 1986": '#808080',
+    "1987 - 1999": '#808080',
+    "2000 - 2019": '#808080'
+  },
+  a: {
+    "to 1929": '#808080',
+    "1930 - 1969": '#808080',
+    "1970 - 1986": '#808080',
+    "1987 - 1999": '#808080',
+    "2000 - 2019": '#808080'
+  },
+  bullseye: {
+    "to 1929": '#808080',
+    "1930 - 1969": '#808080',
+    "1970 - 1986": '#808080',
+    "1987 - 1999": '#808080',
+    "2000 - 2019": '#808080'
+  },
+  missing: {
+    "to 1929": '#808080',
+    "1930 - 1969": '#808080',
+    "1970 - 1986": '#808080',
+    "1987 - 1999": '#808080',
+    "2000 - 2019": '#808080'
+  }
+}
+
+bsbiDataAccess.periodStroke.print = {
+  x: {
+    "prior 1970": '#808080',
+    "1970 - 1986": '#808080',
+    "1987 - 1999": '#808080',
+    "2000 - 2019": '#808080'
+  },
+  n: {
+    "prior 1970": '#808080',
+    "1970 - 1986": '#808080',
+    "1987 - 1999": '#808080',
+    "2000 - 2019": '#808080'
+  },
+  a: {
+    "prior 1970": '#808080',
+    "1970 - 1986": '#808080',
+    "1987 - 1999": '#808080',
+    "2000 - 2019": '#808080'
+  },
+  bullseye: {
+    "prior 1970": '#808080',
+    "1970 - 1986": '#808080',
+    "1987 - 1999": '#808080',
+    "2000 - 2019": '#808080'
+  },
+  missing: {
+    "prior 1970": '#808080',
+    "1970 - 1986": '#808080',
+    "1987 - 1999": '#808080',
+    "2000 - 2019": '#808080'
   }
 }
 
@@ -93,26 +164,48 @@ bsbiDataAccess.periodStroke = {
 // that are different from those expressed in CSV files that I have available at that time.
 // Was extended to meet the requirement of showing faded symbols for hectads where recorded
 // in earlier time period.
-const periodMappings = {
-  "to 1929": {
-      prior:[],
-      csvperiods: ["to 1929"]
-    },
-  "1930 - 1969": {
-      prior: ["to 1929"],
-      csvperiods: ["1930 - 1969"]
-    },
+
+const periodMappings = {}
+
+periodMappings.print = {
+  "prior 1970": {
+    prior: [],
+    csvperiods: ["to 1929", "1930 - 1969"]
+  },
   "1970 - 1986": {
-      prior: ["to 1929", "1930 - 1969"],
-      csvperiods: ["1970 - 1986"],
-    },
+    prior: ["to 1929", "1930 - 1969"],
+    csvperiods: ["1970 - 1986"],
+  },
   "1987 - 1999": {
-      prior: ["to 1929", "1930 - 1969", "1970 - 1986"],
-      csvperiods: ["1987 - 1999"]
-    },
+    prior: ["to 1929", "1930 - 1969", "1970 - 1986"],
+    csvperiods: ["1987 - 1999"]
+  },
   "2000 - 2019": {
-      prior: ["to 1929", "1930 - 1969", "1970 - 1986", "1987 - 1999"],
-      csvperiods: ["2000 - 2009", "2010 - 2019"]
+    prior: ["to 1929", "1930 - 1969", "1970 - 1986", "1987 - 1999"],
+    csvperiods: ["2000 - 2009", "2010 - 2019"]
+  }
+}
+
+periodMappings.standard = {
+  "to 1929": {
+    prior:[],
+    csvperiods: ["to 1929"]
+  },
+  "1930 - 1969": {
+    prior: ["to 1929"],
+    csvperiods: ["1930 - 1969"]
+  },
+  "1970 - 1986": {
+    prior: ["to 1929", "1930 - 1969"],
+    csvperiods: ["1970 - 1986"],
+  },
+  "1987 - 1999": {
+    prior: ["to 1929", "1930 - 1969", "1970 - 1986"],
+    csvperiods: ["1987 - 1999"]
+  },
+  "2000 - 2019": {
+    prior: ["to 1929", "1930 - 1969", "1970 - 1986", "1987 - 1999"],
+    csvperiods: ["2000 - 2009", "2010 - 2019"]
   }
 }
 
@@ -265,6 +358,7 @@ function distAllClasses(identifier) {
   }
 
   const legendText = {
+    "prior 1970": "prior 1970",
     "to 1929": "pre-1930",
     "1930 - 1969": "1930-69",
     "1970 - 1986": "1970-86",
@@ -273,6 +367,7 @@ function distAllClasses(identifier) {
   }
 
   const opacities = {
+    "prior 1970": 1,
     "to 1929": 1,
     "1930 - 1969": 1,
     "1970 - 1986": 1,
@@ -280,7 +375,7 @@ function distAllClasses(identifier) {
     "2000 - 2019": 1
   }
 
-  const periods = Object.keys(periodMappings).reverse()
+  const periods = Object.keys(periodMappings[bsbiDataAccess.periodClasses]).reverse()
   
   return new Promise(function (resolve, reject) {
 
@@ -328,14 +423,16 @@ function distAllClasses(identifier) {
         let period, recent
         for (let iPeriod = 0; iPeriod < periods.length; iPeriod++) {
           period = periods[iPeriod]
-          const csvperiods = periodMappings[period].csvperiods
+          const csvperiods = periodMappings[bsbiDataAccess.periodClasses][period].csvperiods
           for (let iCsvperiod = 0; iCsvperiod < csvperiods.length; iCsvperiod++) {
             const csvperiod = csvperiods[iCsvperiod]
             if (r[csvperiod] === '1') {
               counts[period][country][hectadstatus]++
               counts[period][country]['total']++
               occurs = true
-              recent = recent ? recent : period //Save the most recent period
+              recent = recent ? recent : period // Save the most recent period which is used to get styles
+              // If recent = 'prior 1970', reset
+              // if (recent === 'prior 1970') recent = '1930 - 1969'
               break
             }
           }
@@ -346,7 +443,7 @@ function distAllClasses(identifier) {
         for (let iPeriod = 0; iPeriod < periods.length; iPeriod++) {
           period = periods[iPeriod]
           attrs[period] = 0
-          const csvperiods = periodMappings[period].csvperiods
+          const csvperiods = periodMappings[bsbiDataAccess.periodClasses][period].csvperiods
           for (let iCsvperiod = 0; iCsvperiod < csvperiods.length; iCsvperiod++) {
             const csvperiod = csvperiods[iCsvperiod]
             if (r[csvperiod] === '1') {
@@ -364,8 +461,8 @@ function distAllClasses(identifier) {
               gr: r.hectad,
               //shape: bsbiDataAccess.displayedMapType === 'static' ? 'circle' : 'circlerad',
               shape: 'circle',
-              colour: bsbiDataAccess.periodColours[hectadstatus][recent],
-              stroke: bsbiDataAccess.periodStroke[hectadstatus][recent],
+              colour: bsbiDataAccess.periodColours[bsbiDataAccess.periodClasses][hectadstatus][recent],
+              stroke: bsbiDataAccess.periodStroke[bsbiDataAccess.periodClasses][hectadstatus][recent],
               size: hectadstatus === 'missing' ? 0.5 : 1,
               opacity: opacities[recent],
               //caption: "Hectad: <b>".concat(r.hectad, "</b></br>Status: <b>").concat(capText, "</b>"),
@@ -375,8 +472,8 @@ function distAllClasses(identifier) {
               gr: r.hectad,
               //shape: bsbiDataAccess.displayedMapType === 'static' ? 'circle' : 'circlerad',
               shape: 'circle',
-              colour: bsbiDataAccess.periodColours.x[recent],
-              stroke: bsbiDataAccess.periodStroke.x[recent],
+                colour: bsbiDataAccess.periodColours[bsbiDataAccess.periodClasses].x[recent],
+              stroke: bsbiDataAccess.periodStroke[bsbiDataAccess.periodClasses].x[recent],
               size: 1,
               opacity: opacities[recent],
               //caption: "Hectad: <b>".concat(r.hectad, "</b>"),
@@ -400,8 +497,8 @@ function distAllClasses(identifier) {
           lines.push({text: ['Native', '', 'GB', 'IR'], underline: true})
           periods.forEach(function(p) {
             lines.push ({
-              colour: bsbiDataAccess.periodColours.n[p],
-              stroke: bsbiDataAccess.periodStroke.n[p],
+              colour: bsbiDataAccess.periodColours[bsbiDataAccess.periodClasses].n[p],
+              stroke: bsbiDataAccess.periodStroke[bsbiDataAccess.periodClasses].n[p],
               opacity: opacities[p],
               text: [legendText[p], 'symbol', counts[p].gb.n, counts[p].ire.n],
               shape: 'circle'
@@ -415,8 +512,8 @@ function distAllClasses(identifier) {
           lines.push({text: ['Alien', '', 'GB', 'IR'], underline: true})
           periods.forEach(function(p) {
             lines.push ({
-              colour: bsbiDataAccess.periodColours.a[p],
-              stroke: bsbiDataAccess.periodStroke.a[p],
+              colour: bsbiDataAccess.periodColours[bsbiDataAccess.periodClasses].a[p],
+              stroke: bsbiDataAccess.periodStroke[bsbiDataAccess.periodClasses].a[p],
               opacity: opacities[p],
               text: [legendText[p], 'symbol', counts[p].gb.a, counts[p].ire.a],
               shape: 'circle'
@@ -427,8 +524,8 @@ function distAllClasses(identifier) {
         lines = [{text: ['', '', 'GB', 'IR'], underline: true}]
         periods.forEach(function(p) {
           lines.push ({
-            colour: bsbiDataAccess.periodColours.x[p],
-            stroke: bsbiDataAccess.periodStroke.x[p],
+            colour: bsbiDataAccess.periodColours[bsbiDataAccess.periodClasses].x[p],
+            stroke: bsbiDataAccess.periodStroke[bsbiDataAccess.periodClasses].x[p],
             opacity: opacities[p],
             text: [legendText[p], 'symbol', counts[p].gb.total, counts[p].ire.total],
             shape: 'circle'
@@ -554,13 +651,13 @@ function nativeSpeciesStatus(identifier, period) {
     d3.csv(getCSV(identifier), function (r) {
       if (r.hectad ) {
         let occurs = false
-        periodMappings[period].csvperiods.forEach(function(csvPeriod) {
+        periodMappings[bsbiDataAccess.periodClasses][period].csvperiods.forEach(function(csvPeriod) {
           if (r[csvPeriod] === '1') {
             occurs = true
           }
         })
         let prior = false
-        periodMappings[period].prior.forEach(function(csvPeriod) {
+        periodMappings[bsbiDataAccess.periodClasses][period].prior.forEach(function(csvPeriod) {
           if (r[csvPeriod] === '1') {
             prior = true
           }

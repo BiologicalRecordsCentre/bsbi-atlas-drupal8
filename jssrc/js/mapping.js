@@ -1072,7 +1072,7 @@ export function changeMap() {
 
   if (currentTaxon.identifier) {
     displayedMap.setIdentfier(currentTaxon.identifier)
-    displayedMap.redrawMap()
+    return displayedMap.redrawMap()
   }
 }
 

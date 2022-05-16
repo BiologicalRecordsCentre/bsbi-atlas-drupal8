@@ -1,5 +1,6 @@
 import * as d3 from 'd3'
 // import lightGallery from 'lightGallery'
+import { bsbiDataAccess } from './dataAccessAtlas'
 import { setBaseMetaTags, addMetaTags } from './metaTags'
 import { createEcology, changeEcology } from './ecology'
 import { createGallery } from './gallery'
@@ -47,6 +48,8 @@ export function main() {
   })
 
   function mainAtlasContent() {
+
+    bsbiDataAccess.periodClasses = 'standard'
 
     const sections = [
       {

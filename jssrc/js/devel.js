@@ -187,9 +187,8 @@ export function develMainMapStyles(selector, changeMap) {
     col.option({onChange: function() {colourChange(col, $cb, status, period)}})
     $cb.change(function() {colourChange(col, $cb, status, period)})
 
-    col.fromString(bsbiDataAccess.periodColours[status][labels[period]])
-    //$cb.prop('checked', bsbiDataAccess.periodStroke[status][labels[period]] === 'black')
-    $cb.prop('checked', bsbiDataAccess.periodStroke[status][labels[period]] !== '')
+    col.fromString(bsbiDataAccess.periodColours[bsbiDataAccess.periodClasses][status][labels[period]])
+    $cb.prop('checked', bsbiDataAccess.periodStroke[bsbiDataAccess.periodClasses][status][labels[period]] !== '')
 
     pickers[status][labels[period]]=col
     checkboxes[status][labels[period]]=$cb
@@ -210,7 +209,7 @@ export function develMainMapStyles(selector, changeMap) {
       status.forEach(s => {
         period.forEach(p => {
           const $cb = checkboxes[s][labels[p]]
-          bsbiDataAccess.periodStroke[s][labels[p]] = $cb.is(':checked') ? colStroke.toHEXString() : null
+          bsbiDataAccess.periodStroke[bsbiDataAccess.periodClasses][s][labels[p]] = $cb.is(':checked') ? colStroke.toHEXString() : null
         })
       })
       changeMap()
@@ -219,11 +218,18 @@ export function develMainMapStyles(selector, changeMap) {
 
   function colourChange(col, $cb, status, period) {
 
-    console.log('checkbox', $cb.is(':checked'))
-    console.log('colour', col.toHEXString())
+    //console.log('checkbox', $cb.is(':checked'))
+    //console.log('colour', col.toHEXString())
+    //console.log('period', period)
 
-    bsbiDataAccess.periodColours[status][labels[period]] = col.toHEXString()
-    bsbiDataAccess.periodStroke[status][labels[period]] = $cb.is(':checked') ? colStroke.toHEXString() : null
+    bsbiDataAccess.periodColours[bsbiDataAccess.periodClasses][status][labels[period]] = col.toHEXString()
+    bsbiDataAccess.periodStroke[bsbiDataAccess.periodClasses][status][labels[period]] = $cb.is(':checked') ? colStroke.toHEXString() : null
+
+    // The 'prior 1970' style always matches '1930 - 1969' style
+    if (period === '1930_69') {
+      bsbiDataAccess.periodColours[bsbiDataAccess.periodClasses][status]['prior 1970'] = col.toHEXString()
+      bsbiDataAccess.periodStroke[bsbiDataAccess.periodClasses][status]['prior 1970'] = $cb.is(':checked') ? colStroke.toHEXString() : null
+    }
 
     changeMap()
   }
@@ -231,12 +237,13 @@ export function develMainMapStyles(selector, changeMap) {
   function initColours(status, key, reverse) {
     console.log('init', status, key)
     const colours = colorbrewer[key]
+  
     let periods = ['2000_19', '1987_99', '1970_86', '1930_69', 'pre_1930'].reverse()
     if (reverse) {
       periods.reverse()
     }
-    periods.forEach((period,i) => {
-      bsbiDataAccess.periodColours[status][labels[period]] = colours[i]
+    periods[bsbiDataAccess.periodClasses].forEach((period,i) => {
+      bsbiDataAccess.periodColours[bsbiDataAccess.periodClasses][status][labels[period]] = colours[i]
       pickers[status][labels[period]].fromString(colours[i])
     })
     changeMap()

@@ -1,5 +1,6 @@
 import { createMaps, getStaticMap, changeMap, mapSetCurrentTaxon } from './mapping'
 import { bsbiDataAccess } from './dataAccessAtlas'
+import { develMainMapStyles } from './devel'
 
 const $ = jQuery // eslint-disable-line no-undef
 const ds = drupalSettings // eslint-disable-line no-undef
@@ -22,20 +23,34 @@ export function downloadPage() {
   altlatChart()
 }
 
+async function downloadTaxa() {
+  const staticMap = getStaticMap()
+  const data = await d3.csv(ds.bsbi_atlas.dataRoot + 'bsbi/book_taxa.csv')
+  for (let i=0; i<data.length; i++) {
+    const t = data[i]
+    currentTaxon.identifier = t.taxonId
+    mapSetCurrentTaxon(currentTaxon)
+    await changeMap()
+    await staticMap.saveMap(true, null, t.taxon)
+  }
+}
+
 function downloadButton() {
   const $button = $('<button>').appendTo($('#bsbi-atlas-download'))
   $button.addClass('btn btn-default')
   $button.text('Download')
   $button.on('click', function(){
-    const staticMap = getStaticMap()
-    staticMap.saveMap(true)
-    phen2.saveImage(true, 'phenology')
-    altlat.saveImage(true, 'altlat')
+    //const staticMap = getStaticMap()
+    //staticMap.saveMap(true)
+    //phen2.saveImage(true, 'phenology')
+    //altlat.saveImage(true, 'altlat')
+
+    downloadTaxa()
   })
 }
 
 function mapping() {
-  $('<div id="bsbiMapDiv" style="max-width: 300px">').appendTo($('#bsbi-atlas-download'))
+  $('<div id="bsbiMapDiv" style="max-width: 500px">').appendTo($('#bsbi-atlas-download'))
 
   createMaps("#bsbiMapDiv")
   const staticMap = getStaticMap()
@@ -47,7 +62,8 @@ function mapping() {
   staticMap.setCountryLineStyle('none')
   // Ensure right map is selected
   // allclass is the default, so no need to change, but need to
-  // update showStatus
+  // update showStatus and also indicated that 4 classes are to be used
+  bsbiDataAccess.periodClasses = 'print'
   bsbiDataAccess.showStatus = true
 }
 
@@ -250,7 +266,9 @@ function taxonSelectors() {
       currentTaxon.name =  $(this).find(":selected").attr("data-content")
       currentTaxon.shortName =  $(this).find(":selected").attr("data-taxon-name")
       mapSetCurrentTaxon(currentTaxon)
-      changeMap()
+      changeMap().then(ret => {
+        console.log("remapped!!")
+      })
       phenologyUpdate()
       altlatUpdate()
     })
