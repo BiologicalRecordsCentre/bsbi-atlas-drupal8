@@ -56,31 +56,31 @@ bsbiDataAccess.periodColours.standard = {
 
 bsbiDataAccess.periodColours.print = {
   x: {
-    "prior 1970": '#f7f7f7',
+    "pre-1970": '#f7f7f7',
     "1970 - 1986": '#b9b9b9',
     "1987 - 1999": '#6f6f6f',
     "2000 - 2019": '#000000'
   },
   n: {
-    "prior 1970": '#eff3ff',
+    "pre-1970": '#eff3ff',
     "1970 - 1986": '#bdd7e7',
     "1987 - 1999": '#368dcd',
     "2000 - 2019": '#004d99'
   },
   a: {
-    "prior 1970": '#fee5d9',
+    "pre-1970": '#fee5d9',
     "1970 - 1986": '#fc9898',
     "1987 - 1999": '#ff4646',
     "2000 - 2019": '#b30000'
   },
   bullseye: {
-    "prior 1970": 'black',
+    "pre-1970": 'black',
     "1970 - 1986": 'black',
     "1987 - 1999": 'black',
     "2000 - 2019": 'black'
   },
   missing: {
-    "prior 1970": 'black',
+    "pre-1970": 'black',
     "1970 - 1986": 'black',
     "1987 - 1999": 'black',
     "2000 - 2019": 'black'
@@ -129,31 +129,31 @@ bsbiDataAccess.periodStroke.standard = {
 
 bsbiDataAccess.periodStroke.print = {
   x: {
-    "prior 1970": '#808080',
+    "pre-1970": '#808080',
     "1970 - 1986": '#808080',
     "1987 - 1999": '#808080',
     "2000 - 2019": '#808080'
   },
   n: {
-    "prior 1970": '#808080',
+    "pre-1970": '#808080',
     "1970 - 1986": '#808080',
     "1987 - 1999": '#808080',
     "2000 - 2019": '#808080'
   },
   a: {
-    "prior 1970": '#808080',
+    "pre-1970": '#808080',
     "1970 - 1986": '#808080',
     "1987 - 1999": '#808080',
     "2000 - 2019": '#808080'
   },
   bullseye: {
-    "prior 1970": '#808080',
+    "pre-1970": '#808080',
     "1970 - 1986": '#808080',
     "1987 - 1999": '#808080',
     "2000 - 2019": '#808080'
   },
   missing: {
-    "prior 1970": '#808080',
+    "pre-1970": '#808080',
     "1970 - 1986": '#808080',
     "1987 - 1999": '#808080',
     "2000 - 2019": '#808080'
@@ -168,7 +168,7 @@ bsbiDataAccess.periodStroke.print = {
 const periodMappings = {}
 
 periodMappings.print = {
-  "prior 1970": {
+  "pre-1970": {
     prior: [],
     csvperiods: ["to 1929", "1930 - 1969"]
   },
@@ -358,7 +358,7 @@ function distAllClasses(identifier) {
   }
 
   const legendText = {
-    "prior 1970": "prior 1970",
+    "pre-1970": "pre-1970",
     "to 1929": "pre-1930",
     "1930 - 1969": "1930-69",
     "1970 - 1986": "1970-86",
@@ -367,7 +367,7 @@ function distAllClasses(identifier) {
   }
 
   const opacities = {
-    "prior 1970": 1,
+    "pre-1970": 1,
     "to 1929": 1,
     "1930 - 1969": 1,
     "1970 - 1986": 1,
@@ -431,8 +431,8 @@ function distAllClasses(identifier) {
               counts[period][country]['total']++
               occurs = true
               recent = recent ? recent : period // Save the most recent period which is used to get styles
-              // If recent = 'prior 1970', reset
-              // if (recent === 'prior 1970') recent = '1930 - 1969'
+              // If recent = 'pre-1970', reset
+              // if (recent === 'pre-1970') recent = '1930 - 1969'
               break
             }
           }

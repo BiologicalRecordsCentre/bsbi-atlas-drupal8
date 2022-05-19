@@ -124,31 +124,31 @@
   };
   bsbiDataAccess.periodColours.print = {
     x: {
-      "prior 1970": '#f7f7f7',
+      "pre-1970": '#f7f7f7',
       "1970 - 1986": '#b9b9b9',
       "1987 - 1999": '#6f6f6f',
       "2000 - 2019": '#000000'
     },
     n: {
-      "prior 1970": '#eff3ff',
+      "pre-1970": '#eff3ff',
       "1970 - 1986": '#bdd7e7',
       "1987 - 1999": '#368dcd',
       "2000 - 2019": '#004d99'
     },
     a: {
-      "prior 1970": '#fee5d9',
+      "pre-1970": '#fee5d9',
       "1970 - 1986": '#fc9898',
       "1987 - 1999": '#ff4646',
       "2000 - 2019": '#b30000'
     },
     bullseye: {
-      "prior 1970": 'black',
+      "pre-1970": 'black',
       "1970 - 1986": 'black',
       "1987 - 1999": 'black',
       "2000 - 2019": 'black'
     },
     missing: {
-      "prior 1970": 'black',
+      "pre-1970": 'black',
       "1970 - 1986": 'black',
       "1987 - 1999": 'black',
       "2000 - 2019": 'black'
@@ -194,31 +194,31 @@
   };
   bsbiDataAccess.periodStroke.print = {
     x: {
-      "prior 1970": '#808080',
+      "pre-1970": '#808080',
       "1970 - 1986": '#808080',
       "1987 - 1999": '#808080',
       "2000 - 2019": '#808080'
     },
     n: {
-      "prior 1970": '#808080',
+      "pre-1970": '#808080',
       "1970 - 1986": '#808080',
       "1987 - 1999": '#808080',
       "2000 - 2019": '#808080'
     },
     a: {
-      "prior 1970": '#808080',
+      "pre-1970": '#808080',
       "1970 - 1986": '#808080',
       "1987 - 1999": '#808080',
       "2000 - 2019": '#808080'
     },
     bullseye: {
-      "prior 1970": '#808080',
+      "pre-1970": '#808080',
       "1970 - 1986": '#808080',
       "1987 - 1999": '#808080',
       "2000 - 2019": '#808080'
     },
     missing: {
-      "prior 1970": '#808080',
+      "pre-1970": '#808080',
       "1970 - 1986": '#808080',
       "1987 - 1999": '#808080',
       "2000 - 2019": '#808080'
@@ -230,7 +230,7 @@
 
   var periodMappings = {};
   periodMappings.print = {
-    "prior 1970": {
+    "pre-1970": {
       prior: [],
       csvperiods: ["to 1929", "1930 - 1969"]
     },
@@ -408,7 +408,7 @@
 
   function distAllClasses(identifier) {
     var legendText = {
-      "prior 1970": "prior 1970",
+      "pre-1970": "pre-1970",
       "to 1929": "pre-1930",
       "1930 - 1969": "1930-69",
       "1970 - 1986": "1970-86",
@@ -416,7 +416,7 @@
       "2000 - 2019": "2000-19"
     };
     var opacities = {
-      "prior 1970": 1,
+      "pre-1970": 1,
       "to 1929": 1,
       "1930 - 1969": 1,
       "1970 - 1986": 1,
@@ -481,8 +481,8 @@
                 counts[period][country]['total']++;
                 occurs = true;
                 recent = recent ? recent : period; // Save the most recent period which is used to get styles
-                // If recent = 'prior 1970', reset
-                // if (recent === 'prior 1970') recent = '1930 - 1969'
+                // If recent = 'pre-1970', reset
+                // if (recent === 'pre-1970') recent = '1930 - 1969'
 
                 break;
               }
@@ -963,7 +963,7 @@
 
   var $$5 = jQuery; // eslint-disable-line no-undef
 
-  var phen1, phen2$1, phen3, altlat$1;
+  var phen1$1, phen2$1, phen3, altlat$1;
   function createEcology(sel) {
     $$5('<h4>').appendTo($$5(sel)).text('Phenology & Apparency');
     var $p1 = $$5('<p>').appendTo($$5(sel));
@@ -980,7 +980,7 @@
     var $altlat = $$5('<div>').appendTo($$5(sel));
     var $apparency = $$5('<div>').appendTo($phenFlexLeft);
     $apparency.attr('id', 'bsbi-apparency-chart').css('max-width', '400px');
-    phen1 = brccharts.phen1({
+    phen1$1 = brccharts.phen1({
       selector: '#bsbi-apparency-chart',
       data: [],
       taxa: ['taxon'],
@@ -1169,7 +1169,7 @@
         return a.week > b.week;
       }); // Update the apparency chart
 
-      phen1.setChartOpts({
+      phen1$1.setChartOpts({
         data: sorted
       });
     }
@@ -2677,13 +2677,33 @@
     parent1: '',
     parent2: ''
   };
-  var phen2, altlat;
+  var phen1, phen2, altlat;
+  var browsedFileData;
+  var bCancelled = false;
   function downloadPage() {
     taxonSelectors();
     downloadButton();
+    $$1('<hr/>').appendTo($$1('#bsbi-atlas-download'));
+    fileUploadButton();
+    downloadBatchButton();
+    cancelDownloadBatchButton();
+    $$1('<hr/>').appendTo($$1('#bsbi-atlas-download'));
+    makeCheckbox('map', 'Map');
+    makeCheckbox('apparency', 'Apparency');
+    makeCheckbox('phenology', 'Phenology');
+    makeCheckbox('altlat', 'Alt/Lat');
     mapping();
+    apparencyChart();
     phenologyChart();
     altlatChart();
+  }
+
+  function taxonToFile(taxon) {
+    var filename = "".concat(taxon.replace(/ /g, '_'), "_");
+    filename = filename.replace(/\s+/g, '');
+    filename = filename.replace(/\./g, '_');
+    filename = filename.replace(/_+/g, '_');
+    return filename;
   }
 
   function downloadTaxa() {
@@ -2692,41 +2712,90 @@
 
   function _downloadTaxa() {
     _downloadTaxa = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee() {
-      var staticMap, data, i, t;
+      var mapRoot, staticMap, data, i, t, filename, altlatfile, altlatdata;
       return regeneratorRuntime.wrap(function _callee$(_context) {
         while (1) {
           switch (_context.prev = _context.next) {
             case 0:
-              staticMap = getStaticMap();
-              _context.next = 3;
-              return d3.csv(ds$1.bsbi_atlas.dataRoot + 'bsbi/book_taxa.csv');
+              //const apparencyRoot = `${ds.bsbi_atlas.dataRoot}bsbi/apparency/`
+              //const phenologyRoot = `${ds.bsbi_atlas.dataRoot}bsbi/phenology/`
+              mapRoot = "".concat(ds$1.bsbi_atlas.dataRoot, "bsbi/20210923/");
+              staticMap = getStaticMap(); //const data = await d3.csv(`${ds.bsbi_atlas.dataRoot}bsbi/book_taxa.csv`)
 
-            case 3:
+              _context.next = 4;
+              return d3.csv(browsedFileData);
+
+            case 4:
               data = _context.sent;
+              bCancelled = false;
               i = 0;
 
-            case 5:
+            case 7:
               if (!(i < data.length)) {
-                _context.next = 16;
+                _context.next = 31;
                 break;
               }
 
-              t = data[i];
+              if (!bCancelled) {
+                _context.next = 10;
+                break;
+              }
+
+              return _context.abrupt("break", 31);
+
+            case 10:
+              t = data[i]; // Taxon and create filename without chart type suffix
+
               currentTaxon.identifier = t.taxonId;
+              filename = taxonToFile(t.taxon); // Map
+
+              if (!$$1('#download-map').is(':checked')) {
+                _context.next = 19;
+                break;
+              }
+
               mapSetCurrentTaxon(currentTaxon);
-              _context.next = 11;
+              _context.next = 17;
               return changeMap();
 
-            case 11:
-              _context.next = 13;
-              return staticMap.saveMap(true, null, t.taxon);
+            case 17:
+              _context.next = 19;
+              return staticMap.saveMap(true, null, "".concat(filename, "map"));
 
-            case 13:
+            case 19:
+              if (!$$1('#download-altlat').is(':checked')) {
+                _context.next = 28;
+                break;
+              }
+
+              altlatfile = "".concat(mapRoot, "altlat/").concat(t.taxonId.replace(/\./g, "_"), ".csv");
+              _context.next = 23;
+              return d3.csv(altlatfile, function (r) {
+                return {
+                  distance: Number(r.distance),
+                  altitude: Number(r.altitude),
+                  metric: Number(r.percent),
+                  taxon: 'dummy'
+                };
+              });
+
+            case 23:
+              altlatdata = _context.sent;
+              _context.next = 26;
+              return altlat.setChartOpts({
+                data: altlatdata
+              });
+
+            case 26:
+              _context.next = 28;
+              return altlat.saveImage(true, "".concat(filename, "altlat"));
+
+            case 28:
               i++;
-              _context.next = 5;
+              _context.next = 7;
               break;
 
-            case 16:
+            case 31:
             case "end":
               return _context.stop();
           }
@@ -2736,17 +2805,64 @@
     return _downloadTaxa.apply(this, arguments);
   }
 
+  function fileUploadButton() {
+    var $file = $$1('<input>').appendTo($$1('#bsbi-atlas-download'));
+    $file.attr('type', 'file');
+    $file.attr('accept', '.csv');
+    $file.attr('id', 'bsbi-atlas-batch-file');
+    $file.css('margin-bottom', '1em');
+    $file.on('change', function () {
+      fileOpened(event);
+    });
+  }
+
+  function fileOpened(event) {
+    //console.log('file', event.target.files[0])
+    var reader = new FileReader();
+    reader.addEventListener('load', function (event) {
+      browsedFileData = event.target.result; //console.log('browsedFileData', browsedFileData)
+    });
+    reader.readAsDataURL(event.target.files[0]);
+  }
+
+  function downloadBatchButton() {
+    var $button = $$1('<button>').appendTo($$1('#bsbi-atlas-download'));
+    $button.addClass('btn btn-default');
+    $button.text('Download batch');
+    $button.on('click', function () {
+      clearCharts();
+      downloadTaxa();
+    });
+  }
+
+  function cancelDownloadBatchButton() {
+    var $button = $$1('<button>').appendTo($$1('#bsbi-atlas-download'));
+    $button.addClass('btn btn-default');
+    $button.css('margin-left', '1em');
+    $button.text('Cancel');
+    $button.on('click', function () {
+      bCancelled = true;
+    });
+  }
+
   function downloadButton() {
     var $button = $$1('<button>').appendTo($$1('#bsbi-atlas-download'));
     $button.addClass('btn btn-default');
-    $button.text('Download');
+    $button.text('Download selected');
     $button.on('click', function () {
-      //const staticMap = getStaticMap()
-      //staticMap.saveMap(true)
-      //phen2.saveImage(true, 'phenology')
-      //altlat.saveImage(true, 'altlat')
-      downloadTaxa();
+      clearCharts();
+      var filename = taxonToFile(currentTaxon.shortName);
+      var staticMap = getStaticMap();
+      if ($$1('#download-map').is(':checked')) staticMap.saveMap(true, null, "".concat(filename, "map"));
+      if ($$1('#download-apparency').is(':checked')) phen1.saveImage(true, "".concat(filename, "apparency"));
+      if ($$1('#download-phenology').is(':checked')) phen2.saveImage(true, "".concat(filename, "phenology"));
+      if ($$1('#download-altlat').is(':checked')) altlat.saveImage(true, "".concat(filename, "altlat"));
     });
+  }
+
+  function makeCheckbox(id, label) {
+    $$1("<input type=\"checkbox\" id=\"download-".concat(id, "\" style=\"margin:0.5em\" checked>")).appendTo($$1('#bsbi-atlas-download'));
+    $$1("<label for=\"download-".concat(id, "\">").concat(label, "</label>")).appendTo($$1('#bsbi-atlas-download'));
   }
 
   function mapping() {
@@ -2758,12 +2874,73 @@
 
     staticMap.setGridLineStyle('none'); // No boundaries
 
-    staticMap.setCountryLineStyle('none'); // Ensure right map is selected
+    staticMap.setCountryLineStyle('none'); // Background
+
+    staticMap.basemapImage('colour_elevation', false); // Ensure right map is selected
     // allclass is the default, so no need to change, but need to
     // update showStatus and also indicated that 4 classes are to be used
 
     bsbiDataAccess.periodClasses = 'print';
     bsbiDataAccess.showStatus = true;
+  }
+
+  function apparencyChart() {
+    var $apparency = $$1('<div>').appendTo($$1('#bsbi-atlas-download'));
+    $apparency.attr('id', 'bsbi-apparency-chart').css('max-width', '400px');
+    phen1 = brccharts.phen1({
+      selector: '#bsbi-apparency-chart',
+      data: [],
+      taxa: ['taxon'],
+      metrics: [{
+        prop: 'n',
+        label: 'Apparency',
+        colour: 'green',
+        fill: '#ddffdd'
+      }],
+      width: 400,
+      height: 250,
+      headPad: 35,
+      perRow: 1,
+      expand: true,
+      showTaxonLabel: false,
+      axisLeft: 'off',
+      showLegend: false,
+      interactivity: 'none'
+    });
+  }
+
+  function apparencyUpdate() {
+    var phenologyRoot = ds$1.bsbi_atlas.dataRoot + 'bsbi/apparency/all/';
+    var identifier = currentTaxon.identifier;
+    var file = phenologyRoot + identifier.replace(/\./g, "_") + '.csv';
+    d3.csv(file + '?prevent-cache=').then(function (data) {
+      dataUpdate(data);
+    })["catch"](function () {
+      // TEMPORARY CODE FOR TESTING so that a file always returned 
+      var fileDefault = phenologyRoot + 'dummy.csv';
+      d3.csv(fileDefault + '?prevent-cache=').then(function (data) {
+        dataUpdate(data);
+      });
+    });
+
+    function dataUpdate(data) {
+      // Map text to numeric values and add taxon
+      var numeric = data.map(function (d) {
+        return {
+          taxon: 'taxon',
+          week: Number(d.week),
+          n: Number(d.n)
+        };
+      }); // Sort it - just in case
+
+      var sorted = numeric.sort(function (a, b) {
+        return a.week > b.week;
+      }); // Update the apparency chart
+
+      phen1.setChartOpts({
+        data: sorted
+      });
+    }
   }
 
   function phenologyChart() {
@@ -2911,6 +3088,24 @@
     });
   }
 
+  function clearCharts() {
+    if (!$$1('#download-map').is(':checked')) {
+      var staticMap = getStaticMap();
+      console.log('clear map');
+      staticMap.clearMap();
+    }
+
+    if (!$$1('#download-apparency').is(':checked')) phen1.setChartOpts({
+      data: []
+    });
+    if (!$$1('#download-phenology').is(':checked')) phen2.setChartOpts({
+      data: []
+    });
+    if (!$$1('#download-altlat').is(':checked')) altlat.setChartOpts({
+      data: []
+    });
+  }
+
   function taxonSelectors() {
     // Overall control container
     var $container = $$1('<div>').appendTo($$1('.bsbi-atlas-taxon-selector'));
@@ -2956,15 +3151,15 @@
       $sel.selectpicker();
       $sel.on('changed.bs.select', function () {
         console.log('Identifier:', $$1(this).val());
+        clearCharts();
         currentTaxon.identifier = $$1(this).val();
         currentTaxon.name = $$1(this).find(":selected").attr("data-content");
         currentTaxon.shortName = $$1(this).find(":selected").attr("data-taxon-name");
         mapSetCurrentTaxon(currentTaxon);
-        changeMap().then(function (ret) {
-          console.log("remapped!!");
-        });
-        phenologyUpdate();
-        altlatUpdate();
+        if ($$1('#download-map').is(':checked')) changeMap();
+        if ($$1('#download-apparency').is(':checked')) apparencyUpdate();
+        if ($$1('#download-phenology').is(':checked')) phenologyUpdate();
+        if ($$1('#download-altlat').is(':checked')) altlatUpdate();
       });
     })["catch"](function () {
       console.log('Error reading taxon CSV');

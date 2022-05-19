@@ -13,40 +13,161 @@ const currentTaxon = {
   parent1: '',
   parent2: ''
 }
-let phen2, altlat
+let phen1, phen2, altlat
+let browsedFileData
+let bCancelled = false
 
 export function downloadPage() {
   taxonSelectors()
   downloadButton()
+
+  $('<hr/>').appendTo($('#bsbi-atlas-download'))
+
+  fileUploadButton()
+  downloadBatchButton()
+  cancelDownloadBatchButton()
+
+  $('<hr/>').appendTo($('#bsbi-atlas-download'))
+
+  makeCheckbox('map', 'Map')
+  makeCheckbox('apparency', 'Apparency')
+  makeCheckbox('phenology', 'Phenology')
+  makeCheckbox('altlat', 'Alt/Lat')
+
   mapping()
+  apparencyChart()
   phenologyChart()
   altlatChart()
 }
 
+function taxonToFile(taxon) {
+  let filename = `${taxon.replace(/ /g, '_')}_`
+  filename = filename.replace(/\s+/g, '')
+  filename = filename.replace(/\./g, '_')
+  filename = filename.replace(/_+/g, '_')
+
+  return filename
+}
+
 async function downloadTaxa() {
+
+  //const apparencyRoot = `${ds.bsbi_atlas.dataRoot}bsbi/apparency/`
+  //const phenologyRoot = `${ds.bsbi_atlas.dataRoot}bsbi/phenology/`
+  const mapRoot = `${ds.bsbi_atlas.dataRoot}bsbi/20210923/`
+
   const staticMap = getStaticMap()
-  const data = await d3.csv(ds.bsbi_atlas.dataRoot + 'bsbi/book_taxa.csv')
+  //const data = await d3.csv(`${ds.bsbi_atlas.dataRoot}bsbi/book_taxa.csv`)
+  const data = await d3.csv(browsedFileData)
+  bCancelled = false
   for (let i=0; i<data.length; i++) {
+
+    if (bCancelled) {
+      break
+    }
+
     const t = data[i]
+
+    // Taxon and create filename without chart type suffix
     currentTaxon.identifier = t.taxonId
-    mapSetCurrentTaxon(currentTaxon)
-    await changeMap()
-    await staticMap.saveMap(true, null, t.taxon)
+    const filename = taxonToFile(t.taxon)
+
+    // Map
+    if ($('#download-map').is(':checked')) {
+      mapSetCurrentTaxon(currentTaxon)
+      await changeMap()
+      await staticMap.saveMap(true, null, `${filename}map`)
+      // The following to get the actual data URL and prevent
+      // automatic download.
+      //const blob = await staticMap.saveMap(true, null, '')
+      //console.log('data URL', blob)
+    }
+
+    // Altlat chart
+    if ($('#download-altlat').is(':checked')) {
+      const altlatfile = `${mapRoot}altlat/${t.taxonId.replace(/\./g, "_")}.csv`
+      const altlatdata = await d3.csv(altlatfile, function(r) {
+        return {
+          distance: Number(r.distance),
+          altitude: Number(r.altitude),
+          metric: Number(r.percent),
+          taxon: 'dummy'
+        }
+      })
+      await altlat.setChartOpts({data: altlatdata })
+      await altlat.saveImage(true, `${filename}altlat`)
+    }
   }
+}
+
+function fileUploadButton() {
+
+  const $file = $('<input>').appendTo($('#bsbi-atlas-download'))
+  $file.attr('type', 'file')
+  $file.attr('accept', '.csv')
+  $file.attr('id', 'bsbi-atlas-batch-file')
+  $file.css('margin-bottom', '1em')
+  $file.on('change', function(){
+    fileOpened(event)
+  })
+}
+
+function fileOpened(event) {
+  //console.log('file', event.target.files[0])
+
+  const reader = new FileReader()
+  reader.addEventListener('load', (event) => {
+    browsedFileData = event.target.result
+    //console.log('browsedFileData', browsedFileData)
+  })
+  reader.readAsDataURL(event.target.files[0])
+}
+
+function downloadBatchButton() {
+  const $button = $('<button>').appendTo($('#bsbi-atlas-download'))
+  $button.addClass('btn btn-default')
+  $button.text('Download batch')
+  $button.on('click', function(){
+    clearCharts()
+    downloadTaxa()
+  })
+}
+
+function cancelDownloadBatchButton() {
+  const $button = $('<button>').appendTo($('#bsbi-atlas-download'))
+  $button.addClass('btn btn-default')
+  $button.css('margin-left', '1em')
+  $button.text('Cancel')
+  $button.on('click', function(){
+    bCancelled = true
+  })
 }
 
 function downloadButton() {
   const $button = $('<button>').appendTo($('#bsbi-atlas-download'))
   $button.addClass('btn btn-default')
-  $button.text('Download')
+  $button.text('Download selected')
   $button.on('click', function(){
-    //const staticMap = getStaticMap()
-    //staticMap.saveMap(true)
-    //phen2.saveImage(true, 'phenology')
-    //altlat.saveImage(true, 'altlat')
 
-    downloadTaxa()
+    clearCharts()
+
+    const filename = taxonToFile(currentTaxon.shortName)
+
+    const staticMap = getStaticMap()
+    
+    if ($('#download-map').is(':checked')) 
+      staticMap.saveMap(true, null, `${filename}map`)
+    if ($('#download-apparency').is(':checked')) 
+      phen1.saveImage(true, `${filename}apparency`)
+    if ($('#download-phenology').is(':checked')) 
+      phen2.saveImage(true, `${filename}phenology`)
+    if ($('#download-altlat').is(':checked')) 
+      altlat.saveImage(true, `${filename}altlat`)
   })
+}
+
+function makeCheckbox(id, label ) {
+  const $cb = $(`<input type="checkbox" id="download-${id}" style="margin:0.5em" checked>`).appendTo($('#bsbi-atlas-download'))
+  $(`<label for="download-${id}">${label}</label>`).appendTo($('#bsbi-atlas-download'))
 }
 
 function mapping() {
@@ -60,11 +181,70 @@ function mapping() {
   staticMap.setGridLineStyle('none')
   // No boundaries
   staticMap.setCountryLineStyle('none')
+  // Background
+  staticMap.basemapImage('colour_elevation', false)
   // Ensure right map is selected
   // allclass is the default, so no need to change, but need to
   // update showStatus and also indicated that 4 classes are to be used
   bsbiDataAccess.periodClasses = 'print'
   bsbiDataAccess.showStatus = true
+}
+
+function apparencyChart() {
+  const $apparency = $('<div>').appendTo($('#bsbi-atlas-download'))
+  $apparency.attr('id', 'bsbi-apparency-chart').css('max-width', '400px')
+
+  phen1 = brccharts.phen1({
+    selector: '#bsbi-apparency-chart',
+    data: [],
+    taxa: ['taxon'],
+    metrics: [{ prop: 'n', label: 'Apparency', colour: 'green', fill: '#ddffdd' }],
+    width: 400,
+    height: 250,
+    headPad: 35,
+    perRow: 1,
+    expand: true,
+    showTaxonLabel: false,
+    axisLeft: 'off',
+    showLegend: false,
+    interactivity: 'none'
+  })
+}
+
+function apparencyUpdate() {
+
+  const phenologyRoot = ds.bsbi_atlas.dataRoot + 'bsbi/apparency/all/'
+  const identifier = currentTaxon.identifier
+  const file = phenologyRoot + identifier.replace(/\./g, "_") + '.csv'
+  d3.csv(file + '?prevent-cache=')
+    .then(function(data) {
+      dataUpdate(data)
+    })
+    .catch(function() {
+      // TEMPORARY CODE FOR TESTING so that a file always returned 
+      const fileDefault = phenologyRoot + 'dummy.csv'
+      d3.csv(fileDefault + '?prevent-cache=')
+        .then(function(data) {
+          dataUpdate(data)
+        })
+    })
+
+  function dataUpdate(data) {
+    // Map text to numeric values and add taxon
+    const numeric = data.map(d => {
+      return {
+        taxon: 'taxon',
+        week: Number(d.week),
+        n: Number(d.n)
+      }
+    })
+    // Sort it - just in case
+    const sorted = numeric.sort((a,b) => a.week > b.week)
+    // Update the apparency chart
+    phen1.setChartOpts({
+      data: sorted,
+    })
+  }
 }
 
 function phenologyChart() {
@@ -213,6 +393,20 @@ function altlatUpdate() {
   })
 }
 
+function clearCharts() {
+  if (!$('#download-map').is(':checked')) {
+    const staticMap = getStaticMap()
+    console.log('clear map')
+    staticMap.clearMap()
+  }
+  if (!$('#download-apparency').is(':checked')) 
+    phen1.setChartOpts({data: []})
+  if (!$('#download-phenology').is(':checked')) 
+    phen2.setChartOpts({data: []})
+  if (!$('#download-altlat').is(':checked')) 
+    altlat.setChartOpts({data: []})
+}
+
 function taxonSelectors() {
 
   // Overall control container
@@ -262,15 +456,21 @@ function taxonSelectors() {
     $sel.on('changed.bs.select', function () {
 
       console.log('Identifier:', $(this).val())
+
+      clearCharts()
+
       currentTaxon.identifier = $(this).val()
       currentTaxon.name =  $(this).find(":selected").attr("data-content")
       currentTaxon.shortName =  $(this).find(":selected").attr("data-taxon-name")
       mapSetCurrentTaxon(currentTaxon)
-      changeMap().then(ret => {
-        console.log("remapped!!")
-      })
-      phenologyUpdate()
-      altlatUpdate()
+      if ($('#download-map').is(':checked')) 
+        changeMap()
+      if ($('#download-apparency').is(':checked')) 
+        apparencyUpdate()
+      if ($('#download-phenology').is(':checked')) 
+        phenologyUpdate()
+      if ($('#download-altlat').is(':checked')) 
+        altlatUpdate()
     })
   }).catch(function(){
     console.log('Error reading taxon CSV')
