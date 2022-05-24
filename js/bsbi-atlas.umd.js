@@ -3263,6 +3263,14 @@
     };
     mapSetCurrentTaxon(currentTaxon);
     $(document).ready(function () {
+      addEventListener('popstate', function (event) {
+        console.log('popstate', event);
+
+        if (event.state.identifier) {
+          $('.atlas-taxon-selector-sel').selectpicker('val', event.state.identifier);
+        }
+      });
+
       if (location.pathname === '/download') {
         // Download page
         downloadPage();
@@ -3426,10 +3434,13 @@
         $sel.selectpicker(); //$sel.on('changed.bs.select', function (e, clickedIndex, isSelected, previousValue) {
 
         $sel.on('changed.bs.select', function () {
-          console.log('Identifier:', $(this).val());
+          //console.log('Identifier:', $(this).val())
           currentTaxon.identifier = $(this).val();
           currentTaxon.name = $(this).find(":selected").attr("data-content");
           currentTaxon.shortName = $(this).find(":selected").attr("data-taxon-name");
+          window.history.pushState({
+            identifier: currentTaxon.identifier
+          }, "BSBI Atlas - ".concat(currentTaxon.shortName), "/atlas/".concat(currentTaxon.identifier));
           mapSetCurrentTaxon(currentTaxon);
           setControlState();
           changeMap();
@@ -3473,9 +3484,9 @@
                 parent2Name: mParent2['taxon name']
               };
             } else {
-              if (!mTaxon) console.error('Cannot find ' + ddbid + ' in taxon list');
-              if (!mParent1) console.error('Cannot find ' + p1ddbid + ' in taxon list');
-              if (!mParent2) console.error('Cannot find ' + p2ddbid + ' in taxon list');
+              //if (!mTaxon) console.error('Cannot find ' + ddbid + ' in taxon list')
+              //if (!mParent1) console.error('Cannot find ' + p1ddbid + ' in taxon list')
+              //if (!mParent2) console.error('Cannot find ' + p2ddbid + ' in taxon list')
               return null;
             }
           } else {
@@ -3592,8 +3603,8 @@
       $caption.html('');
       var captionRoot = ds.bsbi_atlas.dataRoot + 'bsbi/captions/';
       d3__namespace.csv(captionRoot + currentTaxon.identifier.replace(/\./g, "_") + '.csv?prevent-cache=09092021').then(function (d) {
-        console.log('caption file', d); // Set taxon name
-
+        //console.log('caption file', d)
+        // Set taxon name
         $('.bsbi-selected-taxon-name').html(getFormattedTaxonName(d[0].vernacular, d[0].taxonName, d[0].authority)); // For caption, set the various sections
         // Description
 

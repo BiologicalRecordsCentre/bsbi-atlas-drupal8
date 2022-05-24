@@ -480,4 +480,3 @@
     return Thumbnail;
 
 })));
-//# sourceMappingURL=lg-thumbnail.umd.js.map

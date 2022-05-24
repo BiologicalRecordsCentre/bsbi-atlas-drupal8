@@ -51,7 +51,8 @@ export default [
       },
 			name: 'bsbi-atlas',
 			file: pkg.browser_min,
-			format: 'umd'
+			format: 'umd',
+      sourcemap: true
 		},
 		plugins: [
 			resolve(), // so Rollup can find node libs
