@@ -1371,6 +1371,8 @@
               hash: false,
               // Do not allow users to close the gallery
               closable: false,
+              // Hide download button
+              download: false,
               // Add maximize icon to enlarge the gallery
               showMaximizeIcon: true,
               // Append caption inside the slide item
@@ -2688,6 +2690,8 @@
     taxonSelectors();
     downloadButton();
     $$1('<hr/>').appendTo($$1('#bsbi-atlas-download'));
+    var $instructions = $$1('<p>').appendTo($$1('#bsbi-atlas-download'));
+    $instructions.html("\n    For batch downloads, first select a CSV file from your computer\n    that has two columns: <i>taxonId</i> which has the ddbid for each \n    taxon and <i>taxon</i> which specifies a taxon name. \n    The taxon name is only used to name the file and\n    doesn't have to be exactly the same as \n    the name used elsewhere on the site. The ddbid will also be used \n    in the filename in case of any ambiguity.\n  ");
     fileUploadButton();
     downloadBatchButton();
     cancelDownloadBatchButton();
@@ -2702,8 +2706,10 @@
     altlatChart();
   }
 
-  function taxonToFile(taxon) {
-    var filename = "".concat(taxon.replace(/ /g, '_'), "_");
+  function taxonToFile(taxon, id) {
+    var filename = "".concat(taxon, "_").concat(id, "_"); //filename = `${taxon.replace(/ /g, '_')}_`
+
+    filename = filename.replace(/ /g, '_');
     filename = filename.replace(/\s+/g, '');
     filename = filename.replace(/\./g, '_');
     filename = filename.replace(/_+/g, '_');
@@ -2745,7 +2751,7 @@
             case 8:
               // Taxon
               t = data[i];
-              filename = taxonToFile(t.taxon); // Map
+              filename = taxonToFile(t.taxon, t.taxonId); // Map
 
               p1 = mappingUpdate(t.taxonId, filename);
               p2 = apparencyUpdate(t.taxonId, filename);
@@ -2814,7 +2820,7 @@
     $button.text('Download selected');
     $button.on('click', function () {
       clearCharts();
-      var filename = taxonToFile(currentTaxon.shortName);
+      var filename = taxonToFile(currentTaxon.shortName, currentTaxon.identifier);
       var staticMap = getStaticMap();
       if ($$1('#download-map').is(':checked')) staticMap.saveMap(true, null, "".concat(filename, "map"));
       if ($$1('#download-apparency').is(':checked')) phen1.saveImage(true, "".concat(filename, "apparency"));
@@ -2877,7 +2883,7 @@
               }
 
               _context2.next = 9;
-              return staticMap.saveMap(true, null, "".concat(taxonToFile(taxon), "map"));
+              return staticMap.saveMap(true, null, "".concat(taxonToFile(taxon, taxonId), "map"));
 
             case 9:
               return _context2.abrupt("return", Promise.resolve());
@@ -2967,7 +2973,7 @@
               }
 
               _context3.next = 16;
-              return phen1.saveImage(true, "".concat(taxonToFile(taxon), "apparency"));
+              return phen1.saveImage(true, "".concat(taxonToFile(taxon, taxonId), "apparency"));
 
             case 16:
               return _context3.abrupt("return", Promise.resolve());
@@ -3051,7 +3057,7 @@
               }
 
               _context4.next = 16;
-              return phen2.saveImage(true, "".concat(taxonToFile(taxon), "phenology"));
+              return phen2.saveImage(true, "".concat(taxonToFile(taxon, taxonId), "phenology"));
 
             case 16:
               return _context4.abrupt("return", Promise.resolve());
@@ -3156,7 +3162,7 @@
               }
 
               _context5.next = 11;
-              return altlat.saveImage(true, "".concat(taxonToFile(taxon), "altlat"));
+              return altlat.saveImage(true, "".concat(taxonToFile(taxon, taxonId), "altlat"));
 
             case 11:
               return _context5.abrupt("return", Promise.resolve());

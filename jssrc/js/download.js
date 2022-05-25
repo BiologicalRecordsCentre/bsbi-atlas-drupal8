@@ -23,6 +23,16 @@ export function downloadPage() {
 
   $('<hr/>').appendTo($('#bsbi-atlas-download'))
 
+  const $instructions = $('<p>').appendTo($('#bsbi-atlas-download'))
+  $instructions.html(`
+    For batch downloads, first select a CSV file from your computer
+    that has two columns: <i>taxonId</i> which has the ddbid for each 
+    taxon and <i>taxon</i> which specifies a taxon name. 
+    The taxon name is only used to name the file and
+    doesn't have to be exactly the same as 
+    the name used elsewhere on the site. The ddbid will also be used 
+    in the filename in case of any ambiguity.
+  `)
   fileUploadButton()
   downloadBatchButton()
   cancelDownloadBatchButton()
@@ -40,8 +50,9 @@ export function downloadPage() {
   altlatChart()
 }
 
-function taxonToFile(taxon) {
-  let filename = `${taxon.replace(/ /g, '_')}_`
+function taxonToFile(taxon, id) {
+  let filename = `${taxon}_${id}_`
+  filename = filename.replace(/ /g, '_')
   filename = filename.replace(/\s+/g, '')
   filename = filename.replace(/\./g, '_')
   filename = filename.replace(/_+/g, '_')
@@ -61,7 +72,7 @@ async function downloadTaxa() {
     }
     // Taxon
     const t = data[i]
-    const filename = taxonToFile(t.taxon)
+    const filename = taxonToFile(t.taxon, t.taxonId)
 
     // Map
     const p1 = mappingUpdate(t.taxonId, filename)
@@ -121,7 +132,7 @@ function downloadButton() {
 
   $button.on('click', function(){
     clearCharts()
-    const filename = taxonToFile(currentTaxon.shortName)
+    const filename = taxonToFile(currentTaxon.shortName, currentTaxon.identifier)
     const staticMap = getStaticMap()
 
     if ($('#download-map').is(':checked')) 
@@ -168,7 +179,7 @@ async function mappingUpdate(taxonId ,taxon) {
     mapSetCurrentTaxon(currentTaxon)
     await changeMap()
     if (taxon) {
-      await staticMap.saveMap(true, null, `${taxonToFile(taxon)}map`)
+      await staticMap.saveMap(true, null, `${taxonToFile(taxon, taxonId)}map`)
     }
   }
   return Promise.resolve()
@@ -207,7 +218,7 @@ async function apparencyUpdate(taxonId ,taxon) {
     }
     await apparency(phen1, data)
     if (taxon) {
-      await phen1.saveImage(true, `${taxonToFile(taxon)}apparency`)
+      await phen1.saveImage(true, `${taxonToFile(taxon, taxonId)}apparency`)
     } 
   }
   return Promise.resolve()
@@ -245,7 +256,7 @@ async function phenologyUpdate(taxonId ,taxon) {
     }
     await phenology(phen2, data, null)
     if (taxon) {
-      await phen2.saveImage(true, `${taxonToFile(taxon)}phenology`)
+      await phen2.saveImage(true, `${taxonToFile(taxon, taxonId)}phenology`)
     }
   }
   return Promise.resolve()
@@ -320,7 +331,7 @@ async function altlatUpdate(taxonId ,taxon) {
     const altlatdata = await d3.csv(altlatfile)
     await altLat(altlat, altlatdata)
     if (taxon) {
-      await altlat.saveImage(true, `${taxonToFile(taxon)}altlat`)
+      await altlat.saveImage(true, `${taxonToFile(taxon, taxonId)}altlat`)
     }
   }
   return Promise.resolve()

@@ -85,6 +85,8 @@ export function createGallery(id, ddbid) {
           hash: false,
           // Do not allow users to close the gallery
           closable: false,
+          // Hide download button
+          download: false,
           // Add maximize icon to enlarge the gallery
           showMaximizeIcon: true,
           // Append caption inside the slide item
