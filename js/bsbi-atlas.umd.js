@@ -407,6 +407,15 @@
   }
 
   function distAllClasses(identifier) {
+    var statusText = {
+      n: 'Native',
+      //inative
+      a: 'Non-native (alien)',
+      //non-native (alien),
+      bullseye: 'Introduced',
+      missing: 'missing' //no value yet
+
+    };
     var legendText = {
       "pre-1970": "pre-1970",
       "to 1929": "pre-1930",
@@ -511,7 +520,6 @@
             var point;
 
             if (bsbiDataAccess.showStatus) {
-              //const capText = statusText[hectadstatus]
               point = {
                 gr: r.hectad,
                 //shape: bsbiDataAccess.displayedMapType === 'static' ? 'circle' : 'circlerad',
@@ -519,8 +527,9 @@
                 colour: bsbiDataAccess.periodColours[bsbiDataAccess.periodClasses][hectadstatus][recent],
                 stroke: bsbiDataAccess.periodStroke[bsbiDataAccess.periodClasses][hectadstatus][recent],
                 size: hectadstatus === 'missing' ? 0.5 : 1,
-                opacity: opacities[recent] //caption: "Hectad: <b>".concat(r.hectad, "</b></br>Status: <b>").concat(capText, "</b>"),
-
+                opacity: opacities[recent],
+                //caption: "Hectad: <b>".concat(r.hectad, "</b></br>Status: <b>").concat(statusText[hectadstatus], "</b>"),
+                caption: "Hectad: <b>".concat(r.hectad, "</b><br/>\n                        Most recent dateclass: <b>").concat(getPeriodText(recent), "</b><br/>\n                        Status: <b>").concat(statusText[hectadstatus], "</b>")
               };
             } else {
               point = {
@@ -530,8 +539,8 @@
                 colour: bsbiDataAccess.periodColours[bsbiDataAccess.periodClasses].x[recent],
                 stroke: bsbiDataAccess.periodStroke[bsbiDataAccess.periodClasses].x[recent],
                 size: 1,
-                opacity: opacities[recent] //caption: "Hectad: <b>".concat(r.hectad, "</b>"),
-
+                opacity: opacities[recent],
+                caption: "Hectad: <b>".concat(r.hectad, "</b><br/>\n                        Most recent dateclass: <b>").concat(getPeriodText(recent), "</b>")
               };
             } // Add attributes required for download
             // Use the legend keys as the attr names
@@ -691,6 +700,10 @@
     });
   }
 
+  function getPeriodText(p) {
+    return p === "to 1929" ? "pre-1930" : p.replace(" - ", "-");
+  }
+
   function nativeSpeciesStatus(identifier, period) {
     return new Promise(function (resolve, reject) {
       d3__namespace.csv(getCSV(identifier), function (r) {
@@ -717,8 +730,8 @@
               colour: occurs ? '#636363' : '#bdbdbd',
               //opacity: occurs ? 1 : 0.5,
               opacity: 1,
-              stroke: 'black' //caption: "Hectad: <b>".concat(r.hectad, "</b>")
-
+              stroke: 'black',
+              caption: "Hectad: <b>".concat(r.hectad, "</b><br/>\n            Occurrence: <b>").concat(occurs ? 'in' : 'prior to', "</b> the period <b>").concat(getPeriodText(period), "</b>")
             };
           }
         }
@@ -731,7 +744,7 @@
             colour: '#636363',
             opacity: 1,
             stroke: 'black',
-            text: period === "to 1929" ? "pre-1930" : period.replace(" - ", "-"),
+            text: getPeriodText(period),
             shape: 'circle'
           }, {
             //colour: 'black',
@@ -783,14 +796,20 @@
         var presentLate = late.some(function (f) {
           return r[f] === '1';
         });
-        var i;
+        var i, capText;
 
         if (presentEarly && presentLate) {
           i = 0; //present
+
+          capText = 'Present in both periods';
         } else if (!presentEarly && presentLate) {
           i = 1; //gain
+
+          capText = 'Gain';
         } else if (presentEarly && !presentLate) {
           i = 2; //loss
+
+          capText = 'Loss';
         } else {
           i = 100; //not present in either period
         }
@@ -799,8 +818,8 @@
           return {
             gr: r.hectad,
             colour: colours[i],
-            shape: shapes[i] //caption: "Hectad: <b>".concat(r.hectad, "</b></br>Change: <b>").concat(capText, "</b>")
-
+            shape: shapes[i],
+            caption: "Hectad: <b>".concat(r.hectad, "</b></br>Change: <b>").concat(capText, "</b>")
           };
         }
       }).then(function (data) {
@@ -846,8 +865,8 @@
         if (r.hectad && tetrads) {
           return {
             gr: r.hectad,
-            size: Math.sqrt(tetround) / 5 //caption: "Hectad: <b>".concat(r.hectad, "</b></br>Tetrads where present: <b>").concat(tetrads, "</b>")
-
+            size: Math.sqrt(tetround) / 5,
+            caption: "Hectad: <b>".concat(r.hectad, "</b></br>Tetrads where present: <b>").concat(tetrads, "</b>")
           };
         }
       }).then(function (data) {
@@ -1233,12 +1252,14 @@
       metrics: [{
         prop: 'band2',
         label: 'In leaf',
-        colour: '#00990066',
+        colour: '#009900',
+        opacity: 0.5,
         svg: svgLeaf
       }, {
         prop: 'band1',
         label: 'Flowering',
-        colour: '#ff9900aa',
+        colour: '#ff9900',
+        opacity: 0.5,
         svg: svgFlower
       }]
     });
@@ -2707,8 +2728,7 @@
   }
 
   function taxonToFile(taxon, id) {
-    var filename = "".concat(taxon, "_").concat(id, "_"); //filename = `${taxon.replace(/ /g, '_')}_`
-
+    var filename = "".concat(taxon, "_").concat(id, "_");
     filename = filename.replace(/ /g, '_');
     filename = filename.replace(/\s+/g, '');
     filename = filename.replace(/\./g, '_');
@@ -3570,6 +3590,7 @@
       var $left = $('<div class="col-sm-8">').appendTo($r);
       var $right = $('<div class="col-sm-4">').appendTo($r);
       $left.append('<div id="bsbiMapDiv" width="100%"></div>');
+      $left.append('<div id="dotCaption" width="100%"></div>');
       var $taxon = $('<div class="bsbi-selected-taxon-name bsbi-section-summary"></div>').appendTo($right);
       $taxon.css('font-size', '1.3em');
       $right.append('<hr/>');

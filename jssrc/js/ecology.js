@@ -298,8 +298,8 @@ export function phenology(chart, data, textId) {
       }
     ],
     metrics: [
-      { prop: 'band2', label: 'In leaf', colour: '#00990066', svg: svgLeaf },
-      { prop: 'band1', label: 'Flowering', colour: '#ff9900aa', svg: svgFlower },
+      { prop: 'band2', label: 'In leaf', colour: '#009900', opacity: 0.5, svg: svgLeaf },
+      { prop: 'band1', label: 'Flowering', colour: '#ff9900', opacity: 0.5, svg: svgFlower }
     ]
   })
 }

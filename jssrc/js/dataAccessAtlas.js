@@ -456,7 +456,6 @@ function distAllClasses(identifier) {
         if (occurs) {
           let point
           if (bsbiDataAccess.showStatus) {
-            //const capText = statusText[hectadstatus]
             point = {
               gr: r.hectad,
               //shape: bsbiDataAccess.displayedMapType === 'static' ? 'circle' : 'circlerad',
@@ -465,7 +464,10 @@ function distAllClasses(identifier) {
               stroke: bsbiDataAccess.periodStroke[bsbiDataAccess.periodClasses][hectadstatus][recent],
               size: hectadstatus === 'missing' ? 0.5 : 1,
               opacity: opacities[recent],
-              //caption: "Hectad: <b>".concat(r.hectad, "</b></br>Status: <b>").concat(capText, "</b>"),
+              //caption: "Hectad: <b>".concat(r.hectad, "</b></br>Status: <b>").concat(statusText[hectadstatus], "</b>"),
+              caption: `Hectad: <b>${r.hectad}</b><br/>
+                        Most recent dateclass: <b>${getPeriodText(recent)}</b><br/>
+                        Status: <b>${statusText[hectadstatus]}</b>`,
             }
           } else {
             point = {
@@ -476,7 +478,8 @@ function distAllClasses(identifier) {
               stroke: bsbiDataAccess.periodStroke[bsbiDataAccess.periodClasses].x[recent],
               size: 1,
               opacity: opacities[recent],
-              //caption: "Hectad: <b>".concat(r.hectad, "</b>"),
+              caption: `Hectad: <b>${r.hectad}</b><br/>
+                        Most recent dateclass: <b>${getPeriodText(recent)}</b>`,
             }
           }
           // Add attributes required for download
@@ -625,6 +628,10 @@ function distAllClassesMonad(identifier) {
   })
 }
 
+function getPeriodText(p) {
+  return p === "to 1929" ? "pre-1930" : p.replace(" - ", "-")
+}
+
 function nativeSpeciesStatus(identifier, period) {
 
   const counts = {
@@ -672,7 +679,8 @@ function nativeSpeciesStatus(identifier, period) {
             //opacity: occurs ? 1 : 0.5,
             opacity: 1,
             stroke: 'black',
-            //caption: "Hectad: <b>".concat(r.hectad, "</b>")
+            caption: `Hectad: <b>${r.hectad}</b><br/>
+            Occurrence: <b>${occurs ? 'in' : 'prior to'}</b> the period <b>${getPeriodText(period)}</b>`
           }
         }
       }
@@ -685,7 +693,7 @@ function nativeSpeciesStatus(identifier, period) {
           colour: '#636363',
           opacity: 1,
           stroke: 'black',
-          text: period === "to 1929" ? "pre-1930" : period.replace(" - ", "-"),
+          text: getPeriodText(period),
           shape: 'circle'
         }, {
           //colour: 'black',
@@ -741,13 +749,13 @@ function change(identifier, early, late, legendTitle) {
 
       if (presentEarly && presentLate) {
         i = 0 //present
-        capText = 'present in both periods'
+        capText = 'Present in both periods'
       } else if (!presentEarly && presentLate) {
         i = 1 //gain
-        capText = 'gain'
+        capText = 'Gain'
       } else if (presentEarly && !presentLate) {
         i = 2 //loss
-        capText = 'loss'
+        capText = 'Loss'
       } else {
         i = 100 //not present in either period
       }
@@ -757,7 +765,7 @@ function change(identifier, early, late, legendTitle) {
           gr: r.hectad,
           colour: colours[i],
           shape: shapes[i],
-          //caption: "Hectad: <b>".concat(r.hectad, "</b></br>Change: <b>").concat(capText, "</b>")
+          caption: "Hectad: <b>".concat(r.hectad, "</b></br>Change: <b>").concat(capText, "</b>")
         }
       }
     }).then(function (data) {
@@ -807,7 +815,7 @@ bsbiDataAccess.bsbiHectadDateTetFreq = function(identifier) {
         return {
           gr: r.hectad,
           size: Math.sqrt(tetround)/5,
-          //caption: "Hectad: <b>".concat(r.hectad, "</b></br>Tetrads where present: <b>").concat(tetrads, "</b>")
+          caption: "Hectad: <b>".concat(r.hectad, "</b></br>Tetrads where present: <b>").concat(tetrads, "</b>")
         }
       }
     }).then(function (data) {

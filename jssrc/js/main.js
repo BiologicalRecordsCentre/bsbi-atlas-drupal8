@@ -344,6 +344,7 @@ export function main() {
     const $left = $('<div class="col-sm-8">').appendTo($r)
     const $right = $('<div class="col-sm-4">').appendTo($r)
     $left.append('<div id="bsbiMapDiv" width="100%"></div>')
+    $left.append('<div id="dotCaption" width="100%"></div>')
 
     const $taxon = $('<div class="bsbi-selected-taxon-name bsbi-section-summary"></div>').appendTo($right)
     $taxon.css('font-size', '1.3em')
