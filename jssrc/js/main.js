@@ -28,8 +28,8 @@ export function main() {
   $(document).ready(function () {
 
     addEventListener('popstate', event => { 
-      console.log('popstate', event)
-      if (event.state.identifier) {
+      //console.log('popstate', event)
+      if (event.state && event.state.identifier) {
         $('.atlas-taxon-selector-sel').selectpicker('val', event.state.identifier)
       }
     })
@@ -221,16 +221,21 @@ export function main() {
       $sel.attr('title', 'Select a taxon')
       $sel.selectpicker()
       //$sel.on('changed.bs.select', function (e, clickedIndex, isSelected, previousValue) {
-      $sel.on('changed.bs.select', function () {
+      $sel.on('changed.bs.select', function (e, clickedIndex, newValue, oldValue) {
 
+        //console.log(e, clickedIndex, newValue, oldValue)
         //console.log('Identifier:', $(this).val())
 
         currentTaxon.identifier = $(this).val()
         currentTaxon.name =  $(this).find(":selected").attr("data-content")
         currentTaxon.shortName =  $(this).find(":selected").attr("data-taxon-name")
         
-        window.history.pushState({identifier: currentTaxon.identifier}, `BSBI Atlas - ${currentTaxon.shortName}`, `/atlas/${currentTaxon.identifier}`)
-        
+        // If selection was made programatically (browser back or forward
+        // button), don't add to history.
+        if (clickedIndex) {
+          window.history.pushState({identifier: currentTaxon.identifier}, `BSBI Atlas - ${currentTaxon.shortName}`, `/atlas/${currentTaxon.identifier}`)
+        }
+
         mapSetCurrentTaxon(currentTaxon)
         setControlState()
         changeMap()
@@ -239,9 +244,10 @@ export function main() {
         createGallery('bsbi-gallery', currentTaxon.identifier)
       })
 
-      // If identifier passed in URL, set the value
+      // If identifier passed in URL, set the value and add to history
       if (ds.bsbi_atlas.identifier) {
         $sel.selectpicker('val', ds.bsbi_atlas.identifier)
+        window.history.pushState({identifier: ds.bsbi_atlas.identifier}, `BSBI Atlas - ${ds.bsbi_atlas.identifier}`, `/atlas/${currentTaxon.identifier}`)
       }
 
       // Get list of hybrid taxa which can be mapped with their parents

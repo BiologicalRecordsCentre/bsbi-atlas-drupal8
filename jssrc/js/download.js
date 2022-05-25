@@ -329,7 +329,7 @@ async function altlatUpdate(taxonId ,taxon) {
 function clearCharts() {
   if (!$('#download-map').is(':checked')) {
     const staticMap = getStaticMap()
-    console.log('clear map')
+    //console.log('clear map')
     staticMap.clearMap()
   }
   if (!$('#download-apparency').is(':checked')) 

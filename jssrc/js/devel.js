@@ -38,6 +38,8 @@ export function develChangeMapColours(selector, changeMap) {
 
 export function develMainMapStyles(selector, changeMap) {
 
+  if ($(selector).length === 0) return
+
   const labels = {
     '2000_19': '2000 - 2019',
     '1987_99': '1987 - 1999',

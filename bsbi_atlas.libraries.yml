@@ -7,7 +7,7 @@ bsbiatlas:
       css/lightgallery-bundle.min.css: {}
   js:
     js/bootstrap-select.min.js: {}
-    js/bsbi-atlas.umd.js: {}
+    js/bsbi-atlas-min.umd.js: {}
     js/jscolor.min.js: {}
     js/lightgallery.umd.js: {}
     js/lg-thumbnail.umd.js: {}
