@@ -193,7 +193,7 @@ export function main() {
         if (d['vernacular']) {
           name = '<b>' + d['vernacular'] + '</b> '
         }
-        name = name + '<i>' + d['taxon name'] + '</i>'
+        name = name + '<i>' + d['taxonName'] + '</i>'
         if (d['qualifier']) {
           name = name + ' <b><i>' + d['qualifier'] + '</i></b>'
         }
@@ -203,13 +203,13 @@ export function main() {
 
         const $opt = $('<option>')
         $opt.attr('data-content', name)
-        $opt.attr('value', d['ddb id'])
+        $opt.attr('value', d['ddbid'])
         $opt.attr('data-canonical', d['canonical'])
-        $opt.attr('data-taxon-name', d['taxon name'])
+        $opt.attr('data-taxon-name', d['taxonName'])
         $opt.attr('data-qualifier', d['qualifier'])
         $opt.attr('data-vernacular', d['vernacular'])
 
-        $opt.attr('data-tetrad', d['tetrad'])
+        //$opt.attr('data-tetrad', d['tetrad'])
         //$opt.attr('data-monad', d['monad'])
 
         $opt.html(name).appendTo($sel)
@@ -220,28 +220,36 @@ export function main() {
       $sel.attr('data-header', 'Start typing the name of a taxon')
       $sel.attr('title', 'Select a taxon')
       $sel.selectpicker()
-      //$sel.on('changed.bs.select', function (e, clickedIndex, isSelected, previousValue) {
+
       $sel.on('changed.bs.select', function (e, clickedIndex, newValue, oldValue) {
 
         //console.log(e, clickedIndex, newValue, oldValue)
         //console.log('Identifier:', $(this).val())
 
-        currentTaxon.identifier = $(this).val()
-        currentTaxon.name =  $(this).find(":selected").attr("data-content")
-        currentTaxon.shortName =  $(this).find(":selected").attr("data-taxon-name")
-        
-        // If selection was made programatically (browser back or forward
-        // button), don't add to history.
-        if (clickedIndex) {
-          window.history.pushState({identifier: currentTaxon.identifier}, `BSBI Atlas - ${currentTaxon.shortName}`, `/atlas/${currentTaxon.identifier}`)
-        }
+        // Because more than one selector can be present on page
+        // (one for mobile and one for larger devices), if this rountine
+        // is reached by $sel.selectpicker() then it will be invoked more
+        // once for each picker, so the comparison below ensures that
+        // the code here is only executed once.
+        if (currentTaxon.identifier !== $(this).val()) {
 
-        mapSetCurrentTaxon(currentTaxon)
-        setControlState()
-        changeMap()
-        changeCaption() //Also changes taxon name display in sections
-        changeEcologyTab()
-        createGallery('bsbi-gallery', currentTaxon.identifier)
+          currentTaxon.identifier = $(this).val()
+          currentTaxon.name =  $(this).find(":selected").attr("data-content")
+          currentTaxon.shortName =  $(this).find(":selected").attr("data-taxon-name")
+          
+          // If selection was made programatically (browser back or forward
+          // button), don't add to history.
+          if (clickedIndex) {
+            window.history.pushState({identifier: currentTaxon.identifier}, `BSBI Atlas - ${currentTaxon.shortName}`, `/atlas/${currentTaxon.identifier}`)
+          }
+
+          mapSetCurrentTaxon(currentTaxon)
+          setControlState()
+          changeMap()
+          changeCaption() //Also changes taxon name display in sections
+          changeEcologyTab()
+          createGallery('bsbi-gallery', currentTaxon.identifier)
+        }
       })
 
       // If identifier passed in URL, set the value and add to history
@@ -397,7 +405,7 @@ export function main() {
     const $caption = $('#bsbi-caption')
     $caption.html('')
     const captionRoot = ds.bsbi_atlas.dataRoot + 'bsbi/captions/'
-    d3.csv(captionRoot + currentTaxon.identifier.replace(/\./g, "_") + '.csv?prevent-cache=09092021')
+    d3.csv(captionRoot + currentTaxon.identifier.replace(/\./g, "_") + '.csv?prevent-cache=26052022x2')
       .then(function(d) {
 
         //console.log('caption file', d)

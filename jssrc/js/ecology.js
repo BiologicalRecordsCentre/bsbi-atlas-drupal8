@@ -192,6 +192,8 @@ export function changeEcology(dataRoot, identifier) {
       apparency(phen1, data)
     })
     .catch(function() {
+      // console.warn(`Apparency chart failed for ${fileAll}. Error message:`, e)
+      // phen1.setChartOpts({data: []})
       // TEMPORARY CODE FOR TESTING so that a file always returned 
       const fileDefault = apparencyRoot + 'all/dummy.csv'
       d3.csv(fileDefault + '?prevent-cache=')
@@ -207,6 +209,8 @@ export function changeEcology(dataRoot, identifier) {
       apparencyByLat(phen3, data)
     })
     .catch(function() {
+      // console.warn(`Apparency by latitude chart failed for ${fileLat}. Error message:`, e)
+      // phen3.setChartOpts({data: [], metrics: [], spread: false})
       // TEMPORARY CODE FOR TESTING so that a file always returned 
       const fileDefault = apparencyRoot + 'byLat/dummy.csv'
       d3.csv(fileDefault + '?prevent-cache=')
@@ -222,6 +226,8 @@ export function changeEcology(dataRoot, identifier) {
       phenology(phen2, data, 'bsbi-phenology-source')
     })
     .catch(function() {
+      // console.warn(`Phenology chart failed for ${file}. Error message:`, e)
+      // phen2.setChartOpts({data: []})
       // TEMPORARY CODE FOR TESTING so that a file always returned 
       const fileDefault = phenologyRoot + 'dummy-phenology.csv'
       d3.csv(fileDefault + '?prevent-cache=')
@@ -245,7 +251,10 @@ export function changeEcology(dataRoot, identifier) {
   // Using pre-processed altlat data
   const altlatdata = `${mapRoot}altlat/${identifier.replace(/\./g, "_")}.csv`
   d3.csv(altlatdata).then(function(data){
-    altLat(altlat, data)
+    return altLat(altlat, data)
+  }).catch(e => {
+    console.warn(`altlat chart failed for ${altlatdata}. Error message:`, e)
+    altlat.setChartOpts({data: []})
   })
 }
 
@@ -326,6 +335,7 @@ export function apparencyByLat(chart, data) {
   return chart.setChartOpts({
     data: sorted,
     metrics: metrics,
+    spread: true
   })
 }
 

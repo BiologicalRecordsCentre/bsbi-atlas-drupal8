@@ -177,7 +177,7 @@ async function mappingUpdate(taxonId ,taxon) {
   if ($('#download-map').is(':checked')) {
     currentTaxon.identifier = taxonId
     mapSetCurrentTaxon(currentTaxon)
-    await changeMap()
+    await changeMap(true)
     if (taxon) {
       await staticMap.saveMap(true, null, `${taxonToFile(taxon, taxonId)}map`)
     }
@@ -370,7 +370,7 @@ function taxonSelectors() {
       if (d['vernacular']) {
         name = '<b>' + d['vernacular'] + '</b> '
       }
-      name = name + '<i>' + d['taxon name'] + '</i>'
+      name = name + '<i>' + d['taxonName'] + '</i>'
       if (d['qualifier']) {
         name = name + ' <b><i>' + d['qualifier'] + '</i></b>'
       }
@@ -380,13 +380,13 @@ function taxonSelectors() {
 
       const $opt = $('<option>')
       $opt.attr('data-content', name)
-      $opt.attr('value', d['ddb id'])
+      $opt.attr('value', d['ddbid'])
       $opt.attr('data-canonical', d['canonical'])
-      $opt.attr('data-taxon-name', d['taxon name'])
+      $opt.attr('data-taxon-name', d['taxonName'])
       $opt.attr('data-qualifier', d['qualifier'])
       $opt.attr('data-vernacular', d['vernacular'])
 
-      $opt.attr('data-tetrad', d['tetrad'])
+      //$opt.attr('data-tetrad', d['tetrad'])
       //$opt.attr('data-monad', d['monad'])
 
       $opt.html(name).appendTo($sel)

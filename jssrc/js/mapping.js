@@ -531,7 +531,7 @@ function mapImageButton($parent, i) {
       fontSize: 10,
       //img: `${ds.bsbi_atlas.dataRoot}combined-logos.png`
     }
-    staticMap.saveMap(imageType === 'svg', info)
+    staticMap.saveMap(imageType === 'svg', info, 'atlas-image')
   })
 
   makeRadio('PNG', 'png', true)
@@ -1034,7 +1034,7 @@ export function createMaps(selector) {
   $('#slippyAtlasMain').hide()
 }
 
-export function changeMap() {
+export function changeMap(retPromise) {
 
   let displayedMap
   if (displayedMapType === 'static') {
@@ -1072,7 +1072,15 @@ export function changeMap() {
 
   if (currentTaxon.identifier) {
     displayedMap.setIdentfier(currentTaxon.identifier)
-    return displayedMap.redrawMap()
+
+    if (retPromise) {
+      return displayedMap.redrawMap()
+    } else {
+      displayedMap.redrawMap().catch(e => {
+        console.warn(`Unable to generate map for ${currentTaxon.shortName} (${currentTaxon.identifier}). Error message:`, e)
+        displayedMap.clearMap()
+      })
+    }
   }
 }
 
@@ -1111,8 +1119,6 @@ export function createMapControls(selector) {
     mapImageButton(mapControlRow(sel, 'atlas-image-button'), i)
     mapDownloadButton(mapControlRow(sel, 'atlas-download-button'), i)
   })
-
-  //DevelMappingPerformance($, selector, changeMap, bsbiDataAccess)
 }
 
 export function updateBsbiDataAccess(key, value) {
