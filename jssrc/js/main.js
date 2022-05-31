@@ -11,6 +11,7 @@ import { downloadPage } from './download'
 
 const $ = jQuery // eslint-disable-line no-undef
 const ds = drupalSettings // eslint-disable-line no-undef
+const pcache = '26052022x5'
 
 export function main() {
 
@@ -20,8 +21,7 @@ export function main() {
     name: null,
     shortName: null,
     tetrad: null,
-    parent1: '',
-    parent2: ''
+    hybridMapping: false
   }
   mapSetCurrentTaxon(currentTaxon)
 
@@ -186,7 +186,8 @@ export function main() {
       }
     })
 
-    d3.csv(ds.bsbi_atlas.dataRoot + 'bsbi/taxon_list.csv').then(function(data) {
+    d3.csv(`${ds.bsbi_atlas.dataRoot}bsbi/taxon_list.csv?prevent-cache=${pcache}`).then(function(data) {
+
       taxaList = data
       taxaList.forEach(function(d) {
         let name = ''
@@ -208,6 +209,11 @@ export function main() {
         $opt.attr('data-taxon-name', d['taxonName'])
         $opt.attr('data-qualifier', d['qualifier'])
         $opt.attr('data-vernacular', d['vernacular'])
+
+        const aParentids = d['hybridParentIds'].split(';')
+        const aParents = d['hybridParents'].split(';')
+        const hybridMapping = (aParents.length === 2 && aParentids.length === 2)
+        $opt.attr('data-hybrid-mapping', hybridMapping)
 
         //$opt.attr('data-tetrad', d['tetrad'])
         //$opt.attr('data-monad', d['monad'])
@@ -235,8 +241,9 @@ export function main() {
 
           currentTaxon.identifier = $(this).val()
           currentTaxon.name =  $(this).find(":selected").attr("data-content")
-          currentTaxon.shortName =  $(this).find(":selected").attr("data-taxon-name")
-          
+          currentTaxon.shortName = $(this).find(":selected").attr("data-taxon-name")
+          currentTaxon.hybridMapping = $(this).find(":selected").attr("data-hybrid-mapping")
+
           // If selection was made programatically (browser back or forward
           // button), don't add to history.
           if (clickedIndex) {
@@ -259,42 +266,21 @@ export function main() {
       }
 
       // Get list of hybrid taxa which can be mapped with their parents
-      // This is done after taxon list loaded so that data can be enriched
-      // with names.
-      d3.csv(ds.bsbi_atlas.dataRoot + 'bsbi/hybrids.csv', function(h) {
+      const hybridTaxa = taxaList.filter(t => t['hybridParentIds'].split(';').length === 2).map(t => {
 
-        const ddbid = h['ddb id']
-        const parentDdbids = h['hybrid parent ids'].split(';')
-        if (parentDdbids.length === 2) {
-          const p1ddbid = parentDdbids[0]
-          const p2ddbid = parentDdbids[1]
+        const parentIds = t['hybridParentIds'].split(';')
+        const parentNames = t['hybridParents'].split(';')
 
-          const mTaxon = taxaList.find(function(t){return t['ddb id'] === ddbid})
-          const mParent1 = taxaList.find(function(t){return t['ddb id'] === p1ddbid})
-          const mParent2 = taxaList.find(function(t){return t['ddb id'] === p2ddbid})
-
-          if (mTaxon && mParent1 && mParent2) {
-            return {
-              taxon: ddbid,
-              parent1: p1ddbid,
-              parent2: p2ddbid,
-              taxonName: mTaxon['taxon name'],
-              parent1Name: mParent1['taxon name'],
-              parent2Name: mParent2['taxon name'],
-            }
-          } else {
-            //if (!mTaxon) console.error('Cannot find ' + ddbid + ' in taxon list')
-            //if (!mParent1) console.error('Cannot find ' + p1ddbid + ' in taxon list')
-            //if (!mParent2) console.error('Cannot find ' + p2ddbid + ' in taxon list')
-            return null
-          }
-        } else {
-          return null // Excludes from result
+        return {
+          taxon: t['ddbid'],
+          parent1: parentIds[0],
+          parent2: parentIds[1],
+          taxonName: t['canonical'],
+          parent1Name: parentNames[0],
+          parent2Name: parentNames[1],
         }
-      }).then(function(data) {
-        delete data.columns
-        updateBsbiDataAccess('taxaHybridList', data)
       })
+      updateBsbiDataAccess('taxaHybridList', hybridTaxa)
 
       // Get list of taxa for which no status exists
       // (for use elsewhere - might as well be done here)
@@ -382,8 +368,12 @@ export function main() {
   function postProcessCaptionText(txt) {
     let txtn = txt
     const bsbidburl = ds.bsbi_atlas.dataBsbidb
-    txtn  = txtn.replace(/href="\/object.php/g, 'target="_blank" href="' + bsbidburl + 'object.php')
-    txtn  = txtn.replace(/href='\/object.php/g, 'target=\'_blank\' href=\'' + bsbidburl + 'object.php')
+    //txtn  = txtn.replace(/href="\/object.php/g, 'target="_blank" href="' + bsbidburl + 'object.php')
+    //txtn  = txtn.replace(/href='\/object.php/g, 'target=\'_blank\' href=\'' + bsbidburl + 'object.php')
+
+    txtn  = txtn.replace(/object.php\?entityid=/g, 'atlas/')
+    txtn  = txtn.replace(/&amp;class=TaxonInstance/g, '')
+
     return txtn
   }
 
@@ -405,7 +395,8 @@ export function main() {
     const $caption = $('#bsbi-caption')
     $caption.html('')
     const captionRoot = ds.bsbi_atlas.dataRoot + 'bsbi/captions/'
-    d3.csv(captionRoot + currentTaxon.identifier.replace(/\./g, "_") + '.csv?prevent-cache=26052022x2')
+    const captionFile = `${captionRoot}${currentTaxon.identifier.replace(/\./g, "_")}.csv?prevent-cache=${pcache}`
+    d3.csv(captionFile)
       .then(function(d) {
 
         //console.log('caption file', d)
@@ -461,6 +452,26 @@ export function main() {
           $caption.append('<h4>Biogeography</h4>')
           $p = $('<p>').appendTo($caption)
           $p.append(postProcessCaptionText(d[0].atlasSpeciesBiogeography))
+        }
+
+        // Parent taxa (for hybrids)
+        if (d[0].hybridParents) {
+
+          $caption.append('<h4>Hybrid parents</h4>')
+          const $ul = $('<ul>').appendTo($caption)
+
+          const parents = d[0].hybridParents.split(';')
+          const parentIds = d[0].hybridParentIds.split(';')
+
+          parents.forEach((p,i) => {
+            const pid = parentIds[i] ? parentIds[i] : ''
+            const $li = $('<li>').appendTo($ul)
+            const $i = $('<i>').appendTo($li)
+            const $a = $('<a>').appendTo($i)
+            $a.attr('href', `/atlas/${pid}`)
+            $a.attr('alt', `Link to ${p}`)
+            $a.text(p)
+          })
         }
 
         // References

@@ -218,7 +218,7 @@ export function setControlState() {
   }
 
   // Enable/disable the hybrid map type option as appropriate
-  const isHybrid = currentTaxon.parent1 !== ''
+  const isHybrid = currentTaxon.hybridMapping
   const $hybridopts = $('.atlas-map-type-selector option[value="hybrid"]') 
   if (isHybrid) {
     $hybridopts.show()
@@ -876,9 +876,6 @@ function insetRadios($parent, i) {
 
 export function mapSetCurrentTaxon(taxon) {
   currentTaxon = taxon
-  const hybrid = bsbiDataAccess.taxaHybridList.find(function(h){return h.taxon === currentTaxon.identifier})
-  currentTaxon.parent1 = hybrid ? hybrid.parent1 : ''
-  currentTaxon.parent2 = hybrid ? hybrid.parent2 : ''
 }
 
 export function createMaps(selector) {

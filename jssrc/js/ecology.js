@@ -2,6 +2,7 @@ import * as d3 from 'd3'
 
 const $=jQuery // eslint-disable-line no-undef
 let phen1, phen2, phen3, altlat
+let apparencyByLatData
 
 export function createEcology(sel) {
 
@@ -90,7 +91,8 @@ export function createEcology(sel) {
     axisLabelFontSize: 12
   })
 
-  latPhenNormalizeCheckbox($phenFlexRight, phen3) 
+  //latPhenNormalizeCheckbox($phenFlexRight, phen3) 
+  latPhenDataTypeDropdown($phenFlexRight) 
 
   // Alt vs Lat visualisation
   $altlat.attr('id', 'bsbi-altlat-chart')
@@ -165,7 +167,7 @@ function latPhenNormalizeCheckbox($parent, phenChart) {
   $container.addClass('atlas-phen-normalize-checkbox-control')
   $container.css('margin-left', '35px')
 
-  // Status on/off toggle
+  // Normalize checkbox
   const $checDiv = $('<div class="checkbox">').appendTo($container)
   $checDiv.css('margin-top', '0')
 
@@ -175,6 +177,49 @@ function latPhenNormalizeCheckbox($parent, phenChart) {
     const normalize = $(this).is(':checked')
     phenChart.setChartOpts({ytype: normalize ? 'normalized' : 'count'})
   })
+}
+
+function latPhenDataTypeDropdown($parent) {
+
+  const dataTypes = [
+    {
+      caption: 'Scale by relative abundance',
+      val: 'count'
+    },
+    {
+      caption: 'Scale across latitudes',
+      val: 'scaled'
+    },
+    {
+      caption: 'Scale within latitude',
+      val: 'density'
+    }
+  ]
+
+  // Main type selector
+  const $div = $('<div>').appendTo($parent)
+  $div.css('margin-left', '35px')
+  const $sel = $('<select>').appendTo($div)
+  $sel.attr('id', 'atlas-lat-phen-data-type')
+  $sel.addClass('selectpicker')
+  //$sel.attr('data-width', '100%')
+  $sel.on('changed.bs.select', function () {
+    if (apparencyByLatData.length) {
+      apparencyByLat(phen3, apparencyByLatData)
+    }
+  })
+
+  dataTypes.forEach(function(t){
+    const $opt = t.selected  ? $('<option>') : $('<option>')
+    $opt.attr('value', t.val)
+    $opt.html(t.caption).appendTo($sel)
+  })
+ 
+  $sel.val('count')
+
+  // This seems to be necessary if interface regenerated,
+  // e.g. changing from tabbed to non-tabbed display.
+  //$sel.selectpicker()
 }
 
 export function changeEcology(dataRoot, identifier) {
@@ -192,31 +237,33 @@ export function changeEcology(dataRoot, identifier) {
       apparency(phen1, data)
     })
     .catch(function() {
-      // console.warn(`Apparency chart failed for ${fileAll}. Error message:`, e)
-      // phen1.setChartOpts({data: []})
+      console.warn(`Apparency chart failed for ${fileAll}. Error message:`, e)
+      phen1.setChartOpts({data: []})
       // TEMPORARY CODE FOR TESTING so that a file always returned 
-      const fileDefault = apparencyRoot + 'all/dummy.csv'
-      d3.csv(fileDefault + '?prevent-cache=')
-        .then(function(data) {
-          apparency(phen1, data)
-        })
+      // const fileDefault = apparencyRoot + 'all/dummy.csv'
+      // d3.csv(fileDefault + '?prevent-cache=')
+      //   .then(function(data) {
+      //     apparency(phen1, data)
+      //   })
     })
 
   // Apparency by latitude
   const fileLat = apparencyRoot + 'byLat/' + identifier.replace(/\./g, "_") + '.csv'
   d3.csv(fileLat + '?prevent-cache=')
     .then(function(data) {
-      apparencyByLat(phen3, data)
+      apparencyByLatData = data // Saved so that apparencyByLat if 
+                                // data type dropdown used.
+      apparencyByLat(phen3, apparencyByLatData)
     })
     .catch(function() {
-      // console.warn(`Apparency by latitude chart failed for ${fileLat}. Error message:`, e)
-      // phen3.setChartOpts({data: [], metrics: [], spread: false})
+      console.warn(`Apparency by latitude chart failed for ${fileLat}. Error message:`, e)
+      phen3.setChartOpts({data: [], metrics: [], spread: false})
       // TEMPORARY CODE FOR TESTING so that a file always returned 
-      const fileDefault = apparencyRoot + 'byLat/dummy.csv'
-      d3.csv(fileDefault + '?prevent-cache=')
-        .then(function(data) {
-          apparencyByLat(phen3, data)
-        })
+      // const fileDefault = apparencyRoot + 'byLat/dummy.csv'
+      // d3.csv(fileDefault + '?prevent-cache=')
+      //   .then(function(data) {
+      //     apparencyByLat(phen3, data)
+      //   })
     })
 
   // Phenology
@@ -315,7 +362,10 @@ export function phenology(chart, data, textId) {
 
 export function apparencyByLat(chart, data) {
   // Map text to numeric values and add taxon
-  const numeric = data.map(d => {
+  const dataType = $('#atlas-lat-phen-data-type').val()
+  console.log('dataType', dataType)
+
+  const numeric = data.filter(d => d.type === dataType).map(d => {
     const nd = {taxon: 'taxon'}
     Object.keys(d).forEach(function(k){
       nd[k] = Number(d[k])

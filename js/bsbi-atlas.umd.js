@@ -315,6 +315,7 @@
       d3__namespace.csv(getCSV(identifier)).then(function (data) {
         resolve(data);
       })["catch"](function (e) {
+        console.log("Hybrid map: can't retrieve map data for hybrid taxon ".concat(identifier));
         reject(e);
       });
     });
@@ -322,6 +323,7 @@
       d3__namespace.csv(getCSV(hybridInfo.parent1)).then(function (data) {
         resolve(data);
       })["catch"](function (e) {
+        console.log("Hybrid map: can't retrieve map data for parent taxon ".concat(hybridInfo.parent1));
         reject(e);
       });
     });
@@ -329,6 +331,7 @@
       d3__namespace.csv(getCSV(hybridInfo.parent2)).then(function (data) {
         resolve(data);
       })["catch"](function (e) {
+        console.log("Hybrid map: can't retrieve map data for parent taxon ".concat(hybridInfo.parent2));
         reject(e);
       });
     });
@@ -983,6 +986,7 @@
   var $$5 = jQuery; // eslint-disable-line no-undef
 
   var phen1$1, phen2$1, phen3, altlat$1;
+  var apparencyByLatData;
   function createEcology(sel) {
     $$5('<h4>').appendTo($$5(sel)).text('Phenology & Apparency');
     var $p1 = $$5('<p>').appendTo($$5(sel));
@@ -1066,8 +1070,9 @@
       },
       axisLeftLabel: 'Latitudinal band',
       axisLabelFontSize: 12
-    });
-    latPhenNormalizeCheckbox($phenFlexRight, phen3); // Alt vs Lat visualisation
+    }); //latPhenNormalizeCheckbox($phenFlexRight, phen3) 
+
+    latPhenDataTypeDropdown($phenFlexRight); // Alt vs Lat visualisation
 
     $altlat.attr('id', 'bsbi-altlat-chart');
     $altlat.css('max-width', '600px');
@@ -1129,21 +1134,37 @@
     $$5('#bsbi-apparency-by-lat-chart .phen-path').css('stroke-width', 1);
   }
 
-  function latPhenNormalizeCheckbox($parent, phenChart) {
-    // Overall control container
-    var $container = $$5('<div style="margin-left: 0px">').appendTo($parent);
-    $container.addClass('atlas-phen-normalize-checkbox-control');
-    $container.css('margin-left', '35px'); // Status on/off toggle
+  function latPhenDataTypeDropdown($parent) {
+    var dataTypes = [{
+      caption: 'Scale by relative abundance',
+      val: 'count'
+    }, {
+      caption: 'Scale across latitudes',
+      val: 'scaled'
+    }, {
+      caption: 'Scale within latitude',
+      val: 'density'
+    }]; // Main type selector
 
-    var $checDiv = $$5('<div class="checkbox">').appendTo($container);
-    $checDiv.css('margin-top', '0');
-    $$5('<label><input type="checkbox" class="atlas-phen-normalize-checkbox"/><span>Normalize over latitudes</span></label>').appendTo($checDiv);
-    $$5('.atlas-phen-normalize-checkbox').change(function () {
-      var normalize = $$5(this).is(':checked');
-      phenChart.setChartOpts({
-        ytype: normalize ? 'normalized' : 'count'
-      });
+    var $div = $$5('<div>').appendTo($parent);
+    $div.css('margin-left', '35px');
+    var $sel = $$5('<select>').appendTo($div);
+    $sel.attr('id', 'atlas-lat-phen-data-type');
+    $sel.addClass('selectpicker'); //$sel.attr('data-width', '100%')
+
+    $sel.on('changed.bs.select', function () {
+      if (apparencyByLatData.length) {
+        apparencyByLat(phen3, apparencyByLatData);
+      }
     });
+    dataTypes.forEach(function (t) {
+      var $opt = t.selected ? $$5('<option>') : $$5('<option>');
+      $opt.attr('value', t.val);
+      $opt.html(t.caption).appendTo($sel);
+    });
+    $sel.val('count'); // This seems to be necessary if interface regenerated,
+    // e.g. changing from tabbed to non-tabbed display.
+    //$sel.selectpicker()
   }
 
   function changeEcology(dataRoot, identifier) {
@@ -1156,26 +1177,35 @@
     d3__namespace.csv(fileAll + '?prevent-cache=').then(function (data) {
       apparency(phen1$1, data);
     })["catch"](function () {
-      // console.warn(`Apparency chart failed for ${fileAll}. Error message:`, e)
-      // phen1.setChartOpts({data: []})
-      // TEMPORARY CODE FOR TESTING so that a file always returned 
-      var fileDefault = apparencyRoot + 'all/dummy.csv';
-      d3__namespace.csv(fileDefault + '?prevent-cache=').then(function (data) {
-        apparency(phen1$1, data);
-      });
+      console.warn("Apparency chart failed for ".concat(fileAll, ". Error message:"), e);
+      phen1$1.setChartOpts({
+        data: []
+      }); // TEMPORARY CODE FOR TESTING so that a file always returned 
+      // const fileDefault = apparencyRoot + 'all/dummy.csv'
+      // d3.csv(fileDefault + '?prevent-cache=')
+      //   .then(function(data) {
+      //     apparency(phen1, data)
+      //   })
     }); // Apparency by latitude
 
     var fileLat = apparencyRoot + 'byLat/' + identifier.replace(/\./g, "_") + '.csv';
     d3__namespace.csv(fileLat + '?prevent-cache=').then(function (data) {
-      apparencyByLat(phen3, data);
+      apparencyByLatData = data; // Saved so that apparencyByLat if 
+      // data type dropdown used.
+
+      apparencyByLat(phen3, apparencyByLatData);
     })["catch"](function () {
-      // console.warn(`Apparency by latitude chart failed for ${fileLat}. Error message:`, e)
-      // phen3.setChartOpts({data: [], metrics: [], spread: false})
-      // TEMPORARY CODE FOR TESTING so that a file always returned 
-      var fileDefault = apparencyRoot + 'byLat/dummy.csv';
-      d3__namespace.csv(fileDefault + '?prevent-cache=').then(function (data) {
-        apparencyByLat(phen3, data);
-      });
+      console.warn("Apparency by latitude chart failed for ".concat(fileLat, ". Error message:"), e);
+      phen3.setChartOpts({
+        data: [],
+        metrics: [],
+        spread: false
+      }); // TEMPORARY CODE FOR TESTING so that a file always returned 
+      // const fileDefault = apparencyRoot + 'byLat/dummy.csv'
+      // d3.csv(fileDefault + '?prevent-cache=')
+      //   .then(function(data) {
+      //     apparencyByLat(phen3, data)
+      //   })
     }); // Phenology
 
     var file = phenologyRoot + identifier.replace(/\./g, "_") + '.csv';
@@ -1277,7 +1307,11 @@
   }
   function apparencyByLat(chart, data) {
     // Map text to numeric values and add taxon
-    var numeric = data.map(function (d) {
+    var dataType = $$5('#atlas-lat-phen-data-type').val();
+    console.log('dataType', dataType);
+    var numeric = data.filter(function (d) {
+      return d.type === dataType;
+    }).map(function (d) {
       var nd = {
         taxon: 'taxon'
       };
@@ -1323,116 +1357,71 @@
 
   var $$4 = jQuery; // eslint-disable-line no-undef
 
+  var ds$3 = drupalSettings; // eslint-disable-line no-undef
+
+  var pcache$1 = '26052022x5';
   function createGallery(id, ddbid) {
     // DO I NEED TO HAVE SEPARATE FUNCTIONS FOR CREATE AND UPDATED GALLERY
     // FOR CONSISTENCY ON MAIN.JS?
     document.getElementById(id).innerHTML = '';
 
     if (ddbid) {
-      (function () {
-        // Fetch the images available for current taxon
-        // const pThumbs = []
-        // const urlThumbs = []
-        // for (let i=1; i<101; i++) {
-        //   const imageUrl = `https://atlasimages.bsbi.org/processed/${ddbid}/${ddbid}-${i}/${ddbid}-${i}-1920w.webp`
-        //   const p = fetch(imageUrl, {method: 'GET',  mode: 'no-cors'})
-        //     .then(response => {
-        //       if (!response.ok) {
-        //         return response.blob()
-        //       } else {
-        //         throw Error(response.statusText)
-        //       }
-        //     })
-        //     .then(imageBlob => {
-        //       urlThumbs[i] = URL.createObjectURL(imageBlob)
-        //     })
-        //     .catch(error => {
-        //       urlThumbs[i] = null
-        //     })
-        //   pThumbs.push(p)
-        // }
-        // Promise.all(pThumbs).then(() => {
-        //   console.log('Thumbnails fetched')
-        //   console.log(urlThumbs)
-        // })
-        // Wanted to do the following by fetching header (see ablove), but can't because of cors
-        // so instead fetch use image objects and store the indices of those that succeed
-        var pThumbs = [];
-        var iThumbs = [];
-
-        var _loop = function _loop(i) {
-          var $thumb = $$4('<img>').attr('src', "https://atlasimages.bsbi.org/processed/".concat(ddbid, "/").concat(ddbid, "-").concat(i, "/").concat(ddbid, "-").concat(i, "-192w.webp"));
-          var p = new Promise(function (resolve) {
-            $thumb.on('load', function () {
-              iThumbs[i] = true;
-              resolve(true);
-            }).on('error', function () {
-              iThumbs[i] = false;
-              resolve(false);
-            });
-          });
-          pThumbs.push(p);
-        };
-
-        for (var i = 1; i <= 50; i++) {
-          _loop(i);
-        }
-
-        Promise.all(pThumbs).then(function () {
-          var lgContainer = document.getElementById(id);
-          var imagesFound = iThumbs.some(function (thumbFound) {
-            return thumbFound;
-          });
-
-          if (imagesFound) {
-            var dynamicEl = iThumbs.filter(function (thumbFound) {
-              return thumbFound;
-            }).map(function (v, i) {
-              return {
-                src: "https://atlasimages.bsbi.org/processed/".concat(ddbid, "/").concat(ddbid, "-").concat(i + 1, "/").concat(ddbid, "-").concat(i + 1, "-1920w.webp"),
-                thumb: "https://atlasimages.bsbi.org/processed/".concat(ddbid, "/").concat(ddbid, "-").concat(i + 1, "/").concat(ddbid, "-").concat(i + 1, "-192w.webp"),
-                subHtml: "\n              <div class=\"lightGallery-captions\">\n                <div style=\"background-color: black; opacity: 0.7\">\n                <p style=\"margin: 0.3em\">TODO - Copyright text to acknowledge Rob Still and Chris Gibson</p>\n                <div>\n              </div>"
-              };
-            }); // After https://www.lightgalleryjs.com/demos/inline/ & https://codepen.io/sachinchoolur/pen/zYZqaGm
-
-            var inlineGallery = lightGallery(lgContainer, {
-              // eslint-disable-line no-undef
-              container: lgContainer,
-              dynamic: true,
-              // Turn off hash plugin in case if you are using it
-              // as we don't want to change the url on slide change
-              hash: false,
-              // Do not allow users to close the gallery
-              closable: false,
-              // Hide download button
-              download: false,
-              // Add maximize icon to enlarge the gallery
-              showMaximizeIcon: true,
-              // Append caption inside the slide item
-              // to apply some animation for the captions (Optional)
-              appendSubHtmlTo: '.lg-item',
-              // Delay slide transition to complete captions animations
-              // before navigating to different slides (Optional)
-              // You can find caption animation demo on the captions demo page
-              slideDelay: 400,
-              plugins: [lgZoom, lgThumbnail],
-              // eslint-disable-line no-undef
-              dynamicEl: dynamicEl,
-              thumbWidth: 90,
-              thumbHeight: "60px",
-              thumbMargin: 4
-            }); // Since we are using dynamic mode, we need to programmatically open lightGallery
-
-            setTimeout(function () {
-              inlineGallery.openGallery();
-              $$4('#bsbi-gallery-copyright').show();
-            }, 200);
-          } else {
-            lgContainer.innerHTML = "<i>No images are available for this taxon.</i>";
-            $$4('#bsbi-gallery-copyright').hide();
-          }
+      // Images are listed in the caption file, so fetch it
+      var captionRoot = ds$3.bsbi_atlas.dataRoot + 'bsbi/captions/';
+      var captionFile = "".concat(captionRoot).concat(ddbid.replace(/\./g, "_"), ".csv?prevent-cache=").concat(pcache$1);
+      d3.csv(captionFile).then(function (d) {
+        // Filter out empty image strings
+        var dynamicEl = d[0].images.split(';').filter(function (i) {
+          return i;
+        }).map(function (img) {
+          return {
+            src: img.replace('{PIXELSIZE}', '1920'),
+            thumb: img.replace('{PIXELSIZE}', '192'),
+            subHtml: "\n              <div class=\"lightGallery-captions\">\n                <div style=\"background-color: black; opacity: 0.7\">\n                <p style=\"margin: 0.3em\">TODO - Copyright text to acknowledge Rob Still and Chris Gibson</p>\n                <div>\n              </div>"
+          };
         });
-      })();
+        console.log(dynamicEl);
+        var lgContainer = document.getElementById(id);
+
+        if (dynamicEl.length) {
+          // After https://www.lightgalleryjs.com/demos/inline/ & https://codepen.io/sachinchoolur/pen/zYZqaGm
+          var inlineGallery = lightGallery(lgContainer, {
+            // eslint-disable-line no-undef
+            container: lgContainer,
+            dynamic: true,
+            // Turn off hash plugin in case if you are using it
+            // as we don't want to change the url on slide change
+            hash: false,
+            // Do not allow users to close the gallery
+            closable: false,
+            // Hide download button
+            download: false,
+            // Add maximize icon to enlarge the gallery
+            showMaximizeIcon: true,
+            // Append caption inside the slide item
+            // to apply some animation for the captions (Optional)
+            appendSubHtmlTo: '.lg-item',
+            // Delay slide transition to complete captions animations
+            // before navigating to different slides (Optional)
+            // You can find caption animation demo on the captions demo page
+            slideDelay: 400,
+            plugins: [lgZoom, lgThumbnail],
+            // eslint-disable-line no-undef
+            dynamicEl: dynamicEl,
+            thumbWidth: 90,
+            thumbHeight: "60px",
+            thumbMargin: 4
+          }); // Since we are using dynamic mode, we need to programmatically open lightGallery
+
+          setTimeout(function () {
+            inlineGallery.openGallery();
+            $$4('#bsbi-gallery-copyright').show();
+          }, 200);
+        } else {
+          lgContainer.innerHTML = "<i>No images are available for this taxon.</i>";
+          $$4('#bsbi-gallery-copyright').hide();
+        }
+      });
     }
   }
 
@@ -1703,7 +1692,7 @@
     } // Enable/disable the hybrid map type option as appropriate
 
 
-    var isHybrid = currentTaxon$1.parent1 !== '';
+    var isHybrid = currentTaxon$1.hybridMapping;
     var $hybridopts = $$3('.atlas-map-type-selector option[value="hybrid"]');
 
     if (isHybrid) {
@@ -2234,11 +2223,6 @@
 
   function mapSetCurrentTaxon(taxon) {
     currentTaxon$1 = taxon;
-    var hybrid = bsbiDataAccess.taxaHybridList.find(function (h) {
-      return h.taxon === currentTaxon$1.identifier;
-    });
-    currentTaxon$1.parent1 = hybrid ? hybrid.parent1 : '';
-    currentTaxon$1.parent2 = hybrid ? hybrid.parent2 : '';
   }
   function createMaps(selector) {
     // Modify standard UK opts to remove any without CI
@@ -2720,23 +2704,24 @@
     identifier: '',
     name: null,
     shortName: null,
-    tetrad: null,
-    parent1: '',
-    parent2: ''
+    tetrad: null
   };
   var phen1, phen2, altlat;
   var browsedFileData;
   var bCancelled = false;
   function downloadPage() {
+    $$1('#bsbi-atlas-download').css('display', 'flex');
+    $$1('<div>').appendTo($$1('#bsbi-atlas-download')).attr('id', 'bsbi-atlas-download-left').css('flex', 1);
+    $$1('<div>').appendTo($$1('#bsbi-atlas-download')).attr('id', 'bsbi-atlas-download-right').css('flex', 1).css('margin-left', '1em');
     taxonSelectors();
     downloadButton();
-    $$1('<hr/>').appendTo($$1('#bsbi-atlas-download'));
-    var $instructions = $$1('<p>').appendTo($$1('#bsbi-atlas-download'));
+    $$1('<hr/>').appendTo($$1('#bsbi-atlas-download-left'));
+    var $instructions = $$1('<p>').appendTo($$1('#bsbi-atlas-download-left'));
     $instructions.html("\n    For batch downloads, first select a CSV file from your computer\n    that has two columns: <i>taxonId</i> which has the ddbid for each \n    taxon and <i>taxon</i> which specifies a taxon name. \n    The taxon name is only used to name the file and\n    doesn't have to be exactly the same as \n    the name used elsewhere on the site. The ddbid will also be used \n    in the filename in case of any ambiguity.\n  ");
     fileUploadButton();
     downloadBatchButton();
     cancelDownloadBatchButton();
-    $$1('<hr/>').appendTo($$1('#bsbi-atlas-download'));
+    $$1('<hr/>').appendTo($$1('#bsbi-atlas-download-left'));
     makeCheckbox('map', 'Map');
     makeCheckbox('apparency', 'Apparency');
     makeCheckbox('phenology', 'Phenology');
@@ -2762,52 +2747,111 @@
 
   function _downloadTaxa() {
     _downloadTaxa = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee() {
-      var data, i, t, filename, p1, p2, p3, p4;
-      return regeneratorRuntime.wrap(function _callee$(_context) {
+      var data, _loop, i, _ret;
+
+      return regeneratorRuntime.wrap(function _callee$(_context2) {
         while (1) {
-          switch (_context.prev = _context.next) {
+          switch (_context2.prev = _context2.next) {
             case 0:
-              _context.next = 2;
+              _context2.next = 2;
               return d3.csv(browsedFileData);
 
             case 2:
-              data = _context.sent;
+              data = _context2.sent;
               bCancelled = false;
+              _loop = /*#__PURE__*/regeneratorRuntime.mark(function _loop(i) {
+                var t, filename, eMapping, eApparency, ePhenology, eAltlat, p1, p2, p3, p4;
+                return regeneratorRuntime.wrap(function _loop$(_context) {
+                  while (1) {
+                    switch (_context.prev = _context.next) {
+                      case 0:
+                        if (!bCancelled) {
+                          _context.next = 2;
+                          break;
+                        }
+
+                        return _context.abrupt("return", "break");
+
+                      case 2:
+                        // Taxon
+                        t = data[i];
+                        filename = taxonToFile(t.taxon, t.taxonId); // For reporting errors
+
+                        eMapping = void 0, eApparency = void 0, ePhenology = void 0, eAltlat = void 0; // Map
+
+                        p1 = mappingUpdate(t.taxonId, filename)["catch"](function (e) {
+                          return eMapping = e;
+                        });
+                        p2 = apparencyUpdate(t.taxonId, filename)["catch"](function (e) {
+                          return eApparency = e;
+                        });
+                        p3 = phenologyUpdate(t.taxonId, filename)["catch"](function (e) {
+                          return ePhenology = e;
+                        });
+                        p4 = altlatUpdate(t.taxonId, filename)["catch"](function (e) {
+                          return eAltlat = e;
+                        });
+                        _context.next = 11;
+                        return Promise.all([p1, p2, p3, p4]).then(function () {
+                          if (eMapping || eApparency || ePhenology || eAltlat) {
+                            var html = "<b>Problems for ".concat(t.taxon, " (").concat(t.taxonId, ")</b>");
+                            html += '<ul>';
+
+                            if (eMapping) {
+                              html += '<li>Map failed</li>';
+                            }
+
+                            if (eApparency) {
+                              html += '<li>Apparency chart failed</li>';
+                            }
+
+                            if (ePhenology) {
+                              html += '<li>Phenology chart failed</li>';
+                            }
+
+                            if (eAltlat) {
+                              html += '<li>Altlat chart failed</li>';
+                            }
+
+                            $$1('<div>').appendTo($$1('#bsbi-atlas-download-right')).html(html);
+                          }
+                        });
+
+                      case 11:
+                      case "end":
+                        return _context.stop();
+                    }
+                  }
+                }, _loop);
+              });
               i = 0;
 
-            case 5:
+            case 6:
               if (!(i < data.length)) {
-                _context.next = 19;
+                _context2.next = 14;
                 break;
               }
 
-              if (!bCancelled) {
-                _context.next = 8;
-                break;
-              }
-
-              return _context.abrupt("break", 19);
+              return _context2.delegateYield(_loop(i), "t0", 8);
 
             case 8:
-              // Taxon
-              t = data[i];
-              filename = taxonToFile(t.taxon, t.taxonId); // Map
+              _ret = _context2.t0;
 
-              p1 = mappingUpdate(t.taxonId, filename);
-              p2 = apparencyUpdate(t.taxonId, filename);
-              p3 = phenologyUpdate(t.taxonId, filename);
-              p4 = altlatUpdate(t.taxonId, filename);
-              _context.next = 16;
-              return Promise.all([p1, p2, p3, p4]);
+              if (!(_ret === "break")) {
+                _context2.next = 11;
+                break;
+              }
 
-            case 16:
+              return _context2.abrupt("break", 14);
+
+            case 11:
               i++;
-              _context.next = 5;
+              _context2.next = 6;
               break;
 
-            case 19:
+            case 14:
             case "end":
-              return _context.stop();
+              return _context2.stop();
           }
         }
       }, _callee);
@@ -2816,7 +2860,7 @@
   }
 
   function fileUploadButton() {
-    var $file = $$1('<input>').appendTo($$1('#bsbi-atlas-download'));
+    var $file = $$1('<input>').appendTo($$1('#bsbi-atlas-download-left'));
     $file.attr('type', 'file');
     $file.attr('accept', '.csv');
     $file.attr('id', 'bsbi-atlas-batch-file');
@@ -2835,7 +2879,7 @@
   }
 
   function downloadBatchButton() {
-    var $button = $$1('<button>').appendTo($$1('#bsbi-atlas-download'));
+    var $button = $$1('<button>').appendTo($$1('#bsbi-atlas-download-left'));
     $button.addClass('btn btn-default');
     $button.text('Download batch');
     $button.on('click', function () {
@@ -2845,7 +2889,7 @@
   }
 
   function cancelDownloadBatchButton() {
-    var $button = $$1('<button>').appendTo($$1('#bsbi-atlas-download'));
+    var $button = $$1('<button>').appendTo($$1('#bsbi-atlas-download-left'));
     $button.addClass('btn btn-default');
     $button.css('margin-left', '1em');
     $button.text('Cancel');
@@ -2855,7 +2899,7 @@
   }
 
   function downloadButton() {
-    var $button = $$1('<button>').appendTo($$1('#bsbi-atlas-download'));
+    var $button = $$1('<button>').appendTo($$1('#bsbi-atlas-download-left'));
     $button.addClass('btn btn-default');
     $button.text('Download selected');
     $button.on('click', function () {
@@ -2870,12 +2914,12 @@
   }
 
   function makeCheckbox(id, label) {
-    $$1("<input type=\"checkbox\" id=\"download-".concat(id, "\" style=\"margin:0.5em\" checked>")).appendTo($$1('#bsbi-atlas-download'));
-    $$1("<label for=\"download-".concat(id, "\">").concat(label, "</label>")).appendTo($$1('#bsbi-atlas-download'));
+    $$1("<input type=\"checkbox\" id=\"download-".concat(id, "\" style=\"margin:0.5em\" checked>")).appendTo($$1('#bsbi-atlas-download-left'));
+    $$1("<label for=\"download-".concat(id, "\">").concat(label, "</label>")).appendTo($$1('#bsbi-atlas-download-left'));
   }
 
   function mapping() {
-    $$1('<div id="bsbiMapDiv" style="max-width: 500px">').appendTo($$1('#bsbi-atlas-download'));
+    $$1('<div id="bsbiMapDiv" style="max-width: 500px">').appendTo($$1('#bsbi-atlas-download-left'));
     createMaps("#bsbiMapDiv");
     var staticMap = getStaticMap(); // Northern and Channel Isles inset
 
@@ -2900,37 +2944,37 @@
   function _mappingUpdate() {
     _mappingUpdate = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee2(taxonId, taxon) {
       var staticMap;
-      return regeneratorRuntime.wrap(function _callee2$(_context2) {
+      return regeneratorRuntime.wrap(function _callee2$(_context3) {
         while (1) {
-          switch (_context2.prev = _context2.next) {
+          switch (_context3.prev = _context3.next) {
             case 0:
               staticMap = getStaticMap();
 
               if (!$$1('#download-map').is(':checked')) {
-                _context2.next = 9;
+                _context3.next = 9;
                 break;
               }
 
               currentTaxon.identifier = taxonId;
               mapSetCurrentTaxon(currentTaxon);
-              _context2.next = 6;
+              _context3.next = 6;
               return changeMap(true);
 
             case 6:
               if (!taxon) {
-                _context2.next = 9;
+                _context3.next = 9;
                 break;
               }
 
-              _context2.next = 9;
+              _context3.next = 9;
               return staticMap.saveMap(true, null, "".concat(taxonToFile(taxon, taxonId), "map"));
 
             case 9:
-              return _context2.abrupt("return", Promise.resolve());
+              return _context3.abrupt("return", Promise.resolve());
 
             case 10:
             case "end":
-              return _context2.stop();
+              return _context3.stop();
           }
         }
       }, _callee2);
@@ -2939,7 +2983,7 @@
   }
 
   function apparencyChart() {
-    var $apparency = $$1('<div>').appendTo($$1('#bsbi-atlas-download'));
+    var $apparency = $$1('<div>').appendTo($$1('#bsbi-atlas-download-left'));
     $apparency.attr('id', 'bsbi-apparency-chart').css('max-width', '400px');
     phen1 = brccharts.phen1({
       selector: '#bsbi-apparency-chart',
@@ -2970,57 +3014,57 @@
   function _apparencyUpdate() {
     _apparencyUpdate = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee3(taxonId, taxon) {
       var apparencyRoot, file, data, fileDefault;
-      return regeneratorRuntime.wrap(function _callee3$(_context3) {
+      return regeneratorRuntime.wrap(function _callee3$(_context4) {
         while (1) {
-          switch (_context3.prev = _context3.next) {
+          switch (_context4.prev = _context4.next) {
             case 0:
               if (!$$1('#download-apparency').is(':checked')) {
-                _context3.next = 16;
+                _context4.next = 16;
                 break;
               }
 
               apparencyRoot = "".concat(ds$1.bsbi_atlas.dataRoot, "bsbi/apparency/");
               file = apparencyRoot + 'all/' + taxonId.replace(/\./g, "_") + '.csv';
-              _context3.next = 5;
+              _context4.next = 5;
               return d3.csv(file + '?prevent-cache=')["catch"](function () {
                 return null;
               });
 
             case 5:
-              data = _context3.sent;
+              data = _context4.sent;
 
               if (data) {
-                _context3.next = 11;
+                _context4.next = 11;
                 break;
               }
 
               // TEMPORARY CODE FOR TESTING so that a file always returned 
               fileDefault = apparencyRoot + 'all/dummy.csv';
-              _context3.next = 10;
+              _context4.next = 10;
               return d3.csv(fileDefault + '?prevent-cache=');
 
             case 10:
-              data = _context3.sent;
+              data = _context4.sent;
 
             case 11:
-              _context3.next = 13;
+              _context4.next = 13;
               return apparency(phen1, data);
 
             case 13:
               if (!taxon) {
-                _context3.next = 16;
+                _context4.next = 16;
                 break;
               }
 
-              _context3.next = 16;
+              _context4.next = 16;
               return phen1.saveImage(true, "".concat(taxonToFile(taxon, taxonId), "apparency"));
 
             case 16:
-              return _context3.abrupt("return", Promise.resolve());
+              return _context4.abrupt("return", Promise.resolve());
 
             case 17:
             case "end":
-              return _context3.stop();
+              return _context4.stop();
           }
         }
       }, _callee3);
@@ -3029,7 +3073,7 @@
   }
 
   function phenologyChart() {
-    var $phenology = $$1('<div>').appendTo($$1('#bsbi-atlas-download'));
+    var $phenology = $$1('<div>').appendTo($$1('#bsbi-atlas-download-left'));
     $phenology.attr('id', 'bsbi-phenology-chart').css('max-width', '400px');
     phen2 = brccharts.phen2({
       selector: '#bsbi-phenology-chart',
@@ -3054,57 +3098,57 @@
   function _phenologyUpdate() {
     _phenologyUpdate = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee4(taxonId, taxon) {
       var phenologyRoot, file, data, fileDefault;
-      return regeneratorRuntime.wrap(function _callee4$(_context4) {
+      return regeneratorRuntime.wrap(function _callee4$(_context5) {
         while (1) {
-          switch (_context4.prev = _context4.next) {
+          switch (_context5.prev = _context5.next) {
             case 0:
               if (!$$1('#download-phenology').is(':checked')) {
-                _context4.next = 16;
+                _context5.next = 16;
                 break;
               }
 
               phenologyRoot = ds$1.bsbi_atlas.dataRoot + 'bsbi/phenology/';
               file = phenologyRoot + taxonId.replace(/\./g, "_") + '.csv';
-              _context4.next = 5;
+              _context5.next = 5;
               return d3.csv(file + '?prevent-cache=')["catch"](function () {
                 return null;
               });
 
             case 5:
-              data = _context4.sent;
+              data = _context5.sent;
 
               if (data) {
-                _context4.next = 11;
+                _context5.next = 11;
                 break;
               }
 
               // TEMPORARY CODE FOR TESTING so that a file always returned 
               fileDefault = phenologyRoot + 'dummy-phenology.csv';
-              _context4.next = 10;
+              _context5.next = 10;
               return d3.csv(fileDefault + '?prevent-cache=');
 
             case 10:
-              data = _context4.sent;
+              data = _context5.sent;
 
             case 11:
-              _context4.next = 13;
+              _context5.next = 13;
               return phenology(phen2, data, null);
 
             case 13:
               if (!taxon) {
-                _context4.next = 16;
+                _context5.next = 16;
                 break;
               }
 
-              _context4.next = 16;
+              _context5.next = 16;
               return phen2.saveImage(true, "".concat(taxonToFile(taxon, taxonId), "phenology"));
 
             case 16:
-              return _context4.abrupt("return", Promise.resolve());
+              return _context5.abrupt("return", Promise.resolve());
 
             case 17:
             case "end":
-              return _context4.stop();
+              return _context5.stop();
           }
         }
       }, _callee4);
@@ -3113,7 +3157,7 @@
   }
 
   function altlatChart() {
-    var $altlat = $$1('<div>').appendTo($$1('#bsbi-atlas-download'));
+    var $altlat = $$1('<div>').appendTo($$1('#bsbi-atlas-download-left'));
     $altlat.attr('id', 'bsbi-altlat-chart').css('max-width', '600px');
     var opts = {
       selector: '#bsbi-altlat-chart',
@@ -3176,40 +3220,40 @@
   function _altlatUpdate() {
     _altlatUpdate = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee5(taxonId, taxon) {
       var altlatRoot, altlatfile, altlatdata;
-      return regeneratorRuntime.wrap(function _callee5$(_context5) {
+      return regeneratorRuntime.wrap(function _callee5$(_context6) {
         while (1) {
-          switch (_context5.prev = _context5.next) {
+          switch (_context6.prev = _context6.next) {
             case 0:
               if (!$$1('#download-altlat').is(':checked')) {
-                _context5.next = 11;
+                _context6.next = 11;
                 break;
               }
 
               altlatRoot = ds$1.bsbi_atlas.dataRoot + 'bsbi/20210923/altlat/';
               altlatfile = "".concat(altlatRoot).concat(taxonId.replace(/\./g, "_"), ".csv");
-              _context5.next = 5;
+              _context6.next = 5;
               return d3.csv(altlatfile);
 
             case 5:
-              altlatdata = _context5.sent;
-              _context5.next = 8;
+              altlatdata = _context6.sent;
+              _context6.next = 8;
               return altLat(altlat, altlatdata);
 
             case 8:
               if (!taxon) {
-                _context5.next = 11;
+                _context6.next = 11;
                 break;
               }
 
-              _context5.next = 11;
+              _context6.next = 11;
               return altlat.saveImage(true, "".concat(taxonToFile(taxon, taxonId), "altlat"));
 
             case 11:
-              return _context5.abrupt("return", Promise.resolve());
+              return _context6.abrupt("return", Promise.resolve());
 
             case 12:
             case "end":
-              return _context5.stop();
+              return _context6.stop();
           }
         }
       }, _callee5);
@@ -3298,6 +3342,7 @@
 
   var ds = drupalSettings; // eslint-disable-line no-undef
 
+  var pcache = '26052022x5';
   function main() {
     var taxaList = [];
     var currentTaxon = {
@@ -3305,8 +3350,7 @@
       name: null,
       shortName: null,
       tetrad: null,
-      parent1: '',
-      parent2: ''
+      hybridMapping: false
     };
     mapSetCurrentTaxon(currentTaxon);
     $(document).ready(function () {
@@ -3443,7 +3487,7 @@
           copyToClipboard(location.origin + '/atlas/' + currentTaxon.identifier);
         }
       });
-      d3__namespace.csv(ds.bsbi_atlas.dataRoot + 'bsbi/taxon_list.csv').then(function (data) {
+      d3__namespace.csv("".concat(ds.bsbi_atlas.dataRoot, "bsbi/taxon_list.csv?prevent-cache=").concat(pcache)).then(function (data) {
         taxaList = data;
         taxaList.forEach(function (d) {
           var name = '';
@@ -3468,7 +3512,11 @@
           $opt.attr('data-canonical', d['canonical']);
           $opt.attr('data-taxon-name', d['taxonName']);
           $opt.attr('data-qualifier', d['qualifier']);
-          $opt.attr('data-vernacular', d['vernacular']); //$opt.attr('data-tetrad', d['tetrad'])
+          $opt.attr('data-vernacular', d['vernacular']);
+          var aParentids = d['hybridParentIds'].split(';');
+          var aParents = d['hybridParents'].split(';');
+          var hybridMapping = aParents.length === 2 && aParentids.length === 2;
+          $opt.attr('data-hybrid-mapping', hybridMapping); //$opt.attr('data-tetrad', d['tetrad'])
           //$opt.attr('data-monad', d['monad'])
 
           $opt.html(name).appendTo($sel);
@@ -3489,7 +3537,8 @@
           if (currentTaxon.identifier !== $(this).val()) {
             currentTaxon.identifier = $(this).val();
             currentTaxon.name = $(this).find(":selected").attr("data-content");
-            currentTaxon.shortName = $(this).find(":selected").attr("data-taxon-name"); // If selection was made programatically (browser back or forward
+            currentTaxon.shortName = $(this).find(":selected").attr("data-taxon-name");
+            currentTaxon.hybridMapping = $(this).find(":selected").attr("data-hybrid-mapping"); // If selection was made programatically (browser back or forward
             // button), don't add to history.
 
             if (clickedIndex) {
@@ -3514,49 +3563,23 @@
             identifier: ds.bsbi_atlas.identifier
           }, "BSBI Atlas - ".concat(ds.bsbi_atlas.identifier), "/atlas/".concat(currentTaxon.identifier));
         } // Get list of hybrid taxa which can be mapped with their parents
-        // This is done after taxon list loaded so that data can be enriched
-        // with names.
 
 
-        d3__namespace.csv(ds.bsbi_atlas.dataRoot + 'bsbi/hybrids.csv', function (h) {
-          var ddbid = h['ddb id'];
-          var parentDdbids = h['hybrid parent ids'].split(';');
-
-          if (parentDdbids.length === 2) {
-            var p1ddbid = parentDdbids[0];
-            var p2ddbid = parentDdbids[1];
-            var mTaxon = taxaList.find(function (t) {
-              return t['ddb id'] === ddbid;
-            });
-            var mParent1 = taxaList.find(function (t) {
-              return t['ddb id'] === p1ddbid;
-            });
-            var mParent2 = taxaList.find(function (t) {
-              return t['ddb id'] === p2ddbid;
-            });
-
-            if (mTaxon && mParent1 && mParent2) {
-              return {
-                taxon: ddbid,
-                parent1: p1ddbid,
-                parent2: p2ddbid,
-                taxonName: mTaxon['taxon name'],
-                parent1Name: mParent1['taxon name'],
-                parent2Name: mParent2['taxon name']
-              };
-            } else {
-              //if (!mTaxon) console.error('Cannot find ' + ddbid + ' in taxon list')
-              //if (!mParent1) console.error('Cannot find ' + p1ddbid + ' in taxon list')
-              //if (!mParent2) console.error('Cannot find ' + p2ddbid + ' in taxon list')
-              return null;
-            }
-          } else {
-            return null; // Excludes from result
-          }
-        }).then(function (data) {
-          delete data.columns;
-          updateBsbiDataAccess('taxaHybridList', data);
-        }); // Get list of taxa for which no status exists
+        var hybridTaxa = taxaList.filter(function (t) {
+          return t['hybridParentIds'].split(';').length === 2;
+        }).map(function (t) {
+          var parentIds = t['hybridParentIds'].split(';');
+          var parentNames = t['hybridParents'].split(';');
+          return {
+            taxon: t['ddbid'],
+            parent1: parentIds[0],
+            parent2: parentIds[1],
+            taxonName: t['canonical'],
+            parent1Name: parentNames[0],
+            parent2Name: parentNames[1]
+          };
+        });
+        updateBsbiDataAccess('taxaHybridList', hybridTaxa); // Get list of taxa for which no status exists
         // (for use elsewhere - might as well be done here)
 
         d3__namespace.csv(ds.bsbi_atlas.dataRoot + 'bsbi/no_status.csv').then(function (data) {
@@ -3642,9 +3665,11 @@
 
     function postProcessCaptionText(txt) {
       var txtn = txt;
-      var bsbidburl = ds.bsbi_atlas.dataBsbidb;
-      txtn = txtn.replace(/href="\/object.php/g, 'target="_blank" href="' + bsbidburl + 'object.php');
-      txtn = txtn.replace(/href='\/object.php/g, 'target=\'_blank\' href=\'' + bsbidburl + 'object.php');
+      ds.bsbi_atlas.dataBsbidb; //txtn  = txtn.replace(/href="\/object.php/g, 'target="_blank" href="' + bsbidburl + 'object.php')
+      //txtn  = txtn.replace(/href='\/object.php/g, 'target=\'_blank\' href=\'' + bsbidburl + 'object.php')
+
+      txtn = txtn.replace(/object.php\?entityid=/g, 'atlas/');
+      txtn = txtn.replace(/&amp;class=TaxonInstance/g, '');
       return txtn;
     }
 
@@ -3664,7 +3689,8 @@
       var $caption = $('#bsbi-caption');
       $caption.html('');
       var captionRoot = ds.bsbi_atlas.dataRoot + 'bsbi/captions/';
-      d3__namespace.csv(captionRoot + currentTaxon.identifier.replace(/\./g, "_") + '.csv?prevent-cache=26052022x2').then(function (d) {
+      var captionFile = "".concat(captionRoot).concat(currentTaxon.identifier.replace(/\./g, "_"), ".csv?prevent-cache=").concat(pcache);
+      d3__namespace.csv(captionFile).then(function (d) {
         //console.log('caption file', d)
         // Set taxon name
         $('.bsbi-selected-taxon-name').html(getFormattedTaxonName(d[0].vernacular, d[0].taxonName, d[0].authority)); // For caption, set the various sections
@@ -3721,6 +3747,25 @@
           $caption.append('<h4>Biogeography</h4>');
           $p = $('<p>').appendTo($caption);
           $p.append(postProcessCaptionText(d[0].atlasSpeciesBiogeography));
+        } // Parent taxa (for hybrids)
+
+
+        if (d[0].hybridParents) {
+          $caption.append('<h4>Hybrid parents</h4>');
+
+          var _$ul = $('<ul>').appendTo($caption);
+
+          var parents = d[0].hybridParents.split(';');
+          var parentIds = d[0].hybridParentIds.split(';');
+          parents.forEach(function (p, i) {
+            var pid = parentIds[i] ? parentIds[i] : '';
+            var $li = $('<li>').appendTo(_$ul);
+            var $i = $('<i>').appendTo($li);
+            var $a = $('<a>').appendTo($i);
+            $a.attr('href', "/atlas/".concat(pid));
+            $a.attr('alt', "Link to ".concat(p));
+            $a.text(p);
+          });
         } // References
 
 
@@ -3746,10 +3791,10 @@
         if (d[0].captionAuthors) {
           $caption.append('<h4>Authors</h4>');
 
-          var _$ul = $('<ul>').appendTo($caption);
+          var _$ul2 = $('<ul>').appendTo($caption);
 
           d[0].captionAuthors.split(';').forEach(function (a) {
-            var $li = $('<li>').appendTo(_$ul);
+            var $li = $('<li>').appendTo(_$ul2);
             $li.text(a);
           });
         } // Citation

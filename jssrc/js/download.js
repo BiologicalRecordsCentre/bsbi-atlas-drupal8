@@ -10,20 +10,29 @@ const currentTaxon = {
   name: null,
   shortName: null,
   tetrad: null,
-  parent1: '',
-  parent2: ''
 }
 let phen1, phen2, altlat
 let browsedFileData
 let bCancelled = false
 
 export function downloadPage() {
+
+  $('#bsbi-atlas-download')
+    .css('display', 'flex')
+  $('<div>').appendTo($('#bsbi-atlas-download'))
+    .attr('id', 'bsbi-atlas-download-left')
+    .css('flex', 1)
+  $('<div>').appendTo($('#bsbi-atlas-download'))
+    .attr('id', 'bsbi-atlas-download-right')
+    .css('flex', 1)
+    .css('margin-left', '1em')
+
   taxonSelectors()
   downloadButton()
 
-  $('<hr/>').appendTo($('#bsbi-atlas-download'))
+  $('<hr/>').appendTo($('#bsbi-atlas-download-left'))
 
-  const $instructions = $('<p>').appendTo($('#bsbi-atlas-download'))
+  const $instructions = $('<p>').appendTo($('#bsbi-atlas-download-left'))
   $instructions.html(`
     For batch downloads, first select a CSV file from your computer
     that has two columns: <i>taxonId</i> which has the ddbid for each 
@@ -37,7 +46,7 @@ export function downloadPage() {
   downloadBatchButton()
   cancelDownloadBatchButton()
 
-  $('<hr/>').appendTo($('#bsbi-atlas-download'))
+  $('<hr/>').appendTo($('#bsbi-atlas-download-left'))
 
   makeCheckbox('map', 'Map')
   makeCheckbox('apparency', 'Apparency')
@@ -74,19 +83,41 @@ async function downloadTaxa() {
     const t = data[i]
     const filename = taxonToFile(t.taxon, t.taxonId)
 
+    // For reporting errors
+    let eMapping, eApparency, ePhenology, eAltlat
     // Map
-    const p1 = mappingUpdate(t.taxonId, filename)
-    const p2 = apparencyUpdate(t.taxonId, filename)
-    const p3 = phenologyUpdate(t.taxonId, filename)
-    const p4 = altlatUpdate(t.taxonId, filename)
+    const p1 = mappingUpdate(t.taxonId, filename).catch(e => eMapping = e)
+    const p2 = apparencyUpdate(t.taxonId, filename).catch(e => eApparency = e)
+    const p3 = phenologyUpdate(t.taxonId, filename).catch(e => ePhenology = e)
+    const p4 = altlatUpdate(t.taxonId, filename).catch(e => eAltlat = e)
 
-    await Promise.all([p1, p2, p3, p4])
+    await Promise.all([p1, p2, p3, p4]).then(() => {
+
+      if (eMapping || eApparency  || ePhenology || eAltlat) {
+        let html=(`<b>Problems for ${t.taxon} (${t.taxonId})</b>`)
+        html += '<ul>'
+        if (eMapping) {
+          html += '<li>Map failed</li>'
+        }
+        if (eApparency) {
+          html += '<li>Apparency chart failed</li>'
+        }
+        if (ePhenology) {
+          html += '<li>Phenology chart failed</li>'
+        }
+        if (eAltlat) {
+          html += '<li>Altlat chart failed</li>'
+        }
+
+        $('<div>').appendTo($('#bsbi-atlas-download-right')).html(html)
+      }
+    })
   }
 }
 
 function fileUploadButton() {
 
-  const $file = $('<input>').appendTo($('#bsbi-atlas-download'))
+  const $file = $('<input>').appendTo($('#bsbi-atlas-download-left'))
   $file.attr('type', 'file')
   $file.attr('accept', '.csv')
   $file.attr('id', 'bsbi-atlas-batch-file')
@@ -106,7 +137,7 @@ function fileOpened(event) {
 }
 
 function downloadBatchButton() {
-  const $button = $('<button>').appendTo($('#bsbi-atlas-download'))
+  const $button = $('<button>').appendTo($('#bsbi-atlas-download-left'))
   $button.addClass('btn btn-default')
   $button.text('Download batch')
   $button.on('click', function(){
@@ -116,7 +147,7 @@ function downloadBatchButton() {
 }
 
 function cancelDownloadBatchButton() {
-  const $button = $('<button>').appendTo($('#bsbi-atlas-download'))
+  const $button = $('<button>').appendTo($('#bsbi-atlas-download-left'))
   $button.addClass('btn btn-default')
   $button.css('margin-left', '1em')
   $button.text('Cancel')
@@ -126,7 +157,7 @@ function cancelDownloadBatchButton() {
 }
 
 function downloadButton() {
-  const $button = $('<button>').appendTo($('#bsbi-atlas-download'))
+  const $button = $('<button>').appendTo($('#bsbi-atlas-download-left'))
   $button.addClass('btn btn-default')
   $button.text('Download selected')
 
@@ -147,12 +178,12 @@ function downloadButton() {
 }
 
 function makeCheckbox(id, label ) {
-  const $cb = $(`<input type="checkbox" id="download-${id}" style="margin:0.5em" checked>`).appendTo($('#bsbi-atlas-download'))
-  $(`<label for="download-${id}">${label}</label>`).appendTo($('#bsbi-atlas-download'))
+  const $cb = $(`<input type="checkbox" id="download-${id}" style="margin:0.5em" checked>`).appendTo($('#bsbi-atlas-download-left'))
+  $(`<label for="download-${id}">${label}</label>`).appendTo($('#bsbi-atlas-download-left'))
 }
 
 function mapping() {
-  $('<div id="bsbiMapDiv" style="max-width: 500px">').appendTo($('#bsbi-atlas-download'))
+  $('<div id="bsbiMapDiv" style="max-width: 500px">').appendTo($('#bsbi-atlas-download-left'))
 
   createMaps("#bsbiMapDiv")
   const staticMap = getStaticMap()
@@ -186,7 +217,7 @@ async function mappingUpdate(taxonId ,taxon) {
 }
 
 function apparencyChart() {
-  const $apparency = $('<div>').appendTo($('#bsbi-atlas-download'))
+  const $apparency = $('<div>').appendTo($('#bsbi-atlas-download-left'))
   $apparency.attr('id', 'bsbi-apparency-chart').css('max-width', '400px')
 
   phen1 = brccharts.phen1({
@@ -225,7 +256,7 @@ async function apparencyUpdate(taxonId ,taxon) {
 }
 
 function phenologyChart() {
-  const $phenology = $('<div>').appendTo($('#bsbi-atlas-download'))
+  const $phenology = $('<div>').appendTo($('#bsbi-atlas-download-left'))
   $phenology.attr('id', 'bsbi-phenology-chart').css('max-width', '400px')
 
   phen2 = brccharts.phen2({
@@ -264,7 +295,7 @@ async function phenologyUpdate(taxonId ,taxon) {
 
 function altlatChart() {
 
-  const $altlat = $('<div>').appendTo($('#bsbi-atlas-download'))
+  const $altlat = $('<div>').appendTo($('#bsbi-atlas-download-left'))
   $altlat.attr('id', 'bsbi-altlat-chart').css('max-width', '600px')
 
   const opts = {

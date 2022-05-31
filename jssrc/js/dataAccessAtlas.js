@@ -254,6 +254,7 @@ bsbiDataAccess.hybrid = function(identifier) {
     d3.csv(getCSV(identifier)).then(function (data) {
       resolve(data)
     })["catch"](function (e) {
+      console.log(`Hybrid map: can't retrieve map data for hybrid taxon ${identifier}`)
       reject(e)
     })
   })
@@ -261,6 +262,7 @@ bsbiDataAccess.hybrid = function(identifier) {
     d3.csv(getCSV(hybridInfo.parent1)).then(function (data) {
       resolve(data)
     })["catch"](function (e) {
+      console.log(`Hybrid map: can't retrieve map data for parent taxon ${hybridInfo.parent1}`)
       reject(e)
     })
   })
@@ -268,6 +270,7 @@ bsbiDataAccess.hybrid = function(identifier) {
     d3.csv(getCSV(hybridInfo.parent2)).then(function (data) {
       resolve(data)
     })["catch"](function (e) {
+      console.log(`Hybrid map: can't retrieve map data for parent taxon ${hybridInfo.parent2}`)
       reject(e)
     })
   })
