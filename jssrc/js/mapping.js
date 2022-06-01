@@ -1079,6 +1079,9 @@ export function changeMap(retPromise) {
       })
     }
   }
+
+  // Initialise dot caption
+  $('#dotCaption').html(bsbiDataAccess.dotCaption)
 }
 
 export function createMapControls(selector) {

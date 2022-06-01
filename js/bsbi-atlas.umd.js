@@ -71,6 +71,42 @@
   	dependencies: dependencies
   };
 
+  function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) {
+    try {
+      var info = gen[key](arg);
+      var value = info.value;
+    } catch (error) {
+      reject(error);
+      return;
+    }
+
+    if (info.done) {
+      resolve(value);
+    } else {
+      Promise.resolve(value).then(_next, _throw);
+    }
+  }
+
+  function _asyncToGenerator(fn) {
+    return function () {
+      var self = this,
+          args = arguments;
+      return new Promise(function (resolve, reject) {
+        var gen = fn.apply(self, args);
+
+        function _next(value) {
+          asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value);
+        }
+
+        function _throw(err) {
+          asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err);
+        }
+
+        _next(undefined);
+      });
+    };
+  }
+
   // access structure. All the data access functions
   // are members of this structure.
 
@@ -85,6 +121,7 @@
   bsbiDataAccess.changeColours = ['#FAD0C8', '#DD5A2F', '#525252'];
   bsbiDataAccess.symboltype = 'circle';
   bsbiDataAccess.periodColours = {};
+  bsbiDataAccess.dotCaption = '';
   bsbiDataAccess.periodColours.standard = {
     x: {
       "to 1929": '#f7f7f7',
@@ -335,6 +372,7 @@
         reject(e);
       });
     });
+    bsbiDataAccess.dotCaption = "Hectad: <br/>\n    <i>".concat(hybridInfo.parent1Name, "</i>: </br>\n    <i>").concat(hybridInfo.parent2Name, "</i>: </br>\n    Hybrid:");
     return new Promise(function (resolve, reject) {
       Promise.all([pHybrid, pParent1, pParent2]).then(function (data) {
         //https://nbn.org.uk/wp-content/uploads/2020/01/Preston_et_al-2015-Biological_Journal_of_the_Linnean_Society.pdf
@@ -342,9 +380,7 @@
         var blue = '#A8CBE2';
         var yellow = '#F7F619';
         var all = [];
-        data.filter(function (d, i) {
-          return i > 0;
-        }).forEach(function (taxonData, iTaxonData) {
+        data.forEach(function (taxonData, iTaxonData) {
           taxonData.forEach(function (r) {
             var match = all.find(function (ar) {
               return r.hectad === ar.gr;
@@ -353,7 +389,7 @@
             if (match) {
               match.presence[iTaxonData] = true;
             } else {
-              var presence = [false, false];
+              var presence = [false, false, false];
               presence[iTaxonData] = true;
               all.push({
                 gr: r.hectad,
@@ -363,16 +399,26 @@
           });
         });
         all.forEach(function (r) {
-          r.colour = r.presence[0] && r.presence[1] ? yellow : r.presence[0] ? pink : blue;
+          r.colour = r.presence[1] && r.presence[2] ? yellow : r.presence[1] ? pink : blue;
+          r.caption = "Hectad: <b>".concat(r.gr, "</b><br/>\n          <i>").concat(hybridInfo.parent1Name, "</i>: <b>").concat(r.presence[1] ? 'present' : 'absent', "</b></br>\n          <i>").concat(hybridInfo.parent2Name, "</i>: <b>").concat(r.presence[2] ? 'present' : 'absent', "</b></br>\n          Hybrid: <b>").concat(r.presence[0] ? 'present' : 'absent', "</b>");
+          r.noCaption = bsbiDataAccess.dotCaption;
         });
-        data[0].forEach(function (r) {
-          all.push({
-            gr: r.hectad,
-            shape: 'square',
-            size: 0.6,
-            colour: 'black'
-          });
-        });
+        var n = all.length;
+
+        for (var i = 0; i < n; i++) {
+          //console.log(all[i])
+          if (all[i].presence[0]) {
+            all.push({
+              gr: all[i].gr,
+              shape: 'square',
+              size: 0.6,
+              colour: 'black',
+              caption: all[i].caption,
+              noCaption: all[i].noCaption
+            });
+          }
+        }
+
         resolve({
           records: all,
           precision: 10000,
@@ -456,6 +502,13 @@
           }
         };
       });
+
+      if (bsbiDataAccess.showStatus) {
+        bsbiDataAccess.dotCaption = "Hectad:<br/>\n        Most recent dateclass:<br/>\n        Status:</b>";
+      } else {
+        bsbiDataAccess.dotCaption = "Hectad:<br/>\n        Most recent dateclass:";
+      }
+
       d3__namespace.csv(getCSV(identifier), function (r) {
         if (r.hectad) {
           // GB or Irish?
@@ -531,8 +584,8 @@
                 stroke: bsbiDataAccess.periodStroke[bsbiDataAccess.periodClasses][hectadstatus][recent],
                 size: hectadstatus === 'missing' ? 0.5 : 1,
                 opacity: opacities[recent],
-                //caption: "Hectad: <b>".concat(r.hectad, "</b></br>Status: <b>").concat(statusText[hectadstatus], "</b>"),
-                caption: "Hectad: <b>".concat(r.hectad, "</b><br/>\n                        Most recent dateclass: <b>").concat(getPeriodText(recent), "</b><br/>\n                        Status: <b>").concat(statusText[hectadstatus], "</b>")
+                caption: "Hectad: <b>".concat(r.hectad, "</b><br/>\n                        Most recent dateclass: <b>").concat(getPeriodText(recent), "</b><br/>\n                        Status: <b>").concat(statusText[hectadstatus], "</b>"),
+                noCaption: bsbiDataAccess.dotCaption
               };
             } else {
               point = {
@@ -543,7 +596,8 @@
                 stroke: bsbiDataAccess.periodStroke[bsbiDataAccess.periodClasses].x[recent],
                 size: 1,
                 opacity: opacities[recent],
-                caption: "Hectad: <b>".concat(r.hectad, "</b><br/>\n                        Most recent dateclass: <b>").concat(getPeriodText(recent), "</b>")
+                caption: "Hectad: <b>".concat(r.hectad, "</b><br/>\n                        Most recent dateclass: <b>").concat(getPeriodText(recent), "</b>"),
+                noCaption: bsbiDataAccess.dotCaption
               };
             } // Add attributes required for download
             // Use the legend keys as the attr names
@@ -638,6 +692,7 @@
   }
 
   function distAllClassesTetrad(identifier) {
+    bsbiDataAccess.dotCaption = "Tetrad:";
     return new Promise(function (resolve, reject) {
       d3__namespace.csv(getCSV(identifier, 'tetrads'), function (r) {
         if (r.tetrad) {
@@ -647,7 +702,9 @@
             shape: 'square',
             colour: 'black',
             size: 1,
-            opacity: 1
+            opacity: 1,
+            caption: "Tetrad: <b>".concat(r.tetrad, "</b>"),
+            noCaption: bsbiDataAccess.dotCaption
           };
         }
       }).then(function (data) {
@@ -708,6 +765,7 @@
   }
 
   function nativeSpeciesStatus(identifier, period) {
+    bsbiDataAccess.dotCaption = "Hectad:<br/>Occurrence:";
     return new Promise(function (resolve, reject) {
       d3__namespace.csv(getCSV(identifier), function (r) {
         if (r.hectad) {
@@ -729,12 +787,11 @@
               gr: r.hectad,
               shape: 'circle',
               size: 1,
-              //colour: 'black',
-              colour: occurs ? '#636363' : '#bdbdbd',
-              //opacity: occurs ? 1 : 0.5,
+              colour: occurs ? '#000000' : '#b0b0b0',
               opacity: 1,
-              stroke: 'black',
-              caption: "Hectad: <b>".concat(r.hectad, "</b><br/>\n            Occurrence: <b>").concat(occurs ? 'in' : 'prior to', "</b> the period <b>").concat(getPeriodText(period), "</b>")
+              stroke: '#808080',
+              caption: "Hectad: <b>".concat(r.hectad, "</b><br/>\n            Occurrence: <b>").concat(occurs ? 'in' : 'prior to', "</b> the period <b>").concat(getPeriodText(period), "</b>"),
+              noCaption: bsbiDataAccess.dotCaption
             };
           }
         }
@@ -788,6 +845,7 @@
   };
 
   function change(identifier, early, late, legendTitle) {
+    bsbiDataAccess.dotCaption = "Hectad:</br>Change:";
     var shapes = ['square', 'triangle-up', 'triangle-down']; //const colours = ['#FAD0C8', '#DD5A2F', '#525252']
 
     var colours = bsbiDataAccess.changeColours;
@@ -822,7 +880,8 @@
             gr: r.hectad,
             colour: colours[i],
             shape: shapes[i],
-            caption: "Hectad: <b>".concat(r.hectad, "</b></br>Change: <b>").concat(capText, "</b>")
+            caption: "Hectad: <b>".concat(r.hectad, "</b></br>Change: <b>").concat(capText, "</b>"),
+            noCaption: bsbiDataAccess.dotCaption
           };
         }
       }).then(function (data) {
@@ -858,7 +917,8 @@
   }
 
   bsbiDataAccess.bsbiHectadDateTetFreq = function (identifier) {
-    var legendSizeFact = 0.5; //const colour = d3.scaleLinear().domain([1, 13, 25]).range(['#edf8b1', '#7fcdbb', '#2c7fb8'])
+    var legendSizeFact = 0.5;
+    bsbiDataAccess.dotCaption = "Hectad: </br>Tetrads where present:"; //const colour = d3.scaleLinear().domain([1, 13, 25]).range(['#edf8b1', '#7fcdbb', '#2c7fb8'])
 
     return new Promise(function (resolve, reject) {
       d3__namespace.csv(getCSV(identifier), function (r) {
@@ -869,7 +929,8 @@
           return {
             gr: r.hectad,
             size: Math.sqrt(tetround) / 5,
-            caption: "Hectad: <b>".concat(r.hectad, "</b></br>Tetrads where present: <b>").concat(tetrads, "</b>")
+            caption: "Hectad: <b>".concat(r.hectad, "</b></br>Tetrads where present: <b>").concat(tetrads, "</b>"),
+            noCaption: bsbiDataAccess.dotCaption
           };
         }
       }).then(function (data) {
@@ -1164,7 +1225,8 @@
     });
     $sel.val('count'); // This seems to be necessary if interface regenerated,
     // e.g. changing from tabbed to non-tabbed display.
-    //$sel.selectpicker()
+
+    $sel.selectpicker();
   }
 
   function changeEcology(dataRoot, identifier) {
@@ -1307,8 +1369,8 @@
   }
   function apparencyByLat(chart, data) {
     // Map text to numeric values and add taxon
-    var dataType = $$5('#atlas-lat-phen-data-type').val();
-    console.log('dataType', dataType);
+    var dataType = $$5('#atlas-lat-phen-data-type').val(); //console.log('dataType', dataType)
+
     var numeric = data.filter(function (d) {
       return d.type === dataType;
     }).map(function (d) {
@@ -1379,8 +1441,8 @@
             thumb: img.replace('{PIXELSIZE}', '192'),
             subHtml: "\n              <div class=\"lightGallery-captions\">\n                <div style=\"background-color: black; opacity: 0.7\">\n                <p style=\"margin: 0.3em\">TODO - Copyright text to acknowledge Rob Still and Chris Gibson</p>\n                <div>\n              </div>"
           };
-        });
-        console.log(dynamicEl);
+        }); //console.log(dynamicEl)
+
         var lgContainer = document.getElementById(id);
 
         if (dynamicEl.length) {
@@ -2411,7 +2473,10 @@
           displayedMap.clearMap();
         });
       }
-    }
+    } // Initialise dot caption
+
+
+    $$3('#dotCaption').html(bsbiDataAccess.dotCaption);
   }
   function createMapControls(selector) {
     mapInterfaceToggle(mapControlRow(selector));
@@ -2658,42 +2723,6 @@
       });
       changeMap();
     }
-  }
-
-  function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) {
-    try {
-      var info = gen[key](arg);
-      var value = info.value;
-    } catch (error) {
-      reject(error);
-      return;
-    }
-
-    if (info.done) {
-      resolve(value);
-    } else {
-      Promise.resolve(value).then(_next, _throw);
-    }
-  }
-
-  function _asyncToGenerator(fn) {
-    return function () {
-      var self = this,
-          args = arguments;
-      return new Promise(function (resolve, reject) {
-        var gen = fn.apply(self, args);
-
-        function _next(value) {
-          asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value);
-        }
-
-        function _throw(err) {
-          asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err);
-        }
-
-        _next(undefined);
-      });
-    };
   }
 
   var $$1 = jQuery; // eslint-disable-line no-undef
@@ -3538,7 +3567,7 @@
             currentTaxon.identifier = $(this).val();
             currentTaxon.name = $(this).find(":selected").attr("data-content");
             currentTaxon.shortName = $(this).find(":selected").attr("data-taxon-name");
-            currentTaxon.hybridMapping = $(this).find(":selected").attr("data-hybrid-mapping"); // If selection was made programatically (browser back or forward
+            currentTaxon.hybridMapping = $(this).find(":selected").attr("data-hybrid-mapping") === 'true'; // If selection was made programatically (browser back or forward
             // button), don't add to history.
 
             if (clickedIndex) {
@@ -3639,7 +3668,10 @@
       var $left = $('<div class="col-sm-8">').appendTo($r);
       var $right = $('<div class="col-sm-4">').appendTo($r);
       $left.append('<div id="bsbiMapDiv" width="100%"></div>');
+      $left.append('<h4>Atlas map point</h4>');
       $left.append('<div id="dotCaption" width="100%"></div>');
+      $left.append('<h4>Status etc for devel</h4>');
+      $left.append('<div id="statusDevel" width="100%"></div>');
       var $taxon = $('<div class="bsbi-selected-taxon-name bsbi-section-summary"></div>').appendTo($right);
       $taxon.css('font-size', '1.3em');
       $right.append('<hr/>');
@@ -3747,25 +3779,95 @@
           $caption.append('<h4>Biogeography</h4>');
           $p = $('<p>').appendTo($caption);
           $p.append(postProcessCaptionText(d[0].atlasSpeciesBiogeography));
-        } // Parent taxa (for hybrids)
+        } // Status etc
 
+
+        $('#statusDevel').html('');
+        var $ulStatus = $('<ul>').appendTo($('#statusDevel'));
+        var vals = ['statusGB', 'statusIE', 'statusCI', 'csRedListEngland', 'csRedListWales', 'csNationalStatus', 'csRedListIreland', 'csRedDataList2005', 'csRedDataList2021'];
+        vals.forEach(function (v) {
+          var $li = $('<li>').appendTo($ulStatus);
+          $li.html("".concat(v, ": ").concat(d[0][v]));
+        }); // Parent taxa (for hybrids)
 
         if (d[0].hybridParents) {
+          var captionExists = /*#__PURE__*/function () {
+            var _ref2 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee2(id) {
+              var captionRoot, captionFile, res;
+              return regeneratorRuntime.wrap(function _callee2$(_context2) {
+                while (1) {
+                  switch (_context2.prev = _context2.next) {
+                    case 0:
+                      captionRoot = ds.bsbi_atlas.dataRoot + 'bsbi/captions/';
+                      captionFile = "".concat(captionRoot).concat(id.replace(/\./g, "_"), ".csv?prevent-cache=").concat(pcache);
+                      _context2.next = 4;
+                      return fetch(captionFile, {
+                        method: "HEAD"
+                      });
+
+                    case 4:
+                      res = _context2.sent;
+                      return _context2.abrupt("return", res.ok);
+
+                    case 6:
+                    case "end":
+                      return _context2.stop();
+                  }
+                }
+              }, _callee2);
+            }));
+
+            return function captionExists(_x3) {
+              return _ref2.apply(this, arguments);
+            };
+          }();
+
           $caption.append('<h4>Hybrid parents</h4>');
 
           var _$ul = $('<ul>').appendTo($caption);
 
           var parents = d[0].hybridParents.split(';');
-          var parentIds = d[0].hybridParentIds.split(';');
-          parents.forEach(function (p, i) {
-            var pid = parentIds[i] ? parentIds[i] : '';
-            var $li = $('<li>').appendTo(_$ul);
-            var $i = $('<i>').appendTo($li);
-            var $a = $('<a>').appendTo($i);
-            $a.attr('href', "/atlas/".concat(pid));
-            $a.attr('alt', "Link to ".concat(p));
-            $a.text(p);
-          });
+          var parentIds = d[0].hybridParentIds.split(';'); // A parent id may not exist as a taxon in the altas
+          // in which case do not link to it. Check if it exists
+          // by checking whether the caption file exists.
+
+          parents.forEach( /*#__PURE__*/function () {
+            var _ref = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee(p, i) {
+              var pid, inAtlas, $li, $i, $a;
+              return regeneratorRuntime.wrap(function _callee$(_context) {
+                while (1) {
+                  switch (_context.prev = _context.next) {
+                    case 0:
+                      pid = parentIds[i] ? parentIds[i] : '';
+                      _context.next = 3;
+                      return captionExists(pid);
+
+                    case 3:
+                      inAtlas = _context.sent;
+                      $li = $('<li>').appendTo(_$ul);
+                      $i = $('<i>').appendTo($li);
+
+                      if (inAtlas) {
+                        $a = $('<a>').appendTo($i);
+                        $a.attr('href', "/atlas/".concat(pid));
+                        $a.attr('alt', "Link to ".concat(p));
+                        $a.text(p);
+                      } else {
+                        $i.text(p);
+                      }
+
+                    case 7:
+                    case "end":
+                      return _context.stop();
+                  }
+                }
+              }, _callee);
+            }));
+
+            return function (_x, _x2) {
+              return _ref.apply(this, arguments);
+            };
+          }());
         } // References
 
 

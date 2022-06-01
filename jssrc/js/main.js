@@ -242,7 +242,7 @@ export function main() {
           currentTaxon.identifier = $(this).val()
           currentTaxon.name =  $(this).find(":selected").attr("data-content")
           currentTaxon.shortName = $(this).find(":selected").attr("data-taxon-name")
-          currentTaxon.hybridMapping = $(this).find(":selected").attr("data-hybrid-mapping")
+          currentTaxon.hybridMapping = $(this).find(":selected").attr("data-hybrid-mapping") === 'true'
 
           // If selection was made programatically (browser back or forward
           // button), don't add to history.
@@ -338,7 +338,12 @@ export function main() {
     const $left = $('<div class="col-sm-8">').appendTo($r)
     const $right = $('<div class="col-sm-4">').appendTo($r)
     $left.append('<div id="bsbiMapDiv" width="100%"></div>')
+
+    $left.append('<h4>Atlas map point</h4>')
     $left.append('<div id="dotCaption" width="100%"></div>')
+
+    $left.append('<h4>Status etc for devel</h4>')
+    $left.append('<div id="statusDevel" width="100%"></div>')
 
     const $taxon = $('<div class="bsbi-selected-taxon-name bsbi-section-summary"></div>').appendTo($right)
     $taxon.css('font-size', '1.3em')
@@ -454,6 +459,15 @@ export function main() {
           $p.append(postProcessCaptionText(d[0].atlasSpeciesBiogeography))
         }
 
+        // Status etc
+        $('#statusDevel').html('')
+        const $ulStatus = $('<ul>').appendTo($('#statusDevel'))
+        const vals = ['statusGB','statusIE','statusCI','csRedListEngland','csRedListWales','csNationalStatus','csRedListIreland','csRedDataList2005','csRedDataList2021']
+        vals.forEach(v => {
+          const $li=$('<li>').appendTo($ulStatus)
+          $li.html(`${v}: ${d[0][v]}`)
+        })
+        
         // Parent taxa (for hybrids)
         if (d[0].hybridParents) {
 
@@ -463,15 +477,34 @@ export function main() {
           const parents = d[0].hybridParents.split(';')
           const parentIds = d[0].hybridParentIds.split(';')
 
-          parents.forEach((p,i) => {
+          // A parent id may not exist as a taxon in the altas
+          // in which case do not link to it. Check if it exists
+          // by checking whether the caption file exists.
+          
+
+          parents.forEach(async (p,i) => {
             const pid = parentIds[i] ? parentIds[i] : ''
+            const inAtlas = await captionExists(pid)
             const $li = $('<li>').appendTo($ul)
             const $i = $('<i>').appendTo($li)
-            const $a = $('<a>').appendTo($i)
-            $a.attr('href', `/atlas/${pid}`)
-            $a.attr('alt', `Link to ${p}`)
-            $a.text(p)
+            if (inAtlas) {
+              const $a = $('<a>').appendTo($i)
+              $a.attr('href', `/atlas/${pid}`)
+              $a.attr('alt', `Link to ${p}`)
+              $a.text(p)
+            } else {
+              $i.text(p)
+            }
           })
+
+          async function captionExists(id) {
+            const captionRoot = ds.bsbi_atlas.dataRoot + 'bsbi/captions/'
+            const captionFile = `${captionRoot}${id.replace(/\./g, "_")}.csv?prevent-cache=${pcache}`
+            const res = await fetch(captionFile,
+              { method: "HEAD" }
+            )
+            return res.ok
+          }
         }
 
         // References

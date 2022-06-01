@@ -15,6 +15,7 @@ bsbiDataAccess.taxaNoStatusList = []
 bsbiDataAccess.changeColours = ['#FAD0C8', '#DD5A2F', '#525252']
 bsbiDataAccess.symboltype ='circle'
 bsbiDataAccess.periodColours = {}
+bsbiDataAccess.dotCaption = ''
 
 bsbiDataAccess.periodColours.standard = {
   x: {
@@ -275,6 +276,11 @@ bsbiDataAccess.hybrid = function(identifier) {
     })
   })
 
+  bsbiDataAccess.dotCaption = `Hectad: <br/>
+    <i>${hybridInfo.parent1Name}</i>: </br>
+    <i>${hybridInfo.parent2Name}</i>: </br>
+    Hybrid:`
+
   return new Promise(function (resolve, reject) {
     Promise.all([pHybrid, pParent1, pParent2]).then(function (data) {
       //https://nbn.org.uk/wp-content/uploads/2020/01/Preston_et_al-2015-Biological_Journal_of_the_Linnean_Society.pdf
@@ -284,13 +290,13 @@ bsbiDataAccess.hybrid = function(identifier) {
       const yellow = '#F7F619'
 
       const all = []
-      data.filter(function(d,i){return i > 0}).forEach(function(taxonData, iTaxonData) {
+      data.forEach(function(taxonData, iTaxonData) {
         taxonData.forEach(function(r){
           const match = all.find(function(ar){return r.hectad === ar.gr})
           if (match){
             match.presence[iTaxonData] = true
           } else {
-            const presence = [false, false]
+            const presence = [false, false, false]
             presence[iTaxonData] = true
             all.push({
               gr: r.hectad,
@@ -300,16 +306,28 @@ bsbiDataAccess.hybrid = function(identifier) {
         })
       })
       all.forEach(function(r) {
-        r.colour = r.presence[0] && r.presence[1] ? yellow : r.presence[0] ? pink : blue
+        r.colour = r.presence[1] && r.presence[2] ? yellow : r.presence[1] ? pink : blue
+        r.caption = `Hectad: <b>${r.gr}</b><br/>
+          <i>${hybridInfo.parent1Name}</i>: <b>${r.presence[1] ? 'present' : 'absent'}</b></br>
+          <i>${hybridInfo.parent2Name}</i>: <b>${r.presence[2] ? 'present' : 'absent'}</b></br>
+          Hybrid: <b>${r.presence[0] ? 'present' : 'absent'}</b>`
+        r.noCaption = bsbiDataAccess.dotCaption
       }) 
-      data[0].forEach(function(r){
-        all.push({
-          gr: r.hectad,
-          shape: 'square',
-          size: 0.6,
-          colour: 'black'
-        })
-      })
+      const n = all.length
+      for (let i=0; i<n; i++) {
+        //console.log(all[i])
+        if (all[i].presence[0]) {
+          all.push({
+            gr: all[i].gr,
+            shape: 'square',
+            size: 0.6,
+            colour: 'black',
+            caption: all[i].caption,
+            noCaption: all[i].noCaption
+          })
+        }
+      }
+      
       resolve({
         records: all,
         precision: 10000,
@@ -402,6 +420,15 @@ function distAllClasses(identifier) {
       }
     })
 
+    if (bsbiDataAccess.showStatus) {
+      bsbiDataAccess.dotCaption = `Hectad:<br/>
+        Most recent dateclass:<br/>
+        Status:</b>`
+    } else {
+      bsbiDataAccess.dotCaption = `Hectad:<br/>
+        Most recent dateclass:`
+    }
+
     d3.csv(getCSV(identifier), function (r) {
       if (r.hectad ) {
         // GB or Irish?
@@ -467,22 +494,23 @@ function distAllClasses(identifier) {
               stroke: bsbiDataAccess.periodStroke[bsbiDataAccess.periodClasses][hectadstatus][recent],
               size: hectadstatus === 'missing' ? 0.5 : 1,
               opacity: opacities[recent],
-              //caption: "Hectad: <b>".concat(r.hectad, "</b></br>Status: <b>").concat(statusText[hectadstatus], "</b>"),
               caption: `Hectad: <b>${r.hectad}</b><br/>
                         Most recent dateclass: <b>${getPeriodText(recent)}</b><br/>
                         Status: <b>${statusText[hectadstatus]}</b>`,
+              noCaption: bsbiDataAccess.dotCaption,
             }
           } else {
             point = {
               gr: r.hectad,
               //shape: bsbiDataAccess.displayedMapType === 'static' ? 'circle' : 'circlerad',
               shape: 'circle',
-                colour: bsbiDataAccess.periodColours[bsbiDataAccess.periodClasses].x[recent],
+              colour: bsbiDataAccess.periodColours[bsbiDataAccess.periodClasses].x[recent],
               stroke: bsbiDataAccess.periodStroke[bsbiDataAccess.periodClasses].x[recent],
               size: 1,
               opacity: opacities[recent],
               caption: `Hectad: <b>${r.hectad}</b><br/>
                         Most recent dateclass: <b>${getPeriodText(recent)}</b>`,
+              noCaption: bsbiDataAccess.dotCaption,
             }
           }
           // Add attributes required for download
@@ -559,6 +587,8 @@ function distAllClasses(identifier) {
 
 function distAllClassesTetrad(identifier) {
 
+  bsbiDataAccess.dotCaption = `Tetrad:`
+
   return new Promise(function (resolve, reject) {
 
     d3.csv(getCSV(identifier, 'tetrads'), function (r) {
@@ -570,6 +600,8 @@ function distAllClassesTetrad(identifier) {
           colour: 'black',
           size: 1,
           opacity: 1,
+          caption: `Tetrad: <b>${r.tetrad}</b>`,
+          noCaption: bsbiDataAccess.dotCaption
         }
       }
     }).then(function (data) {
@@ -656,6 +688,8 @@ function nativeSpeciesStatus(identifier, period) {
     }
   }
 
+  bsbiDataAccess.dotCaption = `Hectad:<br/>Occurrence:`
+
   return new Promise(function (resolve, reject) {
 
     d3.csv(getCSV(identifier), function (r) {
@@ -677,13 +711,12 @@ function nativeSpeciesStatus(identifier, period) {
             gr: r.hectad,
             shape: 'circle',
             size: 1,
-            //colour: 'black',
-            colour: occurs ? '#636363' : '#bdbdbd',
-            //opacity: occurs ? 1 : 0.5,
+            colour: occurs ? '#000000' : '#b0b0b0',
             opacity: 1,
-            stroke: 'black',
+            stroke: '#808080',
             caption: `Hectad: <b>${r.hectad}</b><br/>
-            Occurrence: <b>${occurs ? 'in' : 'prior to'}</b> the period <b>${getPeriodText(period)}</b>`
+            Occurrence: <b>${occurs ? 'in' : 'prior to'}</b> the period <b>${getPeriodText(period)}</b>`,
+            noCaption: bsbiDataAccess.dotCaption
           }
         }
       }
@@ -737,6 +770,9 @@ bsbiDataAccess.change_1930_1969_vs_2000_2019 = function(identifier) {
 }
 
 function change(identifier, early, late, legendTitle) {
+
+  bsbiDataAccess.dotCaption = "Hectad:</br>Change:"
+
   const shapes = ['square', 'triangle-up', 'triangle-down']
   //const colours = ['#FAD0C8', '#DD5A2F', '#525252']
   const colours = bsbiDataAccess.changeColours
@@ -768,7 +804,8 @@ function change(identifier, early, late, legendTitle) {
           gr: r.hectad,
           colour: colours[i],
           shape: shapes[i],
-          caption: "Hectad: <b>".concat(r.hectad, "</b></br>Change: <b>").concat(capText, "</b>")
+          caption: "Hectad: <b>".concat(r.hectad, "</b></br>Change: <b>").concat(capText, "</b>"),
+          noCaption: bsbiDataAccess.dotCaption,
         }
       }
     }).then(function (data) {
@@ -807,6 +844,7 @@ bsbiDataAccess.bsbiHectadDateTetFreq = function(identifier) {
 
   const fields = ["to 1929", "1930 - 1969", "1970 - 1986", "1987 - 1999", "2000 - 2009", "2010 - 2019"]
   const legendSizeFact = 0.5
+  bsbiDataAccess.dotCaption = "Hectad: </br>Tetrads where present:"
   //const colour = d3.scaleLinear().domain([1, 13, 25]).range(['#edf8b1', '#7fcdbb', '#2c7fb8'])
   return new Promise(function (resolve, reject) {
     d3.csv(getCSV(identifier), function (r) {
@@ -818,7 +856,8 @@ bsbiDataAccess.bsbiHectadDateTetFreq = function(identifier) {
         return {
           gr: r.hectad,
           size: Math.sqrt(tetround)/5,
-          caption: "Hectad: <b>".concat(r.hectad, "</b></br>Tetrads where present: <b>").concat(tetrads, "</b>")
+          caption: "Hectad: <b>".concat(r.hectad, "</b></br>Tetrads where present: <b>").concat(tetrads, "</b>"),
+          noCaption: bsbiDataAccess.dotCaption
         }
       }
     }).then(function (data) {

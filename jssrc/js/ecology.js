@@ -219,7 +219,7 @@ function latPhenDataTypeDropdown($parent) {
 
   // This seems to be necessary if interface regenerated,
   // e.g. changing from tabbed to non-tabbed display.
-  //$sel.selectpicker()
+  $sel.selectpicker()
 }
 
 export function changeEcology(dataRoot, identifier) {
@@ -363,7 +363,7 @@ export function phenology(chart, data, textId) {
 export function apparencyByLat(chart, data) {
   // Map text to numeric values and add taxon
   const dataType = $('#atlas-lat-phen-data-type').val()
-  console.log('dataType', dataType)
+  //console.log('dataType', dataType)
 
   const numeric = data.filter(d => d.type === dataType).map(d => {
     const nd = {taxon: 'taxon'}

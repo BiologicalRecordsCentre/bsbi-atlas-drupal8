@@ -30,7 +30,7 @@ export function createGallery(id, ddbid) {
           }
         })
 
-        console.log(dynamicEl)
+        //console.log(dynamicEl)
 
         const lgContainer = document.getElementById(id)
         
