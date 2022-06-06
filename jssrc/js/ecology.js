@@ -228,7 +228,7 @@ export function changeEcology(dataRoot, identifier) {
 
   const apparencyRoot = dataRoot + 'bsbi/apparency/'
   const phenologyRoot = dataRoot + 'bsbi/phenology/'
-  const mapRoot = dataRoot + 'bsbi/20210923/'
+  const mapRoot = dataRoot + 'bsbi/20220606/'
 
   // Apparency all
   const fileAll = apparencyRoot + 'all/' + identifier.replace(/\./g, "_") + '.csv'

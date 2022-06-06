@@ -357,7 +357,7 @@ function altlatChart() {
 
 async function altlatUpdate(taxonId ,taxon) {
   if ($('#download-altlat').is(':checked')) {
-    const altlatRoot = ds.bsbi_atlas.dataRoot + 'bsbi/20210923/altlat/'
+    const altlatRoot = ds.bsbi_atlas.dataRoot + 'bsbi/20220606/altlat/'
     const altlatfile = `${altlatRoot}${taxonId.replace(/\./g, "_")}.csv`
     const altlatdata = await d3.csv(altlatfile)
     await altLat(altlat, altlatdata)

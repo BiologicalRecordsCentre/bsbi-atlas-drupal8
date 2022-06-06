@@ -1233,7 +1233,7 @@
     if (!identifier) return;
     var apparencyRoot = dataRoot + 'bsbi/apparency/';
     var phenologyRoot = dataRoot + 'bsbi/phenology/';
-    var mapRoot = dataRoot + 'bsbi/20210923/'; // Apparency all
+    var mapRoot = dataRoot + 'bsbi/20220606/'; // Apparency all
 
     var fileAll = apparencyRoot + 'all/' + identifier.replace(/\./g, "_") + '.csv';
     d3__namespace.csv(fileAll + '?prevent-cache=').then(function (data) {
@@ -1436,6 +1436,7 @@
         var dynamicEl = d[0].images.split(';').filter(function (i) {
           return i;
         }).map(function (img) {
+          console.log(img.replace('{PIXELSIZE}', '192'));
           return {
             src: img.replace('{PIXELSIZE}', '1920'),
             thumb: img.replace('{PIXELSIZE}', '192'),
@@ -2294,7 +2295,7 @@
     // to give more room for legends!
 
     transOptsSel.BI4.bounds.xmin = -240000, // Init
-    bsbiDataAccess.bsbiDataRoot = ds$2.bsbi_atlas.dataRoot + 'bsbi/20210923/';
+    bsbiDataAccess.bsbiDataRoot = ds$2.bsbi_atlas.dataRoot + 'bsbi/20220606/';
     bsbiDataAccess.showStatus = false; // Data access 
 
     var mapTypesSel = {
@@ -3258,7 +3259,7 @@
                 break;
               }
 
-              altlatRoot = ds$1.bsbi_atlas.dataRoot + 'bsbi/20210923/altlat/';
+              altlatRoot = ds$1.bsbi_atlas.dataRoot + 'bsbi/20220606/altlat/';
               altlatfile = "".concat(altlatRoot).concat(taxonId.replace(/\./g, "_"), ".csv");
               _context6.next = 5;
               return d3.csv(altlatfile);

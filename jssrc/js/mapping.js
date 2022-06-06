@@ -889,7 +889,7 @@ export function createMaps(selector) {
   transOptsSel.BI4.bounds.xmin = -240000,
 
   // Init
-  bsbiDataAccess.bsbiDataRoot = ds.bsbi_atlas.dataRoot + 'bsbi/20210923/'
+  bsbiDataAccess.bsbiDataRoot = ds.bsbi_atlas.dataRoot + 'bsbi/20220606/'
   bsbiDataAccess.showStatus = false
 
   // Data access 
