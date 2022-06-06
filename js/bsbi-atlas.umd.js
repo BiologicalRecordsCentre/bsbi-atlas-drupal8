@@ -138,11 +138,11 @@
       "2000 - 2019": '#004d99'
     },
     a: {
-      "to 1929": '#fee5d9',
-      "1930 - 1969": '#fcbcb4',
-      "1970 - 1986": '#fb6a4a',
-      "1987 - 1999": '#de2d26',
-      "2000 - 2019": '#a50f15'
+      "to 1929": '#FEE5D9',
+      "1930 - 1969": '#FCBCB4',
+      "1970 - 1986": '#FF8C86',
+      "1987 - 1999": '#FF0000',
+      "2000 - 2019": '#B30000'
     },
     bullseye: {
       "to 1929": 'black',
@@ -3612,7 +3612,7 @@
         updateBsbiDataAccess('taxaHybridList', hybridTaxa); // Get list of taxa for which no status exists
         // (for use elsewhere - might as well be done here)
 
-        d3__namespace.csv(ds.bsbi_atlas.dataRoot + 'bsbi/no_status.csv').then(function (data) {
+        d3__namespace.csv("".concat(ds.bsbi_atlas.dataRoot, "bsbi/no_status.csv?prevent-cache=").concat(pcache)).then(function (data) {
           updateBsbiDataAccess('taxaNoStatusList', data.map(function (d) {
             return d['ddb id'];
           }));

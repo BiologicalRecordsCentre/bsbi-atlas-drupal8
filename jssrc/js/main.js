@@ -284,7 +284,7 @@ export function main() {
 
       // Get list of taxa for which no status exists
       // (for use elsewhere - might as well be done here)
-      d3.csv(ds.bsbi_atlas.dataRoot + 'bsbi/no_status.csv').then(function(data) {
+      d3.csv(`${ds.bsbi_atlas.dataRoot}bsbi/no_status.csv?prevent-cache=${pcache}`).then(function(data) {
         updateBsbiDataAccess('taxaNoStatusList',  data.map(function(d) {return d['ddb id']}))
       })
     }).catch(function(){
