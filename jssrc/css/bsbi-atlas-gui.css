@@ -179,9 +179,9 @@ taxon {
   z-index: 2000 !important;
 }
 
-.bsbi-section-summary span.taxname {
+/* .bsbi-section-summary span.taxname {
   display: block
-}
+} */
 
 #bsbi-taxa-covered-toggle {
   cursor: pointer;
@@ -232,4 +232,8 @@ taxon {
   width: 100%;
   height: 0;
   padding-bottom: 65%;
+}
+
+.taxon-authority {
+  color: grey
 }

@@ -401,20 +401,22 @@ function taxonSelectors() {
       if (d['vernacular']) {
         name = '<b>' + d['vernacular'] + '</b> '
       }
-      name = name + '<i>' + d['taxonName'] + '</i>'
-      if (d['qualifier']) {
-        name = name + ' <b><i>' + d['qualifier'] + '</i></b>'
-      }
-      if (d['authority']) {
-        name = name + ' <span style="color: grey">' + d['authority'] + '</span>'
-      }
+      name = name + d['formattedName']
+
+      // name = name + '<i>' + d['taxonName'] + '</i>'
+      // if (d['qualifier']) {
+      //   name = name + ' <b><i>' + d['qualifier'] + '</i></b>'
+      // }
+      // if (d['authority']) {
+      //   name = name + ' <span style="color: grey">' + d['authority'] + '</span>'
+      // }
 
       const $opt = $('<option>')
       $opt.attr('data-content', name)
       $opt.attr('value', d['ddbid'])
-      $opt.attr('data-canonical', d['canonical'])
+      //$opt.attr('data-canonical', d['canonical'])
       $opt.attr('data-taxon-name', d['taxonName'])
-      $opt.attr('data-qualifier', d['qualifier'])
+      //$opt.attr('data-qualifier', d['qualifier'])
       $opt.attr('data-vernacular', d['vernacular'])
 
       //$opt.attr('data-tetrad', d['tetrad'])

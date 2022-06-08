@@ -49,8 +49,8 @@ export function getCookie(cname) {
 
 export function getCitation(currentTaxon, forImageDownload) {
   if (forImageDownload) {
-    return `<i>${currentTaxon.shortName.replace(/\s/g, '</i> <i>')}</i> in <i>BSBI</i> <i>Online</i> <i>Atlas</i> <i>2020</i>, eds P.A. Stroh, T. Humphrey, R.J. Burkmar, O.L. Pescott, D.B. Roy, & K.J. Walker. ${location.origin}/atlas/${currentTaxon.identifier} [Accessed ${new Date().toLocaleDateString('en-GB')}]`
+    return `<i>${currentTaxon.shortName.replace(/\s/g, '</i> <i>')}</i> in <i>BSBI</i> <i>Online</i> <i>Atlas</i> <i>2020</i>, eds P.A. Stroh, T. A. Humphrey, R.J. Burkmar, O.L. Pescott, D.B. Roy, & K.J. Walker. ${location.origin}/atlas/${currentTaxon.identifier} [Accessed ${new Date().toLocaleDateString('en-GB')}]`
   } else {
-    return `<i>${currentTaxon.shortName}</i> in <i>BSBI Online Atlas 2020</i>, eds P.A. Stroh, T. Humphrey, R.J. Burkmar, O.L. Pescott, D.B. Roy, & K.J. Walker. ${location.origin}/atlas/${currentTaxon.identifier} [Accessed ${new Date().toLocaleDateString('en-GB')}]`
+    return `<i>${currentTaxon.shortName}</i> in <i>BSBI Online Plant Atlas 2020</i>, eds P.A. Stroh, T. A. Humphrey, R.J. Burkmar, O.L. Pescott, D.B. Roy, & K.J. Walker. ${location.origin}/atlas/${currentTaxon.identifier} [Accessed ${new Date().toLocaleDateString('en-GB')}]`
   }
 }

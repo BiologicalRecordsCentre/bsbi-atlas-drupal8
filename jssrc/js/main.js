@@ -11,7 +11,7 @@ import { downloadPage } from './download'
 
 const $ = jQuery // eslint-disable-line no-undef
 const ds = drupalSettings // eslint-disable-line no-undef
-const pcache = '26052022x5'
+const pcache = '26052022x7'
 
 export function main() {
 
@@ -194,20 +194,22 @@ export function main() {
         if (d['vernacular']) {
           name = '<b>' + d['vernacular'] + '</b> '
         }
-        name = name + '<i>' + d['taxonName'] + '</i>'
-        if (d['qualifier']) {
-          name = name + ' <b><i>' + d['qualifier'] + '</i></b>'
-        }
-        if (d['authority']) {
-          name = name + ' <span style="color: grey">' + d['authority'] + '</span>'
-        }
+        name = name + d['formattedName']
+
+        // name = name + '<i>' + d['taxonName'] + '</i>'
+        // if (d['qualifier']) {
+        //   name = name + ' <b><i>' + d['qualifier'] + '</i></b>'
+        // }
+        // if (d['authority']) {
+        //   name = name + ' <span style="color: grey">' + d['authority'] + '</span>'
+        // }
 
         const $opt = $('<option>')
         $opt.attr('data-content', name)
         $opt.attr('value', d['ddbid'])
-        $opt.attr('data-canonical', d['canonical'])
+        //$opt.attr('data-canonical', d['canonical'])
         $opt.attr('data-taxon-name', d['taxonName'])
-        $opt.attr('data-qualifier', d['qualifier'])
+        //$opt.attr('data-qualifier', d['qualifier'])
         $opt.attr('data-vernacular', d['vernacular'])
 
         const aParentids = d['hybridParentIds'].split(';')
@@ -275,7 +277,8 @@ export function main() {
           taxon: t['ddbid'],
           parent1: parentIds[0],
           parent2: parentIds[1],
-          taxonName: t['canonical'],
+          //taxonName: t['canonical'],
+          taxonName: t['taxonName'],
           parent1Name: parentNames[0],
           parent2Name: parentNames[1],
         }
@@ -339,8 +342,8 @@ export function main() {
     const $right = $('<div class="col-sm-4">').appendTo($r)
     $left.append('<div id="bsbiMapDiv" width="100%"></div>')
 
-    $left.append('<h4>Atlas map point</h4>')
-    $left.append('<div id="dotCaption" width="100%"></div>')
+    //$left.append('<h4>Atlas map point</h4>')
+    $left.append('<div id="dotCaption" width="100%" style="margin-top:1em"></div>')
 
     $left.append('<h4>Status etc for devel</h4>')
     $left.append('<div id="statusDevel" width="100%"></div>')
@@ -382,12 +385,14 @@ export function main() {
     return txtn
   }
 
-  function getFormattedTaxonName(vernacular, scientific, authority) {
-    const vernacularHtml = vernacular ? '<span class="taxname"><b>' + vernacular + ' </b></span>' : ''
-    const scientificHtml = scientific ? '<span class="taxname"><i>' + scientific + ' </i></span>' : ''
-    const authorityHtml = authority ? '<span class="taxname"><span style="color: grey">' + authority + '</span></span>' : ''
+  function getFormattedTaxonName(vernacular, formatted) {
+    // const vernacularHtml = vernacular ? '<span class="taxname"><b>' + vernacular + ' </b></span>' : ''
+    // const scientificHtml = scientific ? '<span class="taxname"><i>' + scientific + ' </i></span>' : ''
+    // const authorityHtml = authority ? '<span class="taxname"><span style="color: grey">' + authority + '</span></span>' : ''
 
-    return vernacularHtml+ scientificHtml + authorityHtml
+    // return vernacularHtml+ scientificHtml + authorityHtml
+
+    return `<b>${vernacular}</b> ${formatted}`
   }
 
   function changeEcologyTab() {
@@ -407,7 +412,8 @@ export function main() {
         //console.log('caption file', d)
         
         // Set taxon name
-        $('.bsbi-selected-taxon-name').html(getFormattedTaxonName(d[0].vernacular, d[0].taxonName, d[0].authority))
+        const tName = getFormattedTaxonName(d[0].vernacular, d[0].formattedName)
+        $('.bsbi-selected-taxon-name').html(`${tName}`)
 
         // For caption, set the various sections
         // Description
@@ -426,9 +432,15 @@ export function main() {
           const ddbids = d[0].captionedChildTaxonIds.split(';')
           ddbids.forEach(function(ddbid) {
             const $li = $('<li>').appendTo($ul)
-            const taxon = taxaList.find(function(t) {return t['ddb id'] === ddbid})
+            const taxon = taxaList.find(function(t) {return t['ddbid'] === ddbid})
+            console.log('taxon', taxon)
             if (taxon) {
-              $li.html(getFormattedTaxonName(taxon['vernacular'], taxon['taxon name'], taxon['authority']))
+              //$li.html(getFormattedTaxonName(taxon['vernacular'], taxon['formattedName']))
+              const $i = $('<i>').appendTo($li)
+              const $a = $('<a>').appendTo($i)
+              $a.attr('href', `/atlas/${ddbid}`)
+              $a.attr('alt', `Link to ${taxon.taxonName}`)
+              $a.text(taxon.taxonName)
             }
           })
           let taxaCoveredShown = false
@@ -480,8 +492,6 @@ export function main() {
           // A parent id may not exist as a taxon in the altas
           // in which case do not link to it. Check if it exists
           // by checking whether the caption file exists.
-          
-
           parents.forEach(async (p,i) => {
             const pid = parentIds[i] ? parentIds[i] : ''
             const inAtlas = await captionExists(pid)
@@ -507,6 +517,24 @@ export function main() {
           }
         }
 
+        // Authors
+        if (d[0].captionAuthors) {
+          $caption.append('<h4>Authors</h4>')
+          const $pAuthors = $('<p>').appendTo($caption)
+          const aAuthors = d[0].captionAuthors.split(';')
+          let tAuthors
+          for (let i=0; i< aAuthors.length; i++) {
+            if (i === 0) {
+              tAuthors = aAuthors[i]
+            } else if (i === aAuthors.length-1) {
+              tAuthors = `${tAuthors} and ${aAuthors[i]}`
+            } else {
+              tAuthors = `${tAuthors}, ${aAuthors[i]}`
+            }
+          }
+          $pAuthors.text(tAuthors)
+        }
+
         // References
         $caption.append('<h4>References <span id="bsbi-reference-toggle">[show]</span></h4>')
         const $divref = $('<div id="bsbi-reference-div">').appendTo($caption)
@@ -526,16 +554,6 @@ export function main() {
           }
         })
 
-        // Authors
-        if (d[0].captionAuthors) {
-          $caption.append('<h4>Authors</h4>')
-          const $ul = $('<ul>').appendTo($caption)
-          d[0].captionAuthors.split(';').forEach(function(a) {
-            const $li = $('<li>').appendTo($ul)
-            $li.text(a)
-          })
-        }
-
         // Citation
         $caption.append('<h4>Recommended citation <span id="bsbi-citation-toggle">[show]</span></h4>')
         const $div = $('<div id="bsbi-citation-div">').appendTo($caption)
@@ -543,7 +561,7 @@ export function main() {
         $p.append(getCitation(currentTaxon))
 
         // $p.append('<i>' + d[0].taxonName + ',</i> ')
-        // $p.append('in <i>BSBI Online Atlas 2020</i>, eds P.A. Stroh, T. Humphrey, R.J. Burkmar, O.L. Pescott, D.B. Roy, & K.J. Walker. ')
+        // $p.append('in <i>BSBI Online Plant Atlas 2020</i>, eds P.A. Stroh, T. A. Humphrey, R.J. Burkmar, O.L. Pescott, D.B. Roy, & K.J. Walker. ')
         // $p.append(location.origin + '/atlas/' + currentTaxon.identifier)
         // $p.append(' [Accessed ' + new Date().toLocaleDateString('en-GB') + ']')
 
@@ -574,7 +592,7 @@ export function main() {
         })
 
         // Update meta tags
-        addMetaTags('title', d[0].taxonName + ' in BSBI Online Atlas 2020', true)
+        addMetaTags('title', d[0].taxonName + ' in BSBI Online Plant Atlas 2020', true)
       })
   }
 

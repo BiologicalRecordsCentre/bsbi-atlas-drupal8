@@ -2,7 +2,7 @@ const $=jQuery // eslint-disable-line no-undef
 
 export function setBaseMetaTags() {
 
-  addMetaTags('title', 'BSBI Online Atlas 2020')
+  addMetaTags('title', 'BSBI Online Plant Atlas 2020')
   addMetaTags('authors', 'Stroh, P. A., Humphrey, T., Burkmar, R. J., Pescott, O. L., , Roy, D.B., and Walker, K. J.')
   addMetaTags('author', 'Stroh, P. A.')
   addMetaTags('author', 'Humphrey, T.')

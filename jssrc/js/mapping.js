@@ -169,7 +169,9 @@ export function setControlState() {
 
   // status checkbox enabled and checked value
   const disableStatus = bsbiDataAccess.taxaNoStatusList.indexOf(currentTaxon.identifier) > -1
-  if (disableStatus) {
+  const isHybrid = currentTaxon.hybridMapping
+
+  if (disableStatus || isHybrid) {
     showStatus = false
     bsbiDataAccess.showStatus = false
     $('.atlas-status-checkbox-control span').text('No status info for this taxon')
@@ -178,7 +180,7 @@ export function setControlState() {
     $('.atlas-status-checkbox-control span').text('Show status')
     $('.atlas-status-checkbox-control span').css('color', 'black')
   }
-  if (disableStatus || (displayedMapType === 'slippy' && mapType === 'allclass' && resolution !== 'hectad')) {
+  if (disableStatus || isHybrid || (displayedMapType === 'slippy' && mapType === 'allclass' && resolution !== 'hectad')) {
     // Uncheck and disable status checkbutton if not hectad resolution or no status info
     $('.atlas-status-checkbox').prop('checked', false)
     $('.atlas-status-checkbox').attr('disabled', true)
@@ -218,7 +220,6 @@ export function setControlState() {
   }
 
   // Enable/disable the hybrid map type option as appropriate
-  const isHybrid = currentTaxon.hybridMapping
   const $hybridopts = $('.atlas-map-type-selector option[value="hybrid"]') 
   if (isHybrid) {
     $hybridopts.show()
@@ -587,7 +588,7 @@ function mapDownloadButton($parent, i) {
   })
 
   makeRadio('CSV', 'csv', true)
-  makeRadio('GeoJson', 'geojson', false)
+  makeRadio('GJson', 'geojson', false)
 
   function makeRadio(label, val, checked) {
 
