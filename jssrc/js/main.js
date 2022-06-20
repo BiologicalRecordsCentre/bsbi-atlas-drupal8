@@ -8,10 +8,11 @@ import { copyToClipboard,  getCitation } from './utils'
 import { mapSetCurrentTaxon, createMaps, changeMap, createMapControls, setControlState, updateBsbiDataAccess} from './mapping'
 import { develMainMapStyles } from './devel'
 import { downloadPage } from './download'
+import { trendSummary } from './trendSummary'
+import { pcache } from './gen'
 
 const $ = jQuery // eslint-disable-line no-undef
 const ds = drupalSettings // eslint-disable-line no-undef
-const pcache = '26052022x7'
 
 export function main() {
 
@@ -424,6 +425,8 @@ export function main() {
           $caption.append('<h4>Description</h4>')
           $p = $('<p>').appendTo($caption)
           $p.append(postProcessCaptionText(d[0].atlasSpeciesDescription))
+          $p = $('<p>').appendTo($caption)
+          $p.append('TODO - overall status')
         }
 
         // Taxa covered
@@ -463,6 +466,12 @@ export function main() {
         // Trends
         if (d[0].atlasSpeciesTrends) {
           $caption.append('<h4>Trends</h4>')
+         
+          // Graphic
+          const $graphic = trendSummary()
+          $graphic.appendTo($caption)
+
+          // Text
           $p = $('<p>').appendTo($caption)
           $p.append(postProcessCaptionText(d[0].atlasSpeciesTrends))
         }

@@ -1,6 +1,7 @@
+import { pcache } from './gen'
+
 const $ = jQuery // eslint-disable-line no-undef
 const ds = drupalSettings // eslint-disable-line no-undef
-const pcache = '26052022x5'
 
 export function createGallery(id, ddbid) {
 

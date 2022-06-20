@@ -236,6 +236,10 @@ taxon {
 
 .taxon-authority {
   color: grey
+}
+
+#bsbi-phenology-source .publication-title {
+  font-style: italic;
 }@media print {
   .nav-tabs {
     display: none;

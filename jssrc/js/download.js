@@ -1,11 +1,11 @@
 import { createMaps, getStaticMap, changeMap, mapSetCurrentTaxon } from './mapping'
 import { bsbiDataAccess } from './dataAccessAtlas'
 import { apparency, phenology, altLat } from './ecology'
+import { pcache } from './gen'
 
 const $ = jQuery // eslint-disable-line no-undef
 const ds = drupalSettings // eslint-disable-line no-undef
 
-const pcache = '26052022x7'
 const currentTaxon = {
   identifier: '',
   name: null,
@@ -287,8 +287,8 @@ function phenologyChart() {
 
 async function phenologyUpdate(taxonId ,taxon) {
   if ($('#download-phenology').is(':checked')) {
-    const phenologyRoot = ds.bsbi_atlas.dataRoot + 'bsbi/phenology/'
-    const file = phenologyRoot + taxonId.replace(/\./g, "_") + '.csv'
+    const captionRoot = ds.bsbi_atlas.dataRoot + 'bsbi/captions/'
+    const file = `${captionRoot}${currentTaxon.identifier.replace(/\./g, "_")}.csv`
     let data = await d3.csv(file + `?prevent-cache=${pcache}`).catch(() => null)
     if (!data) {
       // TEMPORARY CODE FOR TESTING so that a file always returned 
