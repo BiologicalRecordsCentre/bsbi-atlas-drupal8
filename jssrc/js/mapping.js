@@ -6,6 +6,7 @@ const ds = drupalSettings // eslint-disable-line no-undef
 
 let currentTaxon 
 let gridStyle = getCookie('gridstyle') ? getCookie('gridstyle') : 'solid'
+let backdrop = getCookie('backdrop') ? getCookie('backdrop') : 'colour_elevation'
 let slippyMap, staticMap
 let mapType = 'allclass'
 let insetType = getCookie('inset') ? getCookie('inset') : 'BI4'
@@ -168,7 +169,7 @@ export function setControlState() {
   }
 
   // status checkbox enabled and checked value
-  const disableStatus = bsbiDataAccess.taxaNoStatusList.indexOf(currentTaxon.identifier) > -1
+  const disableStatus = bsbiDataAccess.taxaNoStatusList.indexOf(currentTaxon.identifier) > -1 || currentTaxon.isHybrid
   const isHybrid = currentTaxon.hybridMapping
 
   if (disableStatus || isHybrid) {
@@ -465,7 +466,7 @@ function backdropSelector($parent) {
   const backdrops = [
     {
       caption: 'No backdrop',
-      val: ''
+      val: 'none'
     },
     {
       caption: 'Colour elevation',
@@ -485,22 +486,26 @@ function backdropSelector($parent) {
   $sel.on('changed.bs.select', function () {
     // Remove all backdrops
     backdrops.forEach(function(b){
-      if (b.val) {
+      if (b.val !== 'none') {
         staticMap.basemapImage(b.val, false, rasterRoot + b.val + '.png', rasterRoot + b.val + '.pgw')
       }
     })
     // Display selected backdrop
-    const val = $(this).val()
-    if (val) {
-      staticMap.basemapImage(val, true, rasterRoot + val + '.png', rasterRoot + val + '.pgw')
+    backdrop = $(this).val()
+    setCookie('backdrop', backdrop, 30)
+    if (backdrop !== 'none') {
+      staticMap.basemapImage(backdrop, true, rasterRoot + backdrop + '.png', rasterRoot + backdrop + '.pgw')
     }
   })
   backdrops.forEach(function(b){
-    const $opt = b.selected  ? $('<option>') : $('<option>')
+    const $opt = $('<option>')
     $opt.attr('value', b.val)
     $opt.html(b.caption).appendTo($sel)
   })
-  $sel.val("colour_elevation")
+  $sel.val(backdrop)
+  if (backdrop !== 'none') {
+    staticMap.basemapImage(backdrop, true, rasterRoot + `${backdrop}.png`, rasterRoot + `${backdrop}.pgw`)
+  }
 
   // This seems to be necessary if interface regenerated,
   // e.g. changing from tabbed to non-tabbed display.
@@ -885,9 +890,11 @@ export function createMaps(selector) {
   const transOptsSel =  JSON.parse(JSON.stringify(brcatlas.namedTransOpts))
   delete transOptsSel.BI3 // Remove the options without CI
 
-  // Modify the BI4 - northern Isle inset option to go further west in order
-  // to give more room for legends!
-  transOptsSel.BI4.bounds.xmin = -240000,
+  // Modify insets to go further west in order
+  // to give more room for legends.
+  transOptsSel.BI4.bounds.xmin = -240000,  //Northern Isles
+  transOptsSel.BI1.bounds.xmin = -230000,  //No insets
+  transOptsSel.BI2.bounds.xmin = -230000,  //CI inset
 
   // Init
   bsbiDataAccess.bsbiDataRoot = ds.bsbi_atlas.dataRoot + 'bsbi/20220606/'
@@ -992,9 +999,8 @@ export function createMaps(selector) {
     countryLineStyle: boundaryType === 'country' ? '' : 'none'
   })
 
-  // Initial backgrop image
   const rasterRoot = ds.bsbi_atlas.dataRoot + 'rasters/'
-  staticMap.basemapImage('colour_elevation', true, rasterRoot + 'colour_elevation.png', rasterRoot + 'colour_elevation.pgw')
+  //staticMap.basemapImage('colour_elevation', true, rasterRoot + 'colour_elevation.png', rasterRoot + 'colour_elevation.pgw')
 
   // Callbacks for slippy maps
   function startLoad() {

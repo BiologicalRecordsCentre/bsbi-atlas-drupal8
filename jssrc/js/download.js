@@ -5,6 +5,7 @@ import { apparency, phenology, altLat } from './ecology'
 const $ = jQuery // eslint-disable-line no-undef
 const ds = drupalSettings // eslint-disable-line no-undef
 
+const pcache = '26052022x7'
 const currentTaxon = {
   identifier: '',
   name: null,
@@ -14,6 +15,7 @@ const currentTaxon = {
 let phen1, phen2, altlat
 let browsedFileData
 let bCancelled = false
+let aNoStatus, aIsHybrid
 
 export function downloadPage() {
 
@@ -29,7 +31,7 @@ export function downloadPage() {
 
   taxonSelectors()
   downloadButton()
-
+ 
   $('<hr/>').appendTo($('#bsbi-atlas-download-left'))
 
   const $instructions = $('<p>').appendTo($('#bsbi-atlas-download-left'))
@@ -85,6 +87,12 @@ async function downloadTaxa() {
 
     // For reporting errors
     let eMapping, eApparency, ePhenology, eAltlat
+
+    // Ensure that status is set correctly for mapping
+    const isHybrid = aIsHybrid.indexOf(t.taxonId) > -1
+    const noStatus = aNoStatus.indexOf(t.taxonId) > -1
+    bsbiDataAccess.showStatus = !isHybrid && !noStatus
+
     // Map
     const p1 = mappingUpdate(t.taxonId, filename).catch(e => eMapping = e)
     const p2 = apparencyUpdate(t.taxonId, filename).catch(e => eApparency = e)
@@ -183,23 +191,25 @@ function makeCheckbox(id, label ) {
 }
 
 function mapping() {
-  $('<div id="bsbiMapDiv" style="max-width: 500px">').appendTo($('#bsbi-atlas-download-left'))
+  $('<div id="bsbiMapDownloadDiv" style="max-width: 500px">').appendTo($('#bsbi-atlas-download-left'))
 
-  createMaps("#bsbiMapDiv")
+  createMaps("#bsbiMapDownloadDiv")
   const staticMap = getStaticMap()
-  // Northern and Channel Isles inset
-  staticMap.setTransform('BI4')
-  // No grid lines
-  staticMap.setGridLineStyle('none')
-  // No boundaries
-  staticMap.setCountryLineStyle('none')
-  // Background
-  staticMap.basemapImage('colour_elevation', false)
+
+  // // Northern and Channel Isles inset
+  // staticMap.setTransform('BI4')
+  // // No grid lines
+  // staticMap.setGridLineStyle('none')
+  // // No boundaries
+  // staticMap.setVcLineStyle('none')
+  // staticMap.setCountryLineStyle('none')
+  // // Background
+  // staticMap.basemapImage('colour_elevation', true)
+
   // Ensure right map is selected
-  // allclass is the default, so no need to change, but need to
-  // update showStatus and also indicated that 4 classes are to be used
+  // allclass is the default, status is set on a per taxon basis
+  // Indicated that 4 classes are to be used
   bsbiDataAccess.periodClasses = 'print'
-  bsbiDataAccess.showStatus = true
 }
 
 async function mappingUpdate(taxonId ,taxon) {
@@ -241,7 +251,7 @@ async function apparencyUpdate(taxonId ,taxon) {
   if ($('#download-apparency').is(':checked')) {
     const apparencyRoot = `${ds.bsbi_atlas.dataRoot}bsbi/apparency/`
     const file = apparencyRoot + 'all/' + taxonId.replace(/\./g, "_") + '.csv'
-    let data = await d3.csv(file + '?prevent-cache=').catch(() => null)
+    let data = await d3.csv(file + `?prevent-cache=${pcache}`).catch(() => null)
     if (!data) {
       // TEMPORARY CODE FOR TESTING so that a file always returned 
       const fileDefault = apparencyRoot + 'all/dummy.csv'
@@ -279,11 +289,11 @@ async function phenologyUpdate(taxonId ,taxon) {
   if ($('#download-phenology').is(':checked')) {
     const phenologyRoot = ds.bsbi_atlas.dataRoot + 'bsbi/phenology/'
     const file = phenologyRoot + taxonId.replace(/\./g, "_") + '.csv'
-    let data = await d3.csv(file + '?prevent-cache=').catch(() => null)
+    let data = await d3.csv(file + `?prevent-cache=${pcache}`).catch(() => null)
     if (!data) {
       // TEMPORARY CODE FOR TESTING so that a file always returned 
       const fileDefault = phenologyRoot + 'dummy-phenology.csv'
-      data = await d3.csv(fileDefault + '?prevent-cache=')
+      data = await d3.csv(fileDefault + `?prevent-cache=${pcache}`)
     }
     await phenology(phen2, data, null)
     if (taxon) {
@@ -358,7 +368,7 @@ function altlatChart() {
 async function altlatUpdate(taxonId ,taxon) {
   if ($('#download-altlat').is(':checked')) {
     const altlatRoot = ds.bsbi_atlas.dataRoot + 'bsbi/20220606/altlat/'
-    const altlatfile = `${altlatRoot}${taxonId.replace(/\./g, "_")}.csv`
+    const altlatfile = `${altlatRoot}${taxonId.replace(/\./g, "_")}.csv?prevent-cache=${pcache}`
     const altlatdata = await d3.csv(altlatfile)
     await altLat(altlat, altlatdata)
     if (taxon) {
@@ -392,9 +402,8 @@ function taxonSelectors() {
   const $sel = $('<select>').appendTo($container)
   $sel.addClass('atlas-taxon-selector-sel')
 
-  //console.log('csv', ds.bsbi_atlas.dataRoot + 'bsbi/taxon_list.csv')
 
-  d3.csv(ds.bsbi_atlas.dataRoot + 'bsbi/taxon_list.csv').then(function(data) {
+  d3.csv(ds.bsbi_atlas.dataRoot + `bsbi/taxon_list.csv?prevent-cache=${pcache}`).then(function(data) {
     const taxaList = data
     taxaList.forEach(function(d) {
       let name = ''
@@ -403,24 +412,12 @@ function taxonSelectors() {
       }
       name = name + d['formattedName']
 
-      // name = name + '<i>' + d['taxonName'] + '</i>'
-      // if (d['qualifier']) {
-      //   name = name + ' <b><i>' + d['qualifier'] + '</i></b>'
-      // }
-      // if (d['authority']) {
-      //   name = name + ' <span style="color: grey">' + d['authority'] + '</span>'
-      // }
-
       const $opt = $('<option>')
       $opt.attr('data-content', name)
       $opt.attr('value', d['ddbid'])
-      //$opt.attr('data-canonical', d['canonical'])
       $opt.attr('data-taxon-name', d['taxonName'])
-      //$opt.attr('data-qualifier', d['qualifier'])
-      $opt.attr('data-vernacular', d['vernacular'])
-
-      //$opt.attr('data-tetrad', d['tetrad'])
-      //$opt.attr('data-monad', d['monad'])
+      //$opt.attr('data-vernacular', d['vernacular'])
+      $opt.attr('data-is-hybrid', d['hybrid'])
 
       $opt.html(name).appendTo($sel)
     })
@@ -439,13 +436,27 @@ function taxonSelectors() {
       currentTaxon.identifier = $(this).val()
       currentTaxon.name =  $(this).find(":selected").attr("data-content")
       currentTaxon.shortName =  $(this).find(":selected").attr("data-taxon-name")
+      currentTaxon.isHybrid = $(this).find(":selected").attr("data-is-hybrid") === 't'
+
+      // Ensure that status is set correctly for mapping
+      const isHybrid = $(this).find(":selected").attr("data-is-hybrid") === 't'
+      const noStatus = aNoStatus.indexOf($(this).val()) > -1
+      bsbiDataAccess.showStatus = !isHybrid && !noStatus
 
       mappingUpdate(currentTaxon.identifier)
       apparencyUpdate(currentTaxon.identifier)
       phenologyUpdate(currentTaxon.identifier)
       altlatUpdate(currentTaxon.identifier)
     })
+
+    // For batch mapping
+    aIsHybrid = data.map(t => t.hybrid === 't')
   }).catch(function(){
     console.log('Error reading taxon CSV')
+  })
+
+  // No status list for batch mapping
+  d3.csv(`${ds.bsbi_atlas.dataRoot}bsbi/no_status.csv?prevent-cache=${pcache}`).then(function(data) {
+    aNoStatus = data.map(d => d['ddb id'])
   })
 }

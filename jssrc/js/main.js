@@ -21,6 +21,7 @@ export function main() {
     name: null,
     shortName: null,
     tetrad: null,
+    isHybrid: false,
     hybridMapping: false
   }
   mapSetCurrentTaxon(currentTaxon)
@@ -211,6 +212,7 @@ export function main() {
         $opt.attr('data-taxon-name', d['taxonName'])
         //$opt.attr('data-qualifier', d['qualifier'])
         $opt.attr('data-vernacular', d['vernacular'])
+        $opt.attr('data-is-hybrid', d['hybrid'])
 
         const aParentids = d['hybridParentIds'].split(';')
         const aParents = d['hybridParents'].split(';')
@@ -244,6 +246,7 @@ export function main() {
           currentTaxon.identifier = $(this).val()
           currentTaxon.name =  $(this).find(":selected").attr("data-content")
           currentTaxon.shortName = $(this).find(":selected").attr("data-taxon-name")
+          currentTaxon.isHybrid = $(this).find(":selected").attr("data-is-hybrid") === 't'
           currentTaxon.hybridMapping = $(this).find(":selected").attr("data-hybrid-mapping") === 'true'
 
           // If selection was made programatically (browser back or forward

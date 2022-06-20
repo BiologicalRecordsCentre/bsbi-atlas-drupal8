@@ -1421,7 +1421,7 @@
 
   var ds$3 = drupalSettings; // eslint-disable-line no-undef
 
-  var pcache$1 = '26052022x5';
+  var pcache$2 = '26052022x5';
   function createGallery(id, ddbid) {
     // DO I NEED TO HAVE SEPARATE FUNCTIONS FOR CREATE AND UPDATED GALLERY
     // FOR CONSISTENCY ON MAIN.JS?
@@ -1430,7 +1430,7 @@
     if (ddbid) {
       // Images are listed in the caption file, so fetch it
       var captionRoot = ds$3.bsbi_atlas.dataRoot + 'bsbi/captions/';
-      var captionFile = "".concat(captionRoot).concat(ddbid.replace(/\./g, "_"), ".csv?prevent-cache=").concat(pcache$1);
+      var captionFile = "".concat(captionRoot).concat(ddbid.replace(/\./g, "_"), ".csv?prevent-cache=").concat(pcache$2);
       d3.csv(captionFile).then(function (d) {
         // Filter out empty image strings
         var dynamicEl = d[0].images.split(';').filter(function (i) {
@@ -1552,6 +1552,7 @@
 
   var currentTaxon$1;
   var gridStyle = getCookie('gridstyle') ? getCookie('gridstyle') : 'solid';
+  var backdrop = getCookie('backdrop') ? getCookie('backdrop') : 'colour_elevation';
   var slippyMap, staticMap;
   var mapType = 'allclass';
   var insetType = getCookie('inset') ? getCookie('inset') : 'BI4';
@@ -1706,7 +1707,7 @@
     } // status checkbox enabled and checked value
 
 
-    var disableStatus = bsbiDataAccess.taxaNoStatusList.indexOf(currentTaxon$1.identifier) > -1;
+    var disableStatus = bsbiDataAccess.taxaNoStatusList.indexOf(currentTaxon$1.identifier) > -1 || currentTaxon$1.isHybrid;
     var isHybrid = currentTaxon$1.hybridMapping;
 
     if (disableStatus || isHybrid) {
@@ -1963,7 +1964,7 @@
 
     var backdrops = [{
       caption: 'No backdrop',
-      val: ''
+      val: 'none'
     }, {
       caption: 'Colour elevation',
       val: 'colour_elevation'
@@ -1979,24 +1980,30 @@
     $sel.on('changed.bs.select', function () {
       // Remove all backdrops
       backdrops.forEach(function (b) {
-        if (b.val) {
+        if (b.val !== 'none') {
           staticMap.basemapImage(b.val, false, rasterRoot + b.val + '.png', rasterRoot + b.val + '.pgw');
         }
       }); // Display selected backdrop
 
-      var val = $$3(this).val();
+      backdrop = $$3(this).val();
+      setCookie('backdrop', backdrop, 30);
 
-      if (val) {
-        staticMap.basemapImage(val, true, rasterRoot + val + '.png', rasterRoot + val + '.pgw');
+      if (backdrop !== 'none') {
+        staticMap.basemapImage(backdrop, true, rasterRoot + backdrop + '.png', rasterRoot + backdrop + '.pgw');
       }
     });
     backdrops.forEach(function (b) {
-      var $opt = b.selected ? $$3('<option>') : $$3('<option>');
+      var $opt = $$3('<option>');
       $opt.attr('value', b.val);
       $opt.html(b.caption).appendTo($sel);
     });
-    $sel.val("colour_elevation"); // This seems to be necessary if interface regenerated,
+    $sel.val(backdrop);
+
+    if (backdrop !== 'none') {
+      staticMap.basemapImage(backdrop, true, rasterRoot + "".concat(backdrop, ".png"), rasterRoot + "".concat(backdrop, ".pgw"));
+    } // This seems to be necessary if interface regenerated,
     // e.g. changing from tabbed to non-tabbed display.
+
 
     $sel.selectpicker();
   }
@@ -2291,10 +2298,13 @@
     // Modify standard UK opts to remove any without CI
     var transOptsSel = JSON.parse(JSON.stringify(brcatlas.namedTransOpts));
     delete transOptsSel.BI3; // Remove the options without CI
-    // Modify the BI4 - northern Isle inset option to go further west in order
-    // to give more room for legends!
+    // Modify insets to go further west in order
+    // to give more room for legends.
 
-    transOptsSel.BI4.bounds.xmin = -240000, // Init
+    transOptsSel.BI4.bounds.xmin = -240000, //Northern Isles
+    transOptsSel.BI1.bounds.xmin = -230000, //No insets
+    transOptsSel.BI2.bounds.xmin = -230000, //CI inset
+    // Init
     bsbiDataAccess.bsbiDataRoot = ds$2.bsbi_atlas.dataRoot + 'bsbi/20220606/';
     bsbiDataAccess.showStatus = false; // Data access 
 
@@ -2386,10 +2396,9 @@
       vcLineStyle: boundaryType === 'vc' ? '' : 'none',
       countryColour: '#7C7CD3',
       countryLineStyle: boundaryType === 'country' ? '' : 'none'
-    }); // Initial backgrop image
-
-    var rasterRoot = ds$2.bsbi_atlas.dataRoot + 'rasters/';
-    staticMap.basemapImage('colour_elevation', true, rasterRoot + 'colour_elevation.png', rasterRoot + 'colour_elevation.pgw'); // Callbacks for slippy maps
+    });
+    ds$2.bsbi_atlas.dataRoot + 'rasters/'; //staticMap.basemapImage('colour_elevation', true, rasterRoot + 'colour_elevation.png', rasterRoot + 'colour_elevation.pgw')
+    // Callbacks for slippy maps
 
     function startLoad() {
       document.getElementById('atlas-loader').style.display = 'inline-block'; //develStartMapTiming("download")
@@ -2730,6 +2739,7 @@
 
   var ds$1 = drupalSettings; // eslint-disable-line no-undef
 
+  var pcache$1 = '26052022x7';
   var currentTaxon = {
     identifier: '',
     name: null,
@@ -2739,6 +2749,7 @@
   var phen1, phen2, altlat;
   var browsedFileData;
   var bCancelled = false;
+  var aNoStatus, aIsHybrid;
   function downloadPage() {
     $$1('#bsbi-atlas-download').css('display', 'flex');
     $$1('<div>').appendTo($$1('#bsbi-atlas-download')).attr('id', 'bsbi-atlas-download-left').css('flex', 1);
@@ -2790,7 +2801,7 @@
               data = _context2.sent;
               bCancelled = false;
               _loop = /*#__PURE__*/regeneratorRuntime.mark(function _loop(i) {
-                var t, filename, eMapping, eApparency, ePhenology, eAltlat, p1, p2, p3, p4;
+                var t, filename, eMapping, eApparency, ePhenology, eAltlat, isHybrid, noStatus, p1, p2, p3, p4;
                 return regeneratorRuntime.wrap(function _loop$(_context) {
                   while (1) {
                     switch (_context.prev = _context.next) {
@@ -2807,7 +2818,11 @@
                         t = data[i];
                         filename = taxonToFile(t.taxon, t.taxonId); // For reporting errors
 
-                        eMapping = void 0, eApparency = void 0, ePhenology = void 0, eAltlat = void 0; // Map
+                        eMapping = void 0, eApparency = void 0, ePhenology = void 0, eAltlat = void 0; // Ensure that status is set correctly for mapping
+
+                        isHybrid = aIsHybrid.indexOf(t.taxonId) > -1;
+                        noStatus = aNoStatus.indexOf(t.taxonId) > -1;
+                        bsbiDataAccess.showStatus = !isHybrid && !noStatus; // Map
 
                         p1 = mappingUpdate(t.taxonId, filename)["catch"](function (e) {
                           return eMapping = e;
@@ -2821,7 +2836,7 @@
                         p4 = altlatUpdate(t.taxonId, filename)["catch"](function (e) {
                           return eAltlat = e;
                         });
-                        _context.next = 11;
+                        _context.next = 14;
                         return Promise.all([p1, p2, p3, p4]).then(function () {
                           if (eMapping || eApparency || ePhenology || eAltlat) {
                             var html = "<b>Problems for ".concat(t.taxon, " (").concat(t.taxonId, ")</b>");
@@ -2847,7 +2862,7 @@
                           }
                         });
 
-                      case 11:
+                      case 14:
                       case "end":
                         return _context.stop();
                     }
@@ -2949,22 +2964,21 @@
   }
 
   function mapping() {
-    $$1('<div id="bsbiMapDiv" style="max-width: 500px">').appendTo($$1('#bsbi-atlas-download-left'));
-    createMaps("#bsbiMapDiv");
-    var staticMap = getStaticMap(); // Northern and Channel Isles inset
-
-    staticMap.setTransform('BI4'); // No grid lines
-
-    staticMap.setGridLineStyle('none'); // No boundaries
-
-    staticMap.setCountryLineStyle('none'); // Background
-
-    staticMap.basemapImage('colour_elevation', false); // Ensure right map is selected
-    // allclass is the default, so no need to change, but need to
-    // update showStatus and also indicated that 4 classes are to be used
+    $$1('<div id="bsbiMapDownloadDiv" style="max-width: 500px">').appendTo($$1('#bsbi-atlas-download-left'));
+    createMaps("#bsbiMapDownloadDiv");
+    // staticMap.setTransform('BI4')
+    // // No grid lines
+    // staticMap.setGridLineStyle('none')
+    // // No boundaries
+    // staticMap.setVcLineStyle('none')
+    // staticMap.setCountryLineStyle('none')
+    // // Background
+    // staticMap.basemapImage('colour_elevation', true)
+    // Ensure right map is selected
+    // allclass is the default, status is set on a per taxon basis
+    // Indicated that 4 classes are to be used
 
     bsbiDataAccess.periodClasses = 'print';
-    bsbiDataAccess.showStatus = true;
   }
 
   function mappingUpdate(_x, _x2) {
@@ -3056,7 +3070,7 @@
               apparencyRoot = "".concat(ds$1.bsbi_atlas.dataRoot, "bsbi/apparency/");
               file = apparencyRoot + 'all/' + taxonId.replace(/\./g, "_") + '.csv';
               _context4.next = 5;
-              return d3.csv(file + '?prevent-cache=')["catch"](function () {
+              return d3.csv(file + "?prevent-cache=".concat(pcache$1))["catch"](function () {
                 return null;
               });
 
@@ -3140,7 +3154,7 @@
               phenologyRoot = ds$1.bsbi_atlas.dataRoot + 'bsbi/phenology/';
               file = phenologyRoot + taxonId.replace(/\./g, "_") + '.csv';
               _context5.next = 5;
-              return d3.csv(file + '?prevent-cache=')["catch"](function () {
+              return d3.csv(file + "?prevent-cache=".concat(pcache$1))["catch"](function () {
                 return null;
               });
 
@@ -3155,7 +3169,7 @@
               // TEMPORARY CODE FOR TESTING so that a file always returned 
               fileDefault = phenologyRoot + 'dummy-phenology.csv';
               _context5.next = 10;
-              return d3.csv(fileDefault + '?prevent-cache=');
+              return d3.csv(fileDefault + "?prevent-cache=".concat(pcache$1));
 
             case 10:
               data = _context5.sent;
@@ -3260,7 +3274,7 @@
               }
 
               altlatRoot = ds$1.bsbi_atlas.dataRoot + 'bsbi/20220606/altlat/';
-              altlatfile = "".concat(altlatRoot).concat(taxonId.replace(/\./g, "_"), ".csv");
+              altlatfile = "".concat(altlatRoot).concat(taxonId.replace(/\./g, "_"), ".csv?prevent-cache=").concat(pcache$1);
               _context6.next = 5;
               return d3.csv(altlatfile);
 
@@ -3315,9 +3329,8 @@
     $container.addClass('atlas-taxon-selector-div'); // Selector
 
     var $sel = $$1('<select>').appendTo($container);
-    $sel.addClass('atlas-taxon-selector-sel'); //console.log('csv', ds.bsbi_atlas.dataRoot + 'bsbi/taxon_list.csv')
-
-    d3.csv(ds$1.bsbi_atlas.dataRoot + 'bsbi/taxon_list.csv').then(function (data) {
+    $sel.addClass('atlas-taxon-selector-sel');
+    d3.csv(ds$1.bsbi_atlas.dataRoot + "bsbi/taxon_list.csv?prevent-cache=".concat(pcache$1)).then(function (data) {
       var taxaList = data;
       taxaList.forEach(function (d) {
         var name = '';
@@ -3326,23 +3339,13 @@
           name = '<b>' + d['vernacular'] + '</b> ';
         }
 
-        name = name + d['formattedName']; // name = name + '<i>' + d['taxonName'] + '</i>'
-        // if (d['qualifier']) {
-        //   name = name + ' <b><i>' + d['qualifier'] + '</i></b>'
-        // }
-        // if (d['authority']) {
-        //   name = name + ' <span style="color: grey">' + d['authority'] + '</span>'
-        // }
-
+        name = name + d['formattedName'];
         var $opt = $$1('<option>');
         $opt.attr('data-content', name);
-        $opt.attr('value', d['ddbid']); //$opt.attr('data-canonical', d['canonical'])
+        $opt.attr('value', d['ddbid']);
+        $opt.attr('data-taxon-name', d['taxonName']); //$opt.attr('data-vernacular', d['vernacular'])
 
-        $opt.attr('data-taxon-name', d['taxonName']); //$opt.attr('data-qualifier', d['qualifier'])
-
-        $opt.attr('data-vernacular', d['vernacular']); //$opt.attr('data-tetrad', d['tetrad'])
-        //$opt.attr('data-monad', d['monad'])
-
+        $opt.attr('data-is-hybrid', d['hybrid']);
         $opt.html(name).appendTo($sel);
       });
       $sel.attr('data-size', '10');
@@ -3356,13 +3359,28 @@
         currentTaxon.identifier = $$1(this).val();
         currentTaxon.name = $$1(this).find(":selected").attr("data-content");
         currentTaxon.shortName = $$1(this).find(":selected").attr("data-taxon-name");
+        currentTaxon.isHybrid = $$1(this).find(":selected").attr("data-is-hybrid") === 't'; // Ensure that status is set correctly for mapping
+
+        var isHybrid = $$1(this).find(":selected").attr("data-is-hybrid") === 't';
+        var noStatus = aNoStatus.indexOf($$1(this).val()) > -1;
+        bsbiDataAccess.showStatus = !isHybrid && !noStatus;
         mappingUpdate(currentTaxon.identifier);
         apparencyUpdate(currentTaxon.identifier);
         phenologyUpdate(currentTaxon.identifier);
         altlatUpdate(currentTaxon.identifier);
+      }); // For batch mapping
+
+      aIsHybrid = data.map(function (t) {
+        return t.hybrid === 't';
       });
     })["catch"](function () {
       console.log('Error reading taxon CSV');
+    }); // No status list for batch mapping
+
+    d3.csv("".concat(ds$1.bsbi_atlas.dataRoot, "bsbi/no_status.csv?prevent-cache=").concat(pcache$1)).then(function (data) {
+      aNoStatus = data.map(function (d) {
+        return d['ddb id'];
+      });
     });
   }
 
@@ -3378,6 +3396,7 @@
       name: null,
       shortName: null,
       tetrad: null,
+      isHybrid: false,
       hybridMapping: false
     };
     mapSetCurrentTaxon(currentTaxon);
@@ -3539,6 +3558,7 @@
           $opt.attr('data-taxon-name', d['taxonName']); //$opt.attr('data-qualifier', d['qualifier'])
 
           $opt.attr('data-vernacular', d['vernacular']);
+          $opt.attr('data-is-hybrid', d['hybrid']);
           var aParentids = d['hybridParentIds'].split(';');
           var aParents = d['hybridParents'].split(';');
           var hybridMapping = aParents.length === 2 && aParentids.length === 2;
@@ -3564,6 +3584,7 @@
             currentTaxon.identifier = $(this).val();
             currentTaxon.name = $(this).find(":selected").attr("data-content");
             currentTaxon.shortName = $(this).find(":selected").attr("data-taxon-name");
+            currentTaxon.isHybrid = $(this).find(":selected").attr("data-is-hybrid") === 't';
             currentTaxon.hybridMapping = $(this).find(":selected").attr("data-hybrid-mapping") === 'true'; // If selection was made programatically (browser back or forward
             // button), don't add to history.
 
