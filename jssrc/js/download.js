@@ -2,6 +2,7 @@ import { createMaps, getStaticMap, changeMap, mapSetCurrentTaxon } from './mappi
 import { bsbiDataAccess } from './dataAccessAtlas'
 import { apparency, phenology, altLat } from './ecology'
 import { pcache } from './gen'
+import { getCookie } from './utils'
 
 const $ = jQuery // eslint-disable-line no-undef
 const ds = drupalSettings // eslint-disable-line no-undef
@@ -196,15 +197,13 @@ function mapping() {
   createMaps("#bsbiMapDownloadDiv")
   const staticMap = getStaticMap()
 
-  // // Northern and Channel Isles inset
-  // staticMap.setTransform('BI4')
-  // // No grid lines
-  // staticMap.setGridLineStyle('none')
-  // // No boundaries
-  // staticMap.setVcLineStyle('none')
-  // staticMap.setCountryLineStyle('none')
-  // // Background
-  // staticMap.basemapImage('colour_elevation', true)
+  // Transorm, grid style and boundary style are all set when map is initialised, but
+  // backdrop is not so do it here.
+  const backdrop = getCookie('backdrop') ? getCookie('backdrop') : 'colour_elevation'
+  const rasterRoot = ds.bsbi_atlas.dataRoot + 'rasters/'
+  if (backdrop !== 'none') {
+    staticMap.basemapImage(backdrop, true, rasterRoot + `${backdrop}.png`, rasterRoot + `${backdrop}.pgw`)
+  }
 
   // Ensure right map is selected
   // allclass is the default, status is set on a per taxon basis

@@ -2981,17 +2981,18 @@
   function mapping() {
     $$2('<div id="bsbiMapDownloadDiv" style="max-width: 500px">').appendTo($$2('#bsbi-atlas-download-left'));
     createMaps("#bsbiMapDownloadDiv");
-    // staticMap.setTransform('BI4')
-    // // No grid lines
-    // staticMap.setGridLineStyle('none')
-    // // No boundaries
-    // staticMap.setVcLineStyle('none')
-    // staticMap.setCountryLineStyle('none')
-    // // Background
-    // staticMap.basemapImage('colour_elevation', true)
-    // Ensure right map is selected
+    var staticMap = getStaticMap(); // Transorm, grid style and boundary style are all set when map is initialised, but
+    // backdrop is not so do it here.
+
+    var backdrop = getCookie('backdrop') ? getCookie('backdrop') : 'colour_elevation';
+    var rasterRoot = ds$1.bsbi_atlas.dataRoot + 'rasters/';
+
+    if (backdrop !== 'none') {
+      staticMap.basemapImage(backdrop, true, rasterRoot + "".concat(backdrop, ".png"), rasterRoot + "".concat(backdrop, ".pgw"));
+    } // Ensure right map is selected
     // allclass is the default, status is set on a per taxon basis
     // Indicated that 4 classes are to be used
+
 
     bsbiDataAccess.periodClasses = 'print';
   }
