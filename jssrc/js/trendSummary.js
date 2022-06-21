@@ -1,8 +1,20 @@
 const $ = jQuery // eslint-disable-line no-undef
 
-export function trendSummary(v1, v2, v3, v4, v5) {
+export function updateTrendSummary(id, d, rgbColourString) {
+
+  const baseColour = rgbColourString.substring(0,rgbColourString.length-1).replace('rgb', 'rgba')
+
+  $(`#${id}_decline_strong`).css('background-color', `${baseColour},${Number(d.declineStrong)/100})`)
+  $(`#${id}_decline_mod`).css('background-color', `${baseColour},${Number(d.declineMod)/100})`)
+  $(`#${id}_stable`).css('background-color', `${baseColour},${Number(d.stable)/100})`)
+  $(`#${id}_increase_mod`).css('background-color', `${baseColour},${Number(d.increaseMod)/100})`)
+  $(`#${id}_increase_strong`).css('background-color', `${baseColour},${Number(d.increaseStrong)/100})`)
+}
+
+export function trendSummary(id) {
 
   const $divParent = $('<div>')
+  $divParent.attr('id', id)
 
   // Graphic
   const maxWidth = '160px'
@@ -11,11 +23,11 @@ export function trendSummary(v1, v2, v3, v4, v5) {
   $tg.css('font-weight', 'bold')
   $tg.css('max-width', maxWidth)
 
-  tgSwatch(0.8, '--', 'Strong decline')
-  tgSwatch(0.5, '-', 'Moderate decline')
-  tgSwatch(0.4, '0', 'Stable')
-  tgSwatch(0.6, '+', 'Moderate decline')
-  tgSwatch(0.7, '++', 'Strong decline')
+  tgSwatch('--', 'Strong decline', `${id}_decline_strong`)
+  tgSwatch('-', 'Moderate decline', `${id}_decline_mod`)
+  tgSwatch('0', 'Stable', `${id}_stable`)
+  tgSwatch('+', 'Moderate decline', `${id}_increase_mod`)
+  tgSwatch('++', 'Strong decline', `${id}_increase_strong`)
 
   const $tgt = $('<div>').appendTo($divParent)
   $tgt.css('display', 'flex')
@@ -38,11 +50,11 @@ export function trendSummary(v1, v2, v3, v4, v5) {
 
   return $divParent
 
-  function tgSwatch(opacity, text, tip) {
+  function tgSwatch(text, tip, id) {
     const $tgs = $('<div>').appendTo($tg)
+    $tgs.attr('id', id)
     $tgs.css('flex', '1')
     $tgs.css('height', '30px')
-    //$tgs.css('background-color', `rgba(255,0,0,${opacity})`)
     $tgs.css('text-align', 'center')
     $tgs.css('line-height', '30px')
     $tgs.css('vertical-align', 'middle')

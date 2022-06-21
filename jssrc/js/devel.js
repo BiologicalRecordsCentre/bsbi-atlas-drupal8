@@ -2,6 +2,22 @@ let t1
 const $ = jQuery // eslint-disable-line no-undef
 import { bsbiDataAccess } from './dataAccessAtlas'
 
+export function develTrendSummary(selector, changeSwatchColour) {
+  // Colours
+  const $colours = $('<div style="margin-top: 1em">').appendTo($(selector))
+
+  // No trend swatch base colour
+  const $divTrendSwatch = $('<div>').appendTo($colours)
+  $('<input type="text" style="width: 120px" id="trendSwatchColour">').appendTo($divTrendSwatch)
+  $('<label for="trendSwatchColour" style="margin-left: 1em">Trend summary colour</label>').appendTo($divTrendSwatch)
+  const trendSwatchColour = new JSColor('#trendSwatchColour', {onChange: colourChange})
+  trendSwatchColour.fromString('rgb(255,0,0)')
+
+  function colourChange() {
+    changeSwatchColour(trendSwatchColour.toRGBString())
+  }
+}
+
 export function develChangeMapColours(selector, changeMap) {
 
   // Colours

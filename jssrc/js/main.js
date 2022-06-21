@@ -6,13 +6,15 @@ import { createEcology, changeEcology } from './ecology'
 import { createGallery } from './gallery'
 import { copyToClipboard,  getCitation } from './utils'
 import { mapSetCurrentTaxon, createMaps, changeMap, createMapControls, setControlState, updateBsbiDataAccess} from './mapping'
-import { develMainMapStyles } from './devel'
+import { develTrendSummary } from './devel'
 import { downloadPage } from './download'
-import { trendSummary } from './trendSummary'
+import { trendSummary, updateTrendSummary } from './trendSummary'
 import { pcache } from './gen'
 
 const $ = jQuery // eslint-disable-line no-undef
 const ds = drupalSettings // eslint-disable-line no-undef
+
+let develSummaryTrendColour = 'rgb(255,0,0)'
 
 export function main() {
 
@@ -52,7 +54,12 @@ export function main() {
 
       // Devel block
       //develChangeMapColours('#bsbi-atlas-development', changeMap)
-      develMainMapStyles('#bsbi-atlas-development', changeMap)
+      //develMainMapStyles('#bsbi-atlas-development', changeMap)
+      develTrendSummary('#bsbi-atlas-development', (colour) => {
+        console.log(colour)
+        develSummaryTrendColour = colour
+        changeCaption()
+      })
     }
   })
 
@@ -468,9 +475,34 @@ export function main() {
           $caption.append('<h4>Trends</h4>')
          
           // Graphic
-          const $graphic = trendSummary()
-          $graphic.appendTo($caption)
+          $('<div>').text('Summary Great Britain').appendTo($caption)
+          const $graphicGb = trendSummary('trend-sum-gb')
+          $graphicGb.appendTo($caption)
+          $('<div>').text('Summary Ireland').appendTo($caption)
+          const $graphicIr = trendSummary('trend-sum-ir')
+          $graphicIr.appendTo($caption)
 
+          const trendRoot = ds.bsbi_atlas.dataRoot + 'bsbi/trends/long/trends-summaries'
+          const trendGb = `${trendRoot}/Britain/${currentTaxon.identifier.replace(/\./g, "_")}.csv?prevent-cache=${pcache}`
+          const trendIr = `${trendRoot}/Ireland/${currentTaxon.identifier.replace(/\./g, "_")}.csv?prevent-cache=${pcache}`
+          
+          d3.csv(trendGb)
+            .then(function(d) {
+              console.log(d[0])
+              updateTrendSummary('trend-sum-gb', d[0], develSummaryTrendColour)
+          }).catch(function(){
+            console.log('Error reading trend summary file', trendGb)
+          })
+
+          d3.csv(trendIr)
+            .then(function(d) {
+              console.log(d[0])
+              updateTrendSummary('trend-sum-ir', d[0], develSummaryTrendColour)
+          }).catch(function(){
+            console.log('Error reading trend summary file', trendGb)
+          })
+
+          
           // Text
           $p = $('<p>').appendTo($caption)
           $p.append(postProcessCaptionText(d[0].atlasSpeciesTrends))
