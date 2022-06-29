@@ -468,10 +468,10 @@
     var legendText = {
       "pre-1970": "pre-1970",
       "to 1929": "pre-1930",
-      "1930 - 1969": "1930-69",
-      "1970 - 1986": "1970-86",
-      "1987 - 1999": "1987-99",
-      "2000 - 2019": "2000-19"
+      "1930 - 1969": "1930–69",
+      "1970 - 1986": "1970–86",
+      "1987 - 1999": "1987–99",
+      "2000 - 2019": "2000–19"
     };
     var opacities = {
       "pre-1970": 1,
@@ -761,7 +761,7 @@
   }
 
   function getPeriodText(p) {
-    return p === "to 1929" ? "pre-1930" : p.replace(" - ", "-");
+    return p === "to 1929" ? "pre-1930" : p.replace(" - ", "–");
   }
 
   function nativeSpeciesStatus(identifier, period) {
@@ -835,13 +835,13 @@
   }
 
   bsbiDataAccess.change_1987_1999_vs_2000_2019 = function (identifier) {
-    return change(identifier, ['1987 - 1999'], ['2000 - 2009', '2010 - 2019'], 'Change from 1987-1999 to 2000-2019');
+    return change(identifier, ['1987 - 1999'], ['2000 - 2009', '2010 - 2019'], 'Change from 1987–1999 to 2000–2019');
   };
 
   bsbiDataAccess.change_1930_1969_vs_2000_2019 = function (identifier) {
-    //return change(identifier, ['1930 - 1949', '1950 - 1969'], ['2000 - 2009', '2010 - 2019'], 'Change from 1930-1969 to 2000-2019')
-    //return change(identifier, ['to 1929', '1930 - 1969'], ['2000 - 2009', '2010 - 2019'], 'Change from 1930-1969 to 2000-2019')
-    return change(identifier, ['1930 - 1969'], ['2000 - 2009', '2010 - 2019'], 'Change from 1930-1969 to 2000-2019');
+    //return change(identifier, ['1930 - 1949', '1950 - 1969'], ['2000 - 2009', '2010 - 2019'], 'Change from 1930–1969 to 2000–2019')
+    //return change(identifier, ['to 1929', '1930 - 1969'], ['2000 - 2009', '2010 - 2019'], 'Change from 1930–1969 to 2000–2019')
+    return change(identifier, ['1930 - 1969'], ['2000 - 2009', '2010 - 2019'], 'Change from 1930–1969 to 2000–2019');
   };
 
   function change(identifier, early, late, legendTitle) {
@@ -950,19 +950,19 @@
             precision: 10000,
             opacity: 1,
             lines: [{
-              text: '1-5',
+              text: '1–5',
               size: Math.sqrt(5) / 5 * legendSizeFact
             }, {
-              text: '6-10',
+              text: '6–10',
               size: Math.sqrt(10) / 5 * legendSizeFact
             }, {
-              text: '11-15',
+              text: '11–15',
               size: Math.sqrt(15) / 5 * legendSizeFact
             }, {
-              text: '16-20',
+              text: '16–20',
               size: Math.sqrt(20) / 5 * legendSizeFact
             }, {
-              text: '21-25',
+              text: '21–25',
               size: Math.sqrt(25) / 5 * legendSizeFact
             }]
           }
@@ -973,7 +973,7 @@
     });
   };
 
-  var $$7 = jQuery; // eslint-disable-line no-undef
+  var $$6 = jQuery; // eslint-disable-line no-undef
 
   function setBaseMetaTags() {
     addMetaTags('title', 'BSBI Online Plant Atlas 2020');
@@ -990,16 +990,16 @@
   function addMetaTags(type, value, update) {
     var addHeadTag = function addHeadTag(name, content, update) {
       if (update) {
-        $$7('meta[name="' + name + '"').attr('content', content);
+        $$6('meta[name="' + name + '"').attr('content', content);
       } else {
-        $$7('head').append('<meta name="' + name + '" content="' + content + '" />');
+        $$6('head').append('<meta name="' + name + '" content="' + content + '" />');
       }
     }; // http://div.div1.com.au/div-thoughts/div-commentaries/66-div-commentary-metadata
 
 
     switch (type) {
       case 'title':
-        $$7('title').html(value);
+        $$6('head title').html(value);
         addHeadTag("citation_title", value, update);
         addHeadTag("dc.title", value, update);
         addHeadTag("dcterms.title", value, update);
@@ -1046,25 +1046,25 @@
 
   var pcache = '20062022x1';
 
-  var $$6 = jQuery; // eslint-disable-line no-undef
+  var $$5 = jQuery; // eslint-disable-line no-undef
 
   var phen1$1, phen2$1, phen3, altlat$1;
   var apparencyByLatData;
   function createEcology(sel) {
-    $$6('<h4>').appendTo($$6(sel)).text('Phenology & Apparency');
-    var $p1 = $$6('<p>').appendTo($$6(sel));
+    $$5('<h4>').appendTo($$5(sel)).text('Phenology & Apparency');
+    var $p1 = $$5('<p>').appendTo($$5(sel));
     $p1.text("Explanation of apparency and phenology charts. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque blandit dui vel mauris maximus interdum. Aliquam orci eros, venenatis vel purus nec, venenatis congue leo. Pellentesque rhoncus metus eros, tincidunt congue massa volutpat facilisis. Curabitur pellentesque turpis velit, quis ornare mauris ullamcorper a.");
-    var $phenFlexParent = $$6('<div>').appendTo($$6(sel));
+    var $phenFlexParent = $$5('<div>').appendTo($$5(sel));
     $phenFlexParent.attr('class', 'phenRow');
-    var $phenFlexLeft = $$6('<div>').appendTo($phenFlexParent);
+    var $phenFlexLeft = $$5('<div>').appendTo($phenFlexParent);
     $phenFlexLeft.attr('class', 'phenColumn');
-    var $phenFlexRight = $$6('<div>').appendTo($phenFlexParent);
+    var $phenFlexRight = $$5('<div>').appendTo($phenFlexParent);
     $phenFlexRight.attr('class', 'phenColumn');
-    $$6('<h4>').appendTo($$6(sel)).text('Altitude vs Latitude');
-    var $p2 = $$6('<p>').appendTo($$6(sel));
+    $$5('<h4>').appendTo($$5(sel)).text('Altitude vs Latitude');
+    var $p2 = $$5('<p>').appendTo($$5(sel));
     $p2.text("Explanation of latitude/altitude chart. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque blandit dui vel mauris maximus interdum. Aliquam orci eros, venenatis vel purus nec, venenatis congue leo. Pellentesque rhoncus metus eros, tincidunt congue massa volutpat facilisis. Curabitur pellentesque turpis velit, quis ornare mauris ullamcorper a.");
-    var $altlat = $$6('<div>').appendTo($$6(sel));
-    var $apparency = $$6('<div>').appendTo($phenFlexLeft);
+    var $altlat = $$5('<div>').appendTo($$5(sel));
+    var $apparency = $$5('<div>').appendTo($phenFlexLeft);
     $apparency.attr('id', 'bsbi-apparency-chart').css('max-width', '400px');
     phen1$1 = brccharts.phen1({
       selector: '#bsbi-apparency-chart',
@@ -1086,7 +1086,7 @@
       showLegend: false,
       interactivity: 'none'
     });
-    var $phenology = $$6('<div>').appendTo($phenFlexLeft);
+    var $phenology = $$5('<div>').appendTo($phenFlexLeft);
     $phenology.attr('id', 'bsbi-phenology-chart').css('max-width', '400px');
     phen2$1 = brccharts.phen2({
       selector: '#bsbi-phenology-chart',
@@ -1095,6 +1095,7 @@
       metrics: [],
       width: 400,
       height: 25,
+      split: true,
       headPad: 35,
       chartPad: 35,
       perRow: 1,
@@ -1102,12 +1103,12 @@
       showTaxonLabel: false,
       interactivity: 'none'
     });
-    var $phenSource = $$6('<div>').appendTo($phenFlexLeft);
+    var $phenSource = $$5('<div>').appendTo($phenFlexLeft);
     $phenSource.attr('id', 'bsbi-phenology-source');
     $phenSource.css('font-size', '0.8em');
     $phenSource.css('padding-left', '32px');
     $phenSource.css('max-width', '400px');
-    var $apparencyByLat = $$6('<div>').appendTo($phenFlexRight);
+    var $apparencyByLat = $$5('<div>').appendTo($phenFlexRight);
     $apparencyByLat.attr('id', 'bsbi-apparency-by-lat-chart').css('max-width', '400px'); // $apparencyByLat = $('<div>').appendTo($phenFlexRight)
     // $apparencyByLat.attr('id', 'bsbi-apparency-by-lat-chart').css('max-width', '400px')
 
@@ -1192,9 +1193,9 @@
     };
     altlat$1 = brccharts.altlat(opts); // Website style is overriding some charts style, so reset it
 
-    $$6('.brc-chart-phen1').css('overflow', 'visible'); // Chart line width - not currently a chart option
+    $$5('.brc-chart-phen1').css('overflow', 'visible'); // Chart line width - not currently a chart option
 
-    $$6('#bsbi-apparency-by-lat-chart .phen-path').css('stroke-width', 1);
+    $$5('#bsbi-apparency-by-lat-chart .phen-path').css('stroke-width', 1);
   }
 
   function latPhenDataTypeDropdown($parent) {
@@ -1209,9 +1210,9 @@
       val: 'density'
     }]; // Main type selector
 
-    var $div = $$6('<div>').appendTo($parent);
+    var $div = $$5('<div>').appendTo($parent);
     $div.css('margin-left', '35px');
-    var $sel = $$6('<select>').appendTo($div);
+    var $sel = $$5('<select>').appendTo($div);
     $sel.attr('id', 'atlas-lat-phen-data-type');
     $sel.addClass('selectpicker'); //$sel.attr('data-width', '100%')
 
@@ -1221,7 +1222,7 @@
       }
     });
     dataTypes.forEach(function (t) {
-      var $opt = t.selected ? $$6('<option>') : $$6('<option>');
+      var $opt = t.selected ? $$5('<option>') : $$5('<option>');
       $opt.attr('value', t.val);
       $opt.html(t.caption).appendTo($sel);
     });
@@ -1275,17 +1276,11 @@
     var file = "".concat(captionRoot).concat(identifier.replace(/\./g, "_"), ".csv");
     d3__namespace.csv(file + "?prevent-cache=".concat(pcache)).then(function (data) {
       phenology(phen2$1, data, 'bsbi-phenology-source');
-    })["catch"](function () {
-      console.warn("Phenology chart failed for ".concat(file, ". Error message:"), e);
-      phen2$1.setChartOpts({
-        data: []
-      }); // TEMPORARY CODE FOR TESTING so that a file always returned 
-      // const fileDefault = phenologyRoot + 'dummy-phenology.csv'
-      // d3.csv(fileDefault + '?prevent-cache=')
-      //   .then(function(data) {
-      //     phenology(phen2, data, 'bsbi-phenology-source')
-      //   })
-    }); // Alt/Lat
+    }); // .catch(function() {
+    //   console.warn(`Phenology chart failed for ${file}. Error message:`, e)
+    //   phen2.setChartOpts({data: []})
+    // })
+    // Alt/Lat
     // Using raw tetrad mapping data
     // const tetrads = `${mapRoot}tetrads/${identifier.replace(/\./g, "_")}.csv`
     // d3.csv(tetrads, function(row) {
@@ -1336,57 +1331,143 @@
     var flowerStart = m2d[Number(fs) - 1];
     var flowerEnd = m2d[Number(fe)];
     var leafStart = m2d[Number(ls) - 1];
-    var leafEnd = m2d[Number(le)]; //console.log("months", fs, fe, ls, le)
-    //console.log("days", flowerStart, flowerEnd, leafStart, leafEnd)
+    var leafEnd = m2d[Number(le)]; //console.log('ls le', ls, le)
+    // Work out area of overlap between flowering and leafing
+
+    var flowerRange = [];
+    var leafRange = [];
+
+    if (flowerStart && flowerEnd) {
+      if (flowerStart > flowerEnd) {
+        flowerRange = [[flowerStart, 365], [1, flowerEnd]];
+      } else {
+        flowerRange = [[flowerStart, flowerEnd]];
+      }
+    }
+
+    if (leafStart && leafEnd) {
+      if (leafStart > leafEnd) {
+        leafRange = [[leafStart, 365], [1, leafEnd]];
+      } else {
+        leafRange = [[leafStart, leafEnd]];
+      }
+    } // flowerRange.forEach(fr => {
+    //   leafRange.forEach(lr => {
+    //     const fs = fr[0]
+    //     const fe = fr[1]
+    //     const ls = lr[0]
+    //     const le = lr[1]
+    //     let os, oe
+    //     if (fs > ls && fs < le) {
+    //       os = fs
+    //     }
+    //     if (fe > ls && fe < le) {
+    //       oe = fe
+    //     }
+    //     if (os && !oe) {
+    //       oe = le
+    //     }
+    //     if (oe && !os) {
+    //       os = ls
+    //     }
+    //     if (os) {
+    //       overlapRange.push([os, oe])
+    //     }
+    //   })
+    // })
+    // console.log('flowerRange', flowerRange)
+    // console.log('leafRange', leafRange)
+    // console.log('overlapRange', overlapRange)
+
 
     var svgLeaf = "m12941 19084-175-112-108 54c-59 30-112 54-117 54s-97-112-203-250l-193-250h-150-151l-177-188c-97-104-186-197-197-207-19-17-23-16-139 49-66 36-124 66-128 65-6 0-219-276-359-464-10-14-30-7-149 53l-138 70-26-32c-15-17-103-124-195-238-92-115-171-208-175-208s-61 25-127 55l-119 55-90-92c-50-51-149-155-220-230l-130-138-112 100c-61 55-115 100-120 100-4 0-123-122-263-269-140-148-260-270-266-270-5-1-65 39-131 88l-122 90-233-207c-129-114-264-233-300-265l-66-58-138 80-139 80-139-147c-77-81-181-189-231-240l-91-94-161 80-160 81-169-201c-93-110-176-209-184-219-15-19-19-18-174 26-87 25-162 42-167 39s-79-90-164-194c-140-171-158-188-178-181-12 5-73 30-134 56-62 26-116 45-121 43-5-1-105-104-222-226-192-202-216-223-239-218-14 3-82 23-151 44l-126 38-249-262c-138-145-252-263-255-263s-45 55-95 124c-49 68-92 121-96 117s-98-138-209-299l-201-292-138 69-139 69-223-336c-123-184-227-339-230-344s-83-20-177-33c-95-12-174-25-176-27s-52-107-111-234c-59-126-111-233-114-237-4-4-62 8-130 27-69 19-125 34-127 32-1-1-57-139-125-307-67-168-124-307-125-309-2-2-69-14-150-27-80-12-147-24-149-26-3-2-30-125-60-273-31-149-58-272-60-274-3-2-68 2-146 8-77 7-144 10-147 6-3-3-16-132-28-286s-23-281-25-283-79-18-171-36l-168-34-2-380-3-381-193-79c-139-57-192-84-192-95 0-9 29-149 65-310s65-295 63-296c-2-2-86-43-188-91s-188-90-192-93 45-170 108-371l114-365-67-65c-38-36-110-104-162-152l-93-86 136-329c75-181 136-332 136-337 0-4-58-90-128-190-71-99-132-187-136-194-6-10 62-142 290-561 15-26 21-48 16-55-5-6-66-82-135-170-70-87-127-162-127-166 0-5 108-183 239-396l240-387-90-99c-49-54-89-102-89-107s111-164 246-353c136-188 253-353 261-365 13-20 10-32-43-149-55-124-56-128-38-143 11-9 182-159 381-334l361-317-5-43c-3-23-13-105-24-182-10-77-16-141-15-143 4-3 510-150 857-248 15-4 13-20-18-141-18-74-32-137-31-139 2-1 138-21 303-42 279-37 309-43 431-86 238-83 552-155 824-188 141-17 699-17 840 0 648 79 1266 287 1860 624 111 64 378 237 494 320 46 34 67 44 62 32-4-11-35-107-68-214-397-1294-750-2359-915-2764-72-178-107-247-165-332-72-104-110-172-148-269-56-142-97-325-73-325 29 0 420 94 429 104 6 6 46 128 89 271 42 143 142 478 222 745 79 267 202 679 273 915 71 237 185 621 255 855s151 506 181 604c30 99 54 185 54 193 0 27 18 12 35-30 31-80 204-397 305-558 282-454 581-807 1323-1564l245-250 114 113c62 61 116 112 120 112s118-122 253-270c136-149 250-270 254-270 3 0 40 68 81 151s78 152 82 155c3 2 122-66 263-152 180-110 259-153 264-145 5 7 18 57 30 112l22 99h515c283 0 514 1 514 3s-20 52-44 112l-44 110 479 3c310 1 479 6 479 12s-14 58-31 116-30 106-28 108c2 1 179 26 392 56 214 30 392 57 398 60 5 4-4 44-21 95-16 49-30 94-30 100 0 7 112 32 288 64 158 29 296 55 307 58 20 4 20 7 9 141-7 75-12 138-11 138 5 5 558 214 564 214 5 0 14 4 21 9 13 8 10 15-74 227-3 5 144 82 326 169 181 88 330 164 330 170s-30 84-66 174c-53 134-63 166-52 176 7 7 105 85 218 175s210 168 217 174c9 8-1 46-42 164-30 84-55 157-55 162s101 91 225 190 225 183 225 186-56 66-124 140l-125 135 194 217c107 119 195 219 194 222 0 3-45 41-100 85-54 44-111 90-125 101l-26 21 145 289c80 159 147 294 148 299 1 6-25 25-57 44-33 18-78 44-101 57l-41 24 124 226c69 124 124 229 122 234-2 4-42 42-90 84l-87 76 28 63c15 34 72 158 126 276l98 214-39 36c-21 20-68 61-103 93l-64 56 136 261c76 144 137 263 137 265 0 3-57 23-127 46-71 24-132 46-136 50-4 3 33 128 82 276s88 270 86 272-45-6-95-18c-51-11-95-19-98-16-5 6-4 13 77 405 28 135 49 246 47 248-1 2-36-11-76-27-39-17-74-30-76-27-2 2 1 111 6 243 5 131 10 284 10 339v100l-87-10c-49-6-89-8-90-5s29 140 66 305 67 301 66 303c-2 2-53-22-114-52-91-46-111-53-111-39 0 10 9 144 20 298s20 297 20 317v37l-72-20c-40-11-81-22-90-25-17-5-18 16-18 350 0 278-3 356-12 356-7 0-53-9-102-20s-91-19-92-17c-1 1-17 106-35 232-18 127-35 233-38 237-3 3-39-7-79-24s-74-29-76-27c-3 2-15 155-27 339s-23 336-25 338c-1 2-45-15-98-39-53-23-99-39-102-36s-17 167-30 364c-12 197-23 359-24 361 0 1-43-32-96-73s-99-75-103-75-26 141-50 313c-23 171-44 319-47 328-4 14-14 14-102-6-53-12-100-20-103-16-4 3-31 143-60 309-30 167-57 309-61 315-4 7-30 0-77-21-39-18-73-32-76-32s-5 149-5 330c0 182-3 330-6 330s-49-29-101-65c-53-36-97-64-98-63-2 2-8 154-15 338-6 184-13 337-15 338-2 2-40-24-85-57-44-34-84-61-89-61-4 0-7 10-5 23 2 12 11 139 19 282s18 291 21 329l6 69-126-5c-114-5-126-4-122 11 8 27 126 657 126 673 0 10-37 25-115 48-104 30-114 35-110 54 3 12 16 71 30 131 102 438 125 539 125 551 0 10-24 14-99 16l-98 3 112 248 113 248-27 10c-14 6-61 22-104 35l-77 25 52 97c28 53 75 142 105 196 29 55 52 100 51 101-2 1-42 17-90 35-49 18-88 38-88 45s11 86 25 175c14 90 24 166 23 170-2 4-81-43-177-106z";
-    var svgFlower = "M1048.256,633.499c212.849-356.854,285.555-335.845-191.845-590.438C384.889,283.217,484.493,353.496,664.566,633.499 c-310.065-285.921-239.639-396.021-620.823,0c64.157,504.336,28.591,448.084,502.257,364.911 c-416.078,181.718-421.368,113.233-191.845,590.438c503.843,103.322,428.181,97.12,502.257-364.911 c69.825,407.236,10.978,486.041,502.257,364.911c233.666-457.592,211.268-427.46-191.845-590.438 c452.881,101.063,461.097,199.985,502.257-364.911C1305.872,228.612,1381.606,318.787,1048.256,633.499z M856.411,1100.523 c-114.579,0-207.463-92.884-207.463-207.463s92.884-207.463,207.463-207.463c114.578,0,207.463,92.884,207.463,207.463 S970.989,1100.523,856.411,1100.523z"; // Source
+    var svgFlower = "M1048.256,633.499c212.849-356.854,285.555-335.845-191.845-590.438C384.889,283.217,484.493,353.496,664.566,633.499 c-310.065-285.921-239.639-396.021-620.823,0c64.157,504.336,28.591,448.084,502.257,364.911 c-416.078,181.718-421.368,113.233-191.845,590.438c503.843,103.322,428.181,97.12,502.257-364.911 c69.825,407.236,10.978,486.041,502.257,364.911c233.666-457.592,211.268-427.46-191.845-590.438 c452.881,101.063,461.097,199.985,502.257-364.911C1305.872,228.612,1381.606,318.787,1048.256,633.499z M856.411,1100.523 c-114.579,0-207.463-92.884-207.463-207.463s92.884-207.463,207.463-207.463c114.578,0,207.463,92.884,207.463,207.463 S970.989,1100.523,856.411,1100.523z"; // const svgBoth="M 10482.56 6334.99 c 2128.49 -3568.54 2855.55 -3358.45 -1918.45 -5904.38 C 3848.89 2832.17 4844.93 3534.96 6645.66 6334.99 c -3100.65 -2859.21 -2396.39 -3960.21 -6208.23 0 c 641.57 5043.36 285.91 4480.84 5022.57 3649.11 c -4160.78 1817.18 -4213.68 1132.33 -1918.45 5904.38 c 5038.43 1033.22 4281.81 971.2 5022.57 -3649.11 c 698.25 4072.36 109.78 4860.41 5022.57 3649.11 c 2336.66 -4575.92 2112.68 -4274.6 -1918.45 -5904.38 c 4528.81 1010.63 4610.97 1999.85 5022.57 -3649.11 C 13058.72 2286.12 13816.06 3187.87 10482.56 6334.99 z M 8564.11 11005.23 c -1145.79 0 -2074.63 -928.84 -2074.63 -2074.63 s 928.84 -2074.63 2074.63 -2074.63 c 1145.78 0 2074.63 928.84 2074.63 2074.63 S 9709.89 11005.23 8564.11 11005.23 z m-2000 7000-175-112-108 54c-59 30-112 54-117 54s-97-112-203-250l-193-250h-150-151l-177-188c-97-104-186-197-197-207-19-17-23-16-139 49-66 36-124 66-128 65-6 0-219-276-359-464-10-14-30-7-149 53l-138 70-26-32c-15-17-103-124-195-238-92-115-171-208-175-208s-61 25-127 55l-119 55-90-92c-50-51-149-155-220-230l-130-138-112 100c-61 55-115 100-120 100-4 0-123-122-263-269-140-148-260-270-266-270-5-1-65 39-131 88l-122 90-233-207c-129-114-264-233-300-265l-66-58-138 80-139 80-139-147c-77-81-181-189-231-240l-91-94-161 80-160 81-169-201c-93-110-176-209-184-219-15-19-19-18-174 26-87 25-162 42-167 39s-79-90-164-194c-140-171-158-188-178-181-12 5-73 30-134 56-62 26-116 45-121 43-5-1-105-104-222-226-192-202-216-223-239-218-14 3-82 23-151 44l-126 38-249-262c-138-145-252-263-255-263s-45 55-95 124c-49 68-92 121-96 117s-98-138-209-299l-201-292-138 69-139 69-223-336c-123-184-227-339-230-344s-83-20-177-33c-95-12-174-25-176-27s-52-107-111-234c-59-126-111-233-114-237-4-4-62 8-130 27-69 19-125 34-127 32-1-1-57-139-125-307-67-168-124-307-125-309-2-2-69-14-150-27-80-12-147-24-149-26-3-2-30-125-60-273-31-149-58-272-60-274-3-2-68 2-146 8-77 7-144 10-147 6-3-3-16-132-28-286s-23-281-25-283-79-18-171-36l-168-34-2-380-3-381-193-79c-139-57-192-84-192-95 0-9 29-149 65-310s65-295 63-296c-2-2-86-43-188-91s-188-90-192-93 45-170 108-371l114-365-67-65c-38-36-110-104-162-152l-93-86 136-329c75-181 136-332 136-337 0-4-58-90-128-190-71-99-132-187-136-194-6-10 62-142 290-561 15-26 21-48 16-55-5-6-66-82-135-170-70-87-127-162-127-166 0-5 108-183 239-396l240-387-90-99c-49-54-89-102-89-107s111-164 246-353c136-188 253-353 261-365 13-20 10-32-43-149-55-124-56-128-38-143 11-9 182-159 381-334l361-317-5-43c-3-23-13-105-24-182-10-77-16-141-15-143 4-3 510-150 857-248 15-4 13-20-18-141-18-74-32-137-31-139 2-1 138-21 303-42 279-37 309-43 431-86 238-83 552-155 824-188 141-17 699-17 840 0 648 79 1266 287 1860 624 111 64 378 237 494 320 46 34 67 44 62 32-4-11-35-107-68-214-397-1294-750-2359-915-2764-72-178-107-247-165-332-72-104-110-172-148-269-56-142-97-325-73-325 29 0 420 94 429 104 6 6 46 128 89 271 42 143 142 478 222 745 79 267 202 679 273 915 71 237 185 621 255 855s151 506 181 604c30 99 54 185 54 193 0 27 18 12 35-30 31-80 204-397 305-558 282-454 581-807 1323-1564l245-250 114 113c62 61 116 112 120 112s118-122 253-270c136-149 250-270 254-270 3 0 40 68 81 151s78 152 82 155c3 2 122-66 263-152 180-110 259-153 264-145 5 7 18 57 30 112l22 99h515c283 0 514 1 514 3s-20 52-44 112l-44 110 479 3c310 1 479 6 479 12s-14 58-31 116-30 106-28 108c2 1 179 26 392 56 214 30 392 57 398 60 5 4-4 44-21 95-16 49-30 94-30 100 0 7 112 32 288 64 158 29 296 55 307 58 20 4 20 7 9 141-7 75-12 138-11 138 5 5 558 214 564 214 5 0 14 4 21 9 13 8 10 15-74 227-3 5 144 82 326 169 181 88 330 164 330 170s-30 84-66 174c-53 134-63 166-52 176 7 7 105 85 218 175s210 168 217 174c9 8-1 46-42 164-30 84-55 157-55 162s101 91 225 190 225 183 225 186-56 66-124 140l-125 135 194 217c107 119 195 219 194 222 0 3-45 41-100 85-54 44-111 90-125 101l-26 21 145 289c80 159 147 294 148 299 1 6-25 25-57 44-33 18-78 44-101 57l-41 24 124 226c69 124 124 229 122 234-2 4-42 42-90 84l-87 76 28 63c15 34 72 158 126 276l98 214-39 36c-21 20-68 61-103 93l-64 56 136 261c76 144 137 263 137 265 0 3-57 23-127 46-71 24-132 46-136 50-4 3 33 128 82 276s88 270 86 272-45-6-95-18c-51-11-95-19-98-16-5 6-4 13 77 405 28 135 49 246 47 248-1 2-36-11-76-27-39-17-74-30-76-27-2 2 1 111 6 243 5 131 10 284 10 339v100l-87-10c-49-6-89-8-90-5s29 140 66 305 67 301 66 303c-2 2-53-22-114-52-91-46-111-53-111-39 0 10 9 144 20 298s20 297 20 317v37l-72-20c-40-11-81-22-90-25-17-5-18 16-18 350 0 278-3 356-12 356-7 0-53-9-102-20s-91-19-92-17c-1 1-17 106-35 232-18 127-35 233-38 237-3 3-39-7-79-24s-74-29-76-27c-3 2-15 155-27 339s-23 336-25 338c-1 2-45-15-98-39-53-23-99-39-102-36s-17 167-30 364c-12 197-23 359-24 361 0 1-43-32-96-73s-99-75-103-75-26 141-50 313c-23 171-44 319-47 328-4 14-14 14-102-6-53-12-100-20-103-16-4 3-31 143-60 309-30 167-57 309-61 315-4 7-30 0-77-21-39-18-73-32-76-32s-5 149-5 330c0 182-3 330-6 330s-49-29-101-65c-53-36-97-64-98-63-2 2-8 154-15 338-6 184-13 337-15 338-2 2-40-24-85-57-44-34-84-61-89-61-4 0-7 10-5 23 2 12 11 139 19 282s18 291 21 329l6 69-126-5c-114-5-126-4-122 11 8 27 126 657 126 673 0 10-37 25-115 48-104 30-114 35-110 54 3 12 16 71 30 131 102 438 125 539 125 551 0 10-24 14-99 16l-98 3 112 248 113 248-27 10c-14 6-61 22-104 35l-77 25 52 97c28 53 75 142 105 196 29 55 52 100 51 101-2 1-42 17-90 35-49 18-88 38-88 45s11 86 25 175c14 90 24 166 23 170-2 4-81-43-177-106z"
+    // Source
 
     if (textId) {
-      var source = "Data for flower phenology from ".concat(data[0].phenFlowerRef, ".</br>Data for leafing phenology from ").concat(data[0].phenLeafRef, ".");
-      $$6("#".concat(textId)).html(source);
-    }
+      var flowerText = tweakRef(data[0].phenFlowerRef);
+      var leafText = tweakRef(data[0].phenLeafRef);
+      var source;
+
+      if (flowerRange.length) {
+        source = "Data for flower phenology from ".concat(flowerText, ".");
+      }
+
+      if (flowerRange.length && leafRange.length) {
+        source = "".concat(source, "</br>");
+      }
+
+      if (leafRange.length) {
+        source = "".concat(source, "Data for leafing phenology from ").concat(leafText, ".");
+      }
+
+      $$5("#".concat(textId)).html(source);
+    } // '#009900' '#ff9900'
+
 
     var metrics = [];
+    var iMetric = 0;
 
-    if (ls && le) {
+    if (flowerRange.length) {
       metrics.push({
-        prop: 'band2',
-        label: 'In leaf',
-        colour: '#009900',
-        opacity: 0.5,
-        svg: svgLeaf
-      });
-    }
-
-    if (fs && fe) {
-      metrics.push({
-        prop: 'band1',
+        prop: 'flower',
         label: 'Flowering',
-        colour: '#ff9900',
-        opacity: 0.5,
-        svg: svgFlower
+        colour: '#fc8d62',
+        svg: svgFlower,
+        legendOrder: ++iMetric
       });
     }
+
+    if (leafRange.length) {
+      metrics.push({
+        prop: 'leaf',
+        label: 'In leaf',
+        colour: '#66c2a5',
+        svg: svgLeaf,
+        legendOrder: ++iMetric
+      });
+    } // if (overlapRange.length) {
+    //   metrics.push({ prop: 'both', label: 'In leaf & flowering', colour: '#8da0cb', svg: svgBoth , svgScale: 1.4, legendOrder: 3})
+    // }
+
 
     return chart.setChartOpts({
       data: [{
         taxon: 'taxon',
-        band2: {
-          start: leafStart,
-          end: leafEnd
-        },
-        band1: {
-          start: flowerStart,
-          end: flowerEnd
-        }
+        leaf: leafRange.map(function (r) {
+          return {
+            start: r[0],
+            end: r[1]
+          };
+        }),
+        flower: flowerRange.map(function (r) {
+          return {
+            start: r[0],
+            end: r[1]
+          };
+        }) //both: overlapRange.map(r => {return {start: r[0], end: r[1]}}),
+
       }],
       metrics: metrics
     });
+
+    function tweakRef(ref) {
+      var $tmp = $$5('<div>');
+      $tmp.html(ref); // Replace 'Poland, J. personal observation' with 'John Poland, personal observation'
+
+      var $span1 = $tmp.children('span').eq(0);
+      var $span2 = $tmp.children('span').eq(1);
+
+      if ($span1 && $span1 && $span1.text() === 'Poland, J.' && $span2.text() === 'personal observation') {
+        $span1.text('John Poland,');
+      }
+
+      return $tmp.html();
+    }
   }
   function apparencyByLat(chart, data) {
     // Map text to numeric values and add taxon
-    var dataType = $$6('#atlas-lat-phen-data-type').val(); //console.log('dataType', dataType)
+    var dataType = $$5('#atlas-lat-phen-data-type').val(); //console.log('dataType', dataType)
 
     var numeric = data.filter(function (d) {
       return d.type === dataType;
@@ -1434,7 +1515,7 @@
     });
   }
 
-  var $$5 = jQuery; // eslint-disable-line no-undef
+  var $$4 = jQuery; // eslint-disable-line no-undef
 
   var ds$3 = drupalSettings; // eslint-disable-line no-undef
 
@@ -1452,11 +1533,11 @@
         var dynamicEl = d[0].images.split(';').filter(function (i) {
           return i;
         }).map(function (img) {
-          console.log(img.replace('{PIXELSIZE}', '192'));
+          //console.log(img.replace('{PIXELSIZE}', '192'))
           return {
             src: img.replace('{PIXELSIZE}', '1920'),
             thumb: img.replace('{PIXELSIZE}', '192'),
-            subHtml: "\n              <div class=\"lightGallery-captions\">\n                <div style=\"background-color: black; opacity: 0.7\">\n                <p style=\"margin: 0.3em\">TODO - Copyright text to acknowledge Rob Still and Chris Gibson</p>\n                <div>\n              </div>"
+            subHtml: "\n              <div class=\"lightGallery-captions\">\n                <div style=\"background-color: black; opacity: 0.7\">\n                <p style=\"margin: 0.3em\">Copyright Rob Still/Chris Gibson</p>\n                <div>\n              </div>"
           };
         }); //console.log(dynamicEl)
 
@@ -1494,11 +1575,11 @@
 
           setTimeout(function () {
             inlineGallery.openGallery();
-            $$5('#bsbi-gallery-copyright').show();
+            $$4('#bsbi-gallery-copyright').show();
           }, 200);
         } else {
           lgContainer.innerHTML = "<i>No images are available for this taxon.</i>";
-          $$5('#bsbi-gallery-copyright').hide();
+          $$4('#bsbi-gallery-copyright').hide();
         }
       });
     }
@@ -1562,7 +1643,7 @@
     }
   }
 
-  var $$4 = jQuery; // eslint-disable-line no-undef
+  var $$3 = jQuery; // eslint-disable-line no-undef
 
   var ds$2 = drupalSettings; // eslint-disable-line no-undef
 
@@ -1601,37 +1682,37 @@
     min: 1930,
     max: 1969,
     access: 'status_30_69',
-    caption: '1930 - 1969'
+    caption: '1930–1969'
   }, {
     min: 1970,
     max: 1986,
     access: 'status_70_86',
-    caption: '1970 - 1986'
+    caption: '1970–1986'
   }, {
     min: 1987,
     max: 1999,
     access: 'status_87_99',
-    caption: '1987 - 1999'
+    caption: '1987–1999'
   }, {
     min: 2000,
     max: 2019,
     access: 'status_00_19',
-    caption: '2000 - 2019'
+    caption: '2000–2019'
   }];
   var trends = [{
-    lower: '1930-69',
-    upper: '2000-19',
+    lower: '1930–69',
+    upper: '2000–19',
     access: 'change_1930_1969_vs_2000_2019',
-    caption: '1930-69 vs 2000-19'
+    caption: '1930–69 vs 2000–19'
   }, {
-    lower: '1987-99',
-    upper: '2000-19',
+    lower: '1987–99',
+    upper: '2000–19',
     access: 'change_1987_1999_vs_2000_2019',
-    caption: '1987-99 vs 2000-19'
+    caption: '1987–99 vs 2000–19'
   }];
 
   function mapControlRow(selector, classname) {
-    var $div = $$4('<div>').appendTo($$4(selector));
+    var $div = $$3('<div>').appendTo($$3(selector));
     $div.addClass('atlas-map-control-row');
 
     if (classname) {
@@ -1644,48 +1725,48 @@
   function setControlState() {
     // map display
     if (displayedMapType === "static") {
-      $$4('#slippyAtlasMain').hide();
-      $$4('#staticAtlasMain').show();
+      $$3('#slippyAtlasMain').hide();
+      $$3('#staticAtlasMain').show();
     } else {
-      $$4('#staticAtlasMain').hide();
-      $$4('#slippyAtlasMain').show();
+      $$3('#staticAtlasMain').hide();
+      $$3('#slippyAtlasMain').show();
     } // save map image button
 
 
     if (displayedMapType === 'static') {
-      $$4('.atlas-save-map-image').show();
+      $$3('.atlas-save-map-image').show();
     } else {
-      $$4('.atlas-save-map-image').hide();
+      $$3('.atlas-save-map-image').hide();
     } // download map data button
 
 
-    $$4('.atlas-download-map-data').show();
+    $$3('.atlas-download-map-data').show();
 
     if (mapType === 'allclass' && resolution === 'hectad') {
-      $$4('.atlas-download-map-data input, .atlas-download-map-data button').attr('disabled', false);
+      $$3('.atlas-download-map-data input, .atlas-download-map-data button').attr('disabled', false);
     } else {
-      $$4('.atlas-download-map-data input, .atlas-download-map-data button').attr('disabled', true);
+      $$3('.atlas-download-map-data input, .atlas-download-map-data button').attr('disabled', true);
     } // backdrop selector
 
 
     if (displayedMapType === "static") {
-      $$4('.atlas-backdrop-selector').show();
+      $$3('.atlas-backdrop-selector').show();
     } else {
-      $$4('.atlas-backdrop-selector').hide();
+      $$3('.atlas-backdrop-selector').hide();
     } // inset control
 
 
     if (displayedMapType === "static") {
-      $$4('.atlas-inset-control').show();
+      $$3('.atlas-inset-control').show();
     } else {
-      $$4('.atlas-inset-control').hide();
+      $$3('.atlas-inset-control').hide();
     } // grid type control
 
 
     if (displayedMapType === "static") {
-      $$4('.atlas-grid-type-control').show();
+      $$3('.atlas-grid-type-control').show();
     } else {
-      $$4('.atlas-grid-type-control').hide();
+      $$3('.atlas-grid-type-control').hide();
     } // boundary type control
     // if (displayedMapType === "static") {
     //   $('.atlas-boundaries-control').show()
@@ -1696,30 +1777,30 @@
 
 
     if (mapType === 'status') {
-      $$4('.atlas-period-slider-control').show();
+      $$3('.atlas-period-slider-control').show();
     } else {
-      $$4('.atlas-period-slider-control').hide();
+      $$3('.atlas-period-slider-control').hide();
     } // trend slider control
 
 
     if (mapType === 'trends') {
-      $$4('.atlas-trend-slider-control').show();
+      $$3('.atlas-trend-slider-control').show();
     } else {
-      $$4('.atlas-trend-slider-control').hide();
+      $$3('.atlas-trend-slider-control').hide();
     } // show status checkbox
 
 
     if (mapType === 'allclass' || mapType === 'slippy') {
-      $$4('.atlas-status-checkbox-control').show();
+      $$3('.atlas-status-checkbox-control').show();
     } else {
-      $$4('.atlas-status-checkbox-control').hide();
+      $$3('.atlas-status-checkbox-control').hide();
     } // show opacity slider
 
 
     if (displayedMapType === 'slippy') {
-      $$4('.atlas-opacity-slider-control').show();
+      $$3('.atlas-opacity-slider-control').show();
     } else {
-      $$4('.atlas-opacity-slider-control').hide();
+      $$3('.atlas-opacity-slider-control').hide();
     } // status checkbox enabled and checked value
 
 
@@ -1729,28 +1810,28 @@
     if (disableStatus || isHybrid) {
       showStatus = false;
       bsbiDataAccess.showStatus = false;
-      $$4('.atlas-status-checkbox-control span').text('No status info for this taxon');
-      $$4('.atlas-status-checkbox-control span').css('color', 'silver');
+      $$3('.atlas-status-checkbox-control span').text('No status info for this taxon');
+      $$3('.atlas-status-checkbox-control span').css('color', 'silver');
     } else {
-      $$4('.atlas-status-checkbox-control span').text('Show status');
-      $$4('.atlas-status-checkbox-control span').css('color', 'black');
+      $$3('.atlas-status-checkbox-control span').text('Show status');
+      $$3('.atlas-status-checkbox-control span').css('color', 'black');
     }
 
     if (disableStatus || isHybrid || displayedMapType === 'slippy' && mapType === 'allclass' && resolution !== 'hectad') {
       // Uncheck and disable status checkbutton if not hectad resolution or no status info
-      $$4('.atlas-status-checkbox').prop('checked', false);
-      $$4('.atlas-status-checkbox').attr('disabled', true);
+      $$3('.atlas-status-checkbox').prop('checked', false);
+      $$3('.atlas-status-checkbox').attr('disabled', true);
     } else {
       // Display and set checked status to current value of showStatus global
-      $$4('.atlas-status-checkbox').attr('disabled', false);
-      $$4('.atlas-status-checkbox').prop('checked', showStatus);
+      $$3('.atlas-status-checkbox').attr('disabled', false);
+      $$3('.atlas-status-checkbox').prop('checked', showStatus);
     } // atlas resolution control visibility
 
 
     if (displayedMapType === "slippy" && mapType === 'allclass') {
-      $$4('.atlas-resolution-control').show();
+      $$3('.atlas-resolution-control').show();
     } else {
-      $$4('.atlas-resolution-control').hide();
+      $$3('.atlas-resolution-control').hide();
     } // atlas resolution control value and global variables
 
 
@@ -1762,7 +1843,7 @@
       // }
       bsbiDataAccess.resolution = resolution; // Ensure right option is selected
 
-      $$4('.bsbi-resolution-' + resolution).prop('checked', true); // Enable/disable tetrad option as appropriate
+      $$3('.bsbi-resolution-' + resolution).prop('checked', true); // Enable/disable tetrad option as appropriate
       // if (currentTaxon.tetrad) {
       //   $('.bsbi-resolution-tetrad').attr('disabled', false)
       // } else {
@@ -1773,7 +1854,7 @@
     } // Enable/disable the hybrid map type option as appropriate
 
 
-    var $hybridopts = $$4('.atlas-map-type-selector option[value="hybrid"]');
+    var $hybridopts = $$3('.atlas-map-type-selector option[value="hybrid"]');
 
     if (isHybrid) {
       $hybridopts.show();
@@ -1782,12 +1863,12 @@
 
       if (mapType === 'hybrid') {
         $hybridopts.prop('selected', false);
-        $$4('.atlas-map-type-selector option[value="allclass"]').prop('selected', true);
+        $$3('.atlas-map-type-selector option[value="allclass"]').prop('selected', true);
         mapType = 'allclass';
       }
     }
 
-    $$4('.atlas-map-type-selector').selectpicker('refresh');
+    $$3('.atlas-map-type-selector').selectpicker('refresh');
   }
 
   function gridStyleSelector($parent) {
@@ -1802,17 +1883,17 @@
       val: 'none'
     }]; // Main type selector
 
-    var $sel = $$4('<select>').appendTo($parent);
+    var $sel = $$3('<select>').appendTo($parent);
     $sel.addClass('selectpicker');
     $sel.addClass('atlas-grid-type-control');
     $sel.attr('data-width', '100%');
     $sel.on('changed.bs.select', function () {
-      gridStyle = $$4(this).val();
+      gridStyle = $$3(this).val();
       setCookie('gridstyle', gridStyle, 30);
       staticMap.setGridLineStyle(gridStyle);
     });
     gridStyles.forEach(function (s) {
-      var $opt = s.selected ? $$4('<option>') : $$4('<option>');
+      var $opt = s.selected ? $$3('<option>') : $$3('<option>');
       $opt.attr('value', s.val);
       $opt.html(s.caption).appendTo($sel);
     });
@@ -1865,12 +1946,12 @@
       val: 'none'
     }]; // Main type selector
 
-    var $sel = $$4('<select>').appendTo($parent);
+    var $sel = $$3('<select>').appendTo($parent);
     $sel.addClass('selectpicker');
     $sel.addClass('atlas-boundaries-control');
     $sel.attr('data-width', '100%');
     $sel.on('changed.bs.select', function () {
-      boundaryType = $$4(this).val();
+      boundaryType = $$3(this).val();
       setCookie('boundaries', boundaryType, 30);
 
       if (boundaryType === 'none') {
@@ -1894,7 +1975,7 @@
       }
     });
     boundaries.forEach(function (b) {
-      var $opt = b.selected ? $$4('<option>') : $$4('<option>');
+      var $opt = b.selected ? $$3('<option>') : $$3('<option>');
       $opt.attr('value', b.val);
       $opt.html(b.caption).appendTo($sel);
     });
@@ -1905,25 +1986,25 @@
   }
 
   function mapInterfaceToggle($parent) {
-    var $container = $$4('<div style="display: flex">').appendTo($parent); // Buttons
+    var $container = $$3('<div style="display: flex">').appendTo($parent); // Buttons
 
-    var $bgrp = $$4('<div class="btn-group" data-toggle="buttons">').appendTo($container);
-    var $staticLabel = $$4('<label class="btn btn-primary active">').appendTo($bgrp);
-    $$4('<input type="radio" name="mapType" value="static" checked>').appendTo($staticLabel);
+    var $bgrp = $$3('<div class="btn-group" data-toggle="buttons">').appendTo($container);
+    var $staticLabel = $$3('<label class="btn btn-primary active">').appendTo($bgrp);
+    $$3('<input type="radio" name="mapType" value="static" checked>').appendTo($staticLabel);
     $staticLabel.append("Overview");
-    var $slippyLabel = $$4('<label class="btn btn-primary">').appendTo($bgrp);
-    $$4('<input type="radio" name="mapType" value="slippy">').appendTo($slippyLabel);
+    var $slippyLabel = $$3('<label class="btn btn-primary">').appendTo($bgrp);
+    $$3('<input type="radio" name="mapType" value="slippy">').appendTo($slippyLabel);
     $slippyLabel.append("Zoomable"); // Busy indicator
 
-    var $loader = $$4('<div id="atlas-loader" style="display: none">').appendTo($container);
-    $$4('<div class="atlas-loader">').appendTo($loader);
-    $$4('input[type=radio][name="mapType"]').change(function () {
-      displayedMapType = $$4(this).val();
+    var $loader = $$3('<div id="atlas-loader" style="display: none">').appendTo($container);
+    $$3('<div class="atlas-loader">').appendTo($loader);
+    $$3('input[type=radio][name="mapType"]').change(function () {
+      displayedMapType = $$3(this).val();
       bsbiDataAccess.displayedMapType = displayedMapType;
 
       if (displayedMapType === "slippy") {
         // Get current width of static map
-        var $svg = $$4('#staticAtlasMain svg');
+        var $svg = $$3('#staticAtlasMain svg');
         var w = $svg.width();
         var h = $svg.height();
         slippyMap.setSize(w, h);
@@ -1940,12 +2021,12 @@
 
   function mapTypeSelector($parent) {
     // Main type selector
-    var $sel = $$4('<select>').appendTo($parent);
+    var $sel = $$3('<select>').appendTo($parent);
     $sel.addClass('selectpicker');
     $sel.addClass('atlas-map-type-selector');
     $sel.attr('data-width', '100%');
     $sel.on('changed.bs.select', function () {
-      mapType = $$4(this).val();
+      mapType = $$3(this).val();
       setControlState();
       changeMap();
     });
@@ -1966,7 +2047,7 @@
       val: 'hybrid'
     }];
     types.forEach(function (t) {
-      var $opt = $$4('<option>');
+      var $opt = $$3('<option>');
       $opt.attr('value', t.val);
       $opt.html(t.caption).appendTo($sel);
     }); // This seems to be necessary if interface regenerated,
@@ -1989,7 +2070,7 @@
       val: 'grey_elevation_300'
     }]; // Main type selector
 
-    var $sel = $$4('<select>').appendTo($parent);
+    var $sel = $$3('<select>').appendTo($parent);
     $sel.addClass('selectpicker'); //$sel.addClass('atlas-backdrop-selector')
 
     $sel.attr('data-width', '100%');
@@ -2001,7 +2082,7 @@
         }
       }); // Display selected backdrop
 
-      backdrop = $$4(this).val();
+      backdrop = $$3(this).val();
       setCookie('backdrop', backdrop, 30);
 
       if (backdrop !== 'none') {
@@ -2009,7 +2090,7 @@
       }
     });
     backdrops.forEach(function (b) {
-      var $opt = $$4('<option>');
+      var $opt = $$3('<option>');
       $opt.attr('value', b.val);
       $opt.html(b.caption).appendTo($sel);
     });
@@ -2027,15 +2108,15 @@
   function mapImageButton($parent, i) {
     var imageType = 'png'; // Overall control container
 
-    var $container = $$4('<div>').appendTo($parent);
+    var $container = $$3('<div>').appendTo($parent);
     $container.addClass('atlas-save-map-image');
     $container.hide();
-    var $svg = $$4('<svg>').appendTo($container);
-    var $t = $$4('<text>').appendTo($svg);
+    var $svg = $$3('<svg>').appendTo($container);
+    var $t = $$3('<text>').appendTo($svg);
     $t.attr('x', '10');
     $t.attr('y', '20');
-    $$4('<br>').appendTo($container);
-    var $button = $$4('<button>').appendTo($container);
+    $$3('<br>').appendTo($container);
+    var $button = $$3('<button>').appendTo($container);
     $button.addClass('btn btn-default');
     $button.text('Download image');
     $button.on('click', function () {
@@ -2051,14 +2132,14 @@
     makeRadio('SVG', 'svg', false);
 
     function makeRadio(label, val, checked) {
-      var $div = $$4('<div>').appendTo($container);
+      var $div = $$3('<div>').appendTo($container);
       $div.css('display', 'inline-block');
       $div.css('margin-left', '0.5em');
       $div.attr('class', 'radio');
-      var $label = $$4('<label>').appendTo($div);
+      var $label = $$3('<label>').appendTo($div);
       $label.css('padding-left', '0');
-      var $radio = $$4('<input>').appendTo($label);
-      var $span = $$4('<span>').appendTo($label);
+      var $radio = $$3('<input>').appendTo($label);
+      var $span = $$3('<span>').appendTo($label);
       $span.text(label);
       $span.css('padding-left', '20px');
       $radio.attr('type', 'radio');
@@ -2069,7 +2150,7 @@
       if (checked) $radio.prop('checked', true);
       $radio.change(function () {
         // Update controls mirrored in other blocks
-        $$4('.img-download-type-' + val).prop("checked", true);
+        $$3('.img-download-type-' + val).prop("checked", true);
         imageType = val;
       });
     }
@@ -2078,10 +2159,10 @@
   function mapDownloadButton($parent, i) {
     var downloadType = 'csv'; // Overall control container
 
-    var $container = $$4('<div>').appendTo($parent);
+    var $container = $$3('<div>').appendTo($parent);
     $container.addClass('atlas-download-map-data');
     $container.hide();
-    var $button = $$4('<button>').appendTo($container);
+    var $button = $$3('<button>').appendTo($container);
     $button.addClass('btn btn-default');
     $button.text('Download data');
     $button.on('click', function () {
@@ -2099,14 +2180,14 @@
     makeRadio('GJson', 'geojson', false);
 
     function makeRadio(label, val, checked) {
-      var $div = $$4('<div>').appendTo($container);
+      var $div = $$3('<div>').appendTo($container);
       $div.css('display', 'inline-block');
       $div.css('margin-left', '0.5em');
       $div.attr('class', 'radio');
-      var $label = $$4('<label>').appendTo($div);
+      var $label = $$3('<label>').appendTo($div);
       $label.css('padding-left', '0');
-      var $radio = $$4('<input>').appendTo($label);
-      var $span = $$4('<span>').appendTo($label);
+      var $radio = $$3('<input>').appendTo($label);
+      var $span = $$3('<span>').appendTo($label);
       $span.text(label);
       $span.css('padding-left', '20px');
       $radio.attr('type', 'radio');
@@ -2117,7 +2198,7 @@
       if (checked) $radio.prop('checked', true);
       $radio.change(function () {
         // Update controls mirrored in other blocks
-        $$4('.download-type-' + val).prop("checked", true);
+        $$3('.download-type-' + val).prop("checked", true);
         downloadType = val;
       });
     }
@@ -2125,37 +2206,37 @@
 
   function opacitySlider($parent) {
     var initOpacity = 70;
-    $$4('#atlas-leaflet-svg').css('opacity', initOpacity / 100); // Overall control container
+    $$3('#atlas-leaflet-svg').css('opacity', initOpacity / 100); // Overall control container
 
-    var $container = $$4('<div>').appendTo($parent);
+    var $container = $$3('<div>').appendTo($parent);
     $container.addClass('atlas-opacity-slider-control');
     $container.hide(); // Label
 
-    var $sliderLabel = $$4('<div>').appendTo($container);
+    var $sliderLabel = $$3('<div>').appendTo($container);
     $sliderLabel.addClass('atlas-opacity-slider-label');
     $sliderLabel.text('Opacity:'); // Slider
 
-    var $sliderContainer = $$4('<div>').appendTo($container);
+    var $sliderContainer = $$3('<div>').appendTo($container);
     $sliderContainer.addClass('slidecontainer');
     $sliderContainer.addClass('atlas-opacity-slider-slider');
-    var $slider = $$4('<input>').appendTo($sliderContainer);
+    var $slider = $$3('<input>').appendTo($sliderContainer);
     $slider.addClass('slider');
     $slider.attr('type', 'range').attr('min', '1').attr('max', '100').attr('value', initOpacity).attr('id', 'atlas-opacity-slider');
     $slider.change(function () {
-      $$4('#atlas-leaflet-svg').css('opacity', $$4(this).val() / 100);
+      $$3('#atlas-leaflet-svg').css('opacity', $$3(this).val() / 100);
     });
   }
 
   function statusCheckbox($parent) {
     // Overall control container
-    var $container = $$4('<div>').appendTo($parent);
+    var $container = $$3('<div>').appendTo($parent);
     $container.addClass('atlas-status-checkbox-control'); // Status on/off toggle
 
-    var $checDiv = $$4('<div class="checkbox">').appendTo($container); //$checDiv.css('margin-top', '4.3em')
+    var $checDiv = $$3('<div class="checkbox">').appendTo($container); //$checDiv.css('margin-top', '4.3em')
 
-    $$4('<label><input type="checkbox" class="atlas-status-checkbox"/><span>Show status</span></label>').appendTo($checDiv);
-    $$4('.atlas-status-checkbox').change(function () {
-      showStatus = $$4(this).is(':checked');
+    $$3('<label><input type="checkbox" class="atlas-status-checkbox"/><span>Show status</span></label>').appendTo($checDiv);
+    $$3('.atlas-status-checkbox').change(function () {
+      showStatus = $$3(this).is(':checked');
       bsbiDataAccess.showStatus = showStatus;
       changeMap();
     });
@@ -2163,7 +2244,7 @@
 
   function statusControl($parent) {
     // Overall control container
-    var $container = $$4('<div>').appendTo($parent);
+    var $container = $$3('<div>').appendTo($parent);
     $container.addClass('atlas-period-slider-control');
     $container.hide(); // Period display
     // const $indicator = $('<div>').appendTo($container)
@@ -2172,26 +2253,26 @@
     // $indicator.text(periods[periods.length - 1].caption)
     // Slider
 
-    var $sliderContainer = $$4('<div>').appendTo($container);
+    var $sliderContainer = $$3('<div>').appendTo($container);
     $sliderContainer.addClass('slidecontainer');
-    var $slider = $$4('<input>').appendTo($sliderContainer);
+    var $slider = $$3('<input>').appendTo($sliderContainer);
     $slider.addClass('slider');
     $slider.attr('type', 'range').attr('min', '1').attr('max', periods.length).attr('id', 'atlas-range-select');
     $slider.change(function () {
-      atlasRangeIndex = $$4(this).val();
+      atlasRangeIndex = $$3(this).val();
       changeMap();
     });
-    var $scaleContainer = $$4('<div>').appendTo($sliderContainer);
+    var $scaleContainer = $$3('<div>').appendTo($sliderContainer);
     $scaleContainer.addClass('atlas-range-tick-container');
     $scaleContainer.css('margin-bottom', '4.3em');
     periods.forEach(function (p, i) {
-      var $tick = $$4('<span>').appendTo($scaleContainer);
+      var $tick = $$3('<span>').appendTo($scaleContainer);
       $tick.addClass('atlas-range-tick');
       var percent = i / (periods.length - 1) * 100;
       $tick.css('left', percent.toString() + '%');
       $tick.text('|');
       $tick.append('<br>');
-      var $tickText = $$4('<span>').appendTo($tick);
+      var $tickText = $$3('<span>').appendTo($tick);
       $tickText.addClass('atlas-range-tick-text');
       $tickText.html((p.min ? p.min : 'pre') + '<br>' + (p.max === 1929 ? 1930 : p.max)); //$tickText.html(p.min + '<br>' + p.max)
     }); // // Status on/off toggle
@@ -2207,25 +2288,25 @@
 
   function resolutionControl($parent, i) {
     // Overall control container
-    var $container = $$4('<div>').appendTo($parent);
+    var $container = $$3('<div>').appendTo($parent);
 
     function makeRadio(label, val, checked) {
-      var $div = $$4('<div>').appendTo($container);
+      var $div = $$3('<div>').appendTo($container);
       $div.attr('class', 'radio');
-      var $radio = $$4('<input>').appendTo($div);
+      var $radio = $$3('<input>').appendTo($div);
       $radio.attr('type', 'radio');
       $radio.attr('name', 'bsbi-resolution-' + i);
       $radio.attr('class', 'bsbi-resolution-' + val);
       $radio.attr('value', val);
       $radio.css('margin-left', 0);
       if (checked) $radio.prop('checked', true);
-      var $label = $$4('<label>').appendTo($div);
+      var $label = $$3('<label>').appendTo($div);
       $label.attr('for', 'bsbi-resolution-' + val);
       $label.text(label);
       $radio.change(function () {
-        resolution = $$4(this).val(); // Update controls mirrored in other blocks
+        resolution = $$3(this).val(); // Update controls mirrored in other blocks
 
-        $$4('.bsbi-resolution-' + resolution).prop("checked", true);
+        $$3('.bsbi-resolution-' + resolution).prop("checked", true);
         setControlState();
         changeMap();
       });
@@ -2237,7 +2318,7 @@
 
   function trendControl($parent) {
     // Overall control container
-    var $container = $$4('<div>').appendTo($parent);
+    var $container = $$3('<div>').appendTo($parent);
     $container.addClass('atlas-trend-slider-control');
     $container.hide(); // Trend display
     // const $indicator = $('<div>').appendTo($container)
@@ -2246,26 +2327,26 @@
     // $indicator.text(trends[trends.length - 1].caption)
     // Slider
 
-    var $sliderContainer = $$4('<div>').appendTo($container);
+    var $sliderContainer = $$3('<div>').appendTo($container);
     $sliderContainer.addClass('slidecontainer');
     $sliderContainer.addClass('atlas-trend-select-container');
-    var $slider = $$4('<input>').appendTo($sliderContainer);
+    var $slider = $$3('<input>').appendTo($sliderContainer);
     $slider.addClass('slider');
     $slider.attr('type', 'range').attr('min', '1').attr('max', trends.length).addClass('atlas-trend-select');
     $slider.change(function () {
-      atlasTrendIndex = $$4(this).val();
+      atlasTrendIndex = $$3(this).val();
       changeMap();
     });
-    var $scaleContainer = $$4('<div>').appendTo($sliderContainer);
+    var $scaleContainer = $$3('<div>').appendTo($sliderContainer);
     $scaleContainer.addClass('atlas-trend-tick-container');
     trends.forEach(function (p, i) {
-      var $tick = $$4('<span>').appendTo($scaleContainer);
+      var $tick = $$3('<span>').appendTo($scaleContainer);
       $tick.addClass('atlas-trend-tick');
       var percent = i / (trends.length - 1) * 100;
       $tick.css('left', percent.toString() + '%');
       $tick.text('|');
       $tick.append('<br>');
-      var $tickText = $$4('<span>').appendTo($tick);
+      var $tickText = $$3('<span>').appendTo($tick);
       $tickText.addClass('atlas-trend-tick-text');
       $tickText.addClass('atlas-trend-tick-text-' + i);
       $tickText.html(p.lower + '<br>v.<br>' + p.upper);
@@ -2285,19 +2366,19 @@
       val: 'BI4'
     }]; // Main type selector
 
-    var $sel = $$4('<select>').appendTo($parent);
+    var $sel = $$3('<select>').appendTo($parent);
     $sel.addClass('selectpicker');
     $sel.addClass('atlas-inset-control'); //$sel.addClass('atlas-backdrop-selector')
 
     $sel.attr('data-width', '100%');
     $sel.on('changed.bs.select', function () {
-      insetType = $$4(this).val();
+      insetType = $$3(this).val();
       staticMap.setTransform(insetType);
       setCookie('inset', insetType, 30);
       changeMap();
     });
     inserts.forEach(function (i) {
-      var $opt = i.selected ? $$4('<option>') : $$4('<option>');
+      var $opt = i.selected ? $$3('<option>') : $$3('<option>');
       $opt.attr('value', i.val);
       $opt.html(i.caption).appendTo($sel);
     });
@@ -2447,7 +2528,7 @@
       showVcs: boundaryType === 'vc',
       showCountries: boundaryType === 'country'
     });
-    $$4('#slippyAtlasMain').hide();
+    $$3('#slippyAtlasMain').hide();
   }
   function changeMap(retPromise) {
     var displayedMap;
@@ -2502,7 +2583,7 @@
     } // Initialise dot caption
 
 
-    $$4('#dotCaption').html(bsbiDataAccess.dotCaption);
+    $$3('#dotCaption').html(bsbiDataAccess.dotCaption);
   }
   function createMapControls(selector) {
     mapInterfaceToggle(mapControlRow(selector));
@@ -2515,14 +2596,14 @@
     gridStyleSelector(mapControlRow(selector));
     boundarySelector(mapControlRow(selector));
     opacitySlider(mapControlRow(selector));
-    $$4(selector).each(function (i) {
+    $$3(selector).each(function (i) {
       // We loop through the selection so that we can use the
       // index value to differentiate the equivalent controls
       // from different blocks. This is vital for radio controls
       // otherwise value can only be selected in one block and
       // therefore initialisation may be wrong.
       var sel = 'bsbi-atlas-map-controls-' + i;
-      var $div = $$4('<div>').appendTo($$4(this));
+      var $div = $$3('<div>').appendTo($$3(this));
       $div.addClass(sel);
       sel = '.' + sel; // Potentially we can also use this to ensure that selection
       // in one block is mirrored in the other. This is only important
@@ -2546,25 +2627,188 @@
   //   mapType = type
   // }
 
-  var $$3 = jQuery; // eslint-disable-line no-undef
+  var $$2 = jQuery; // eslint-disable-line no-undef
   function develTrendSummary(selector, changeSwatchColour) {
     // Colours
-    var $colours = $$3('<div style="margin-top: 1em">').appendTo($$3(selector)); // No trend swatch base colour
+    var $colours = $$2('<div style="margin-top: 1em">').appendTo($$2(selector)); // No trend swatch base colour
 
-    var $divTrendSwatch = $$3('<div>').appendTo($colours);
-    $$3('<input type="text" style="width: 120px" id="trendSwatchColour">').appendTo($divTrendSwatch);
-    $$3('<label for="trendSwatchColour" style="margin-left: 1em">Trend summary colour</label>').appendTo($divTrendSwatch);
+    var $divTrendSwatch = $$2('<div>').appendTo($colours);
+    $$2('<input type="text" style="width: 120px" id="trendSwatchColour">').appendTo($divTrendSwatch);
+    $$2('<label for="trendSwatchColour" style="margin-left: 1em">Trend summary colour</label>').appendTo($divTrendSwatch);
     var trendSwatchColour = new JSColor('#trendSwatchColour', {
       onChange: colourChange
     });
-    trendSwatchColour.fromString('rgb(255,0,0)');
+    trendSwatchColour.fromString('rgb(0,255,255)');
 
     function colourChange() {
       changeSwatchColour(trendSwatchColour.toRGBString());
     }
   }
 
-  var $$2 = jQuery; // eslint-disable-line no-undef
+  jQuery; // eslint-disable-line no-undef
+  function updateTrendSummary2(id, d, rgbColourString) {
+    setColour("".concat(id, "_decline_strong"), d.declineStrong);
+    setColour("".concat(id, "_decline_mod"), d.declineMod);
+    setColour("".concat(id, "_stable"), d.stable);
+    setColour("".concat(id, "_increase_mod"), d.increaseMod);
+    setColour("".concat(id, "_increase_strong"), d.increaseStrong);
+
+    function setColour(id, val) {
+      var baseColour = rgbColourString.substring(0, rgbColourString.length - 1).replace('rgb', 'rgba');
+      var grey = 220 - Math.floor(val / 100 * 220);
+      d3.select("#".concat(id)).attr('fill', "".concat(baseColour, ",").concat(Number(val) / 100, ")"));
+      d3.select("#".concat(id, "-path")).attr('fill', "rgb(".concat(grey, ",").concat(grey, ",").concat(grey, ")"));
+    }
+  }
+  function trendSummary2(id) {
+    var svgArrow = "M 2250 7256 l 0 -2813 l -61 -7 c -34 -3 -526 -6 -1093 -6 l -1031 -1 l 66 -62 c 36 -34 756 -714 1600 -1512 c 844 -797 1820 -1719 2169 -2049 c 349 -329 667 -630 705 -668 l 70 -68 l 230 217 c 1454 1373 3719 3512 4012 3790 l 373 353 l -1090 0 l -1090 0 l 0 2820 l 0 2820 l -2430 0 l -2430 0 l 0 -2814 z";
+    var svgSquare = "M 5 3968 c -3 -7 -4 -897 -3 -1978 l 3 -1965 l 2080 0 l 2080 0 l 0 1975 l 0 1975 l -2078 3 c -1657 2 -2079 0 -2082 -10 z";
+    var ss = 25;
+    var sr = 22;
+    var swatches = [{
+      svg: svgArrow,
+      scale: 0.6,
+      rot: 180,
+      text: "Strong decline",
+      id: "".concat(id, "_decline_strong"),
+      da: [ss * 4]
+    }, {
+      svg: svgArrow,
+      scale: 0.4,
+      rot: 180,
+      text: "Moderate decline",
+      id: "".concat(id, "_decline_mod"),
+      da: [ss * 3, ss]
+    }, {
+      svg: svgSquare,
+      scale: 0.2,
+      rot: 45,
+      text: 'Stable',
+      id: "".concat(id, "_stable"),
+      da: [ss * 3, ss]
+    }, {
+      svg: svgArrow,
+      scale: 0.4,
+      rot: 0,
+      text: "Moderate increase",
+      id: "".concat(id, "_increase_mod"),
+      da: [ss * 3, ss]
+    }, {
+      svg: svgArrow,
+      scale: 0.6,
+      rot: 0,
+      text: "Strong increase",
+      id: "".concat(id, "_increase_strong"),
+      da: [ss * 3, ss]
+    }]; // Graphic
+
+    var divParent = d3.select("#".concat(id));
+    var svg = divParent.append('svg').attr('width', ss * 5).attr('height', ss).style('overflow', 'visible'); // Swatches
+
+    swatches.forEach(function (s, i) {
+      // const indicator = svg.append('rect')
+      //   .attr('id', s.id)
+      //   .attr('width', ss)
+      //   .attr('height', ss)
+      //   .attr('x', i * ss)
+      //   .attr('stroke', 'grey')
+      //   .attr('fill', 'white')
+      //   .style('stroke-dasharray', s.da.toString())
+      var indicator = svg.append('circle').attr('id', s.id).attr('r', sr / 2).attr('cx', i * ss + ss / 2).attr('cy', ss / 2).attr('stroke', 'grey').attr('fill', 'white').attr('clip-path', 'circle()');
+      indicator.append('title').text(s.text);
+
+      if (s.svg) {
+        var path = svg.append('path').attr('d', s.svg).style('visibility', 'hidden');
+        var svgbbox = path.node().getBBox();
+        path.remove(); // Note the order of the transformations is right to left
+        // in the translate clause
+
+        var iScale = ss / svgbbox.width * s.scale;
+        var xAdj = i * ss + (ss - svgbbox.width * iScale) / 2;
+        var yAdj = (ss - svgbbox.height * iScale) / 2;
+        var xRot = ss / 2 + i * ss;
+        var yRot = ss / 2;
+        var symbol = svg.append('path').attr('id', "".concat(s.id, "-path")).attr('d', s.svg).attr('transform', "\n          rotate(".concat(s.rot, ", ").concat(xRot, ", ").concat(yRot, ")\n          translate(").concat(xAdj, " ").concat(yAdj, ") \n          scale(").concat(iScale, ")\n        "));
+        symbol.append('title').text(s.text);
+      }
+    });
+  }
+  function trendSave(_x, _x2) {
+    return _trendSave.apply(this, arguments);
+  }
+
+  function _trendSave() {
+    _trendSave = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee(id, filename) {
+      var svg, download, serialize, downloadLink;
+      return regeneratorRuntime.wrap(function _callee$(_context) {
+        while (1) {
+          switch (_context.prev = _context.next) {
+            case 0:
+              downloadLink = function _downloadLink(dataUrl, file) {
+                // Create a link element
+                var link = document.createElement("a"); // Set link's href to point to the data URL
+
+                link.href = dataUrl;
+                link.download = file; // Append link to the body
+
+                document.body.appendChild(link); // Dispatch click event on the link
+                // This is necessary as link.click() does not work on the latest firefox
+
+                link.dispatchEvent(new MouseEvent('click', {
+                  bubbles: true,
+                  cancelable: true,
+                  view: window
+                })); // Remove link from body
+
+                document.body.removeChild(link);
+              };
+
+              serialize = function _serialize(svg) {
+                var xmlns = "http://www.w3.org/2000/xmlns/";
+                var xlinkns = "http://www.w3.org/1999/xlink";
+                var svgns = "http://www.w3.org/2000/svg";
+                var domSvg = svg.node();
+                var cloneSvg = domSvg.cloneNode(true);
+                var d3Clone = d3.select(cloneSvg); // Explicitly change text in clone to required font
+
+                d3Clone.selectAll('text').style('font-family', 'Arial, Helvetica, sans-serif');
+                cloneSvg.setAttributeNS(xmlns, "xmlns", svgns);
+                cloneSvg.setAttributeNS(xmlns, "xmlns:xlink", xlinkns);
+                var serializer = new window.XMLSerializer();
+                var string = serializer.serializeToString(cloneSvg);
+                return new Blob([string], {
+                  type: "image/svg+xml"
+                });
+              };
+
+              download = function _download(data, filename) {
+                var dataUrl = URL.createObjectURL(data);
+                var file = "".concat(filename, ".svg");
+                downloadLink(dataUrl, file);
+              };
+
+              svg = d3.select("#".concat(id, " svg"));
+              return _context.abrupt("return", new Promise(function (resolve) {
+                var blob1 = serialize(svg);
+
+                if (filename) {
+                  download(blob1, filename);
+                }
+
+                resolve(blob1);
+              }));
+
+            case 5:
+            case "end":
+              return _context.stop();
+          }
+        }
+      }, _callee);
+    }));
+    return _trendSave.apply(this, arguments);
+  }
+
+  var $$1 = jQuery; // eslint-disable-line no-undef
 
   var ds$1 = drupalSettings; // eslint-disable-line no-undef
 
@@ -2579,26 +2823,28 @@
   var bCancelled = false;
   var aNoStatus, aIsHybrid;
   function downloadPage() {
-    $$2('#bsbi-atlas-download').css('display', 'flex');
-    $$2('<div>').appendTo($$2('#bsbi-atlas-download')).attr('id', 'bsbi-atlas-download-left').css('flex', 1);
-    $$2('<div>').appendTo($$2('#bsbi-atlas-download')).attr('id', 'bsbi-atlas-download-right').css('flex', 1).css('margin-left', '1em');
+    $$1('#bsbi-atlas-download').css('display', 'flex');
+    $$1('<div>').appendTo($$1('#bsbi-atlas-download')).attr('id', 'bsbi-atlas-download-left').css('flex', 1);
+    $$1('<div>').appendTo($$1('#bsbi-atlas-download')).attr('id', 'bsbi-atlas-download-right').css('flex', 1).css('margin-left', '1em');
     taxonSelectors();
     downloadButton();
-    $$2('<hr/>').appendTo($$2('#bsbi-atlas-download-left'));
-    var $instructions = $$2('<p>').appendTo($$2('#bsbi-atlas-download-left'));
+    $$1('<hr/>').appendTo($$1('#bsbi-atlas-download-left'));
+    var $instructions = $$1('<p>').appendTo($$1('#bsbi-atlas-download-left'));
     $instructions.html("\n    For batch downloads, first select a CSV file from your computer\n    that has two columns: <i>taxonId</i> which has the ddbid for each \n    taxon and <i>taxon</i> which specifies a taxon name. \n    The taxon name is only used to name the file and\n    doesn't have to be exactly the same as \n    the name used elsewhere on the site. The ddbid will also be used \n    in the filename in case of any ambiguity.\n  ");
     fileUploadButton();
     downloadBatchButton();
     cancelDownloadBatchButton();
-    $$2('<hr/>').appendTo($$2('#bsbi-atlas-download-left'));
+    $$1('<hr/>').appendTo($$1('#bsbi-atlas-download-left'));
     makeCheckbox('map', 'Map');
     makeCheckbox('apparency', 'Apparency');
     makeCheckbox('phenology', 'Phenology');
     makeCheckbox('altlat', 'Alt/Lat');
+    makeCheckbox('trend', 'Trends');
     mapping();
     apparencyChart();
     phenologyChart();
     altlatChart();
+    trendIndicators();
   }
 
   function taxonToFile(taxon, id) {
@@ -2629,7 +2875,7 @@
               data = _context2.sent;
               bCancelled = false;
               _loop = /*#__PURE__*/regeneratorRuntime.mark(function _loop(i) {
-                var t, filename, eMapping, eApparency, ePhenology, eAltlat, isHybrid, noStatus, p1, p2, p3, p4;
+                var t, filename, eMapping, eApparency, ePhenology, eAltlat, isHybrid, noStatus, p1, p2, p3, p4, p5;
                 return regeneratorRuntime.wrap(function _loop$(_context) {
                   while (1) {
                     switch (_context.prev = _context.next) {
@@ -2664,8 +2910,11 @@
                         p4 = altlatUpdate(t.taxonId, filename)["catch"](function (e) {
                           return eAltlat = e;
                         });
-                        _context.next = 14;
-                        return Promise.all([p1, p2, p3, p4]).then(function () {
+                        p5 = trendsUpdate(t.taxonId, filename)["catch"](function (e) {
+                          return e;
+                        });
+                        _context.next = 15;
+                        return Promise.all([p1, p2, p3, p4, p5]).then(function () {
                           if (eMapping || eApparency || ePhenology || eAltlat) {
                             var html = "<b>Problems for ".concat(t.taxon, " (").concat(t.taxonId, ")</b>");
                             html += '<ul>';
@@ -2679,18 +2928,21 @@
                             }
 
                             if (ePhenology) {
+                              //console.log(ePhenology)
                               html += '<li>Phenology chart failed</li>';
                             }
 
                             if (eAltlat) {
                               html += '<li>Altlat chart failed</li>';
-                            }
+                            } // Doesn't report missing trends since there are lots of these
 
-                            $$2('<div>').appendTo($$2('#bsbi-atlas-download-right')).html(html);
+
+                            // Doesn't report missing trends since there are lots of these
+                            $$1('<div>').appendTo($$1('#bsbi-atlas-download-right')).html(html);
                           }
                         });
 
-                      case 14:
+                      case 15:
                       case "end":
                         return _context.stop();
                     }
@@ -2733,7 +2985,7 @@
   }
 
   function fileUploadButton() {
-    var $file = $$2('<input>').appendTo($$2('#bsbi-atlas-download-left'));
+    var $file = $$1('<input>').appendTo($$1('#bsbi-atlas-download-left'));
     $file.attr('type', 'file');
     $file.attr('accept', '.csv');
     $file.attr('id', 'bsbi-atlas-batch-file');
@@ -2752,7 +3004,7 @@
   }
 
   function downloadBatchButton() {
-    var $button = $$2('<button>').appendTo($$2('#bsbi-atlas-download-left'));
+    var $button = $$1('<button>').appendTo($$1('#bsbi-atlas-download-left'));
     $button.addClass('btn btn-default');
     $button.text('Download batch');
     $button.on('click', function () {
@@ -2762,7 +3014,7 @@
   }
 
   function cancelDownloadBatchButton() {
-    var $button = $$2('<button>').appendTo($$2('#bsbi-atlas-download-left'));
+    var $button = $$1('<button>').appendTo($$1('#bsbi-atlas-download-left'));
     $button.addClass('btn btn-default');
     $button.css('margin-left', '1em');
     $button.text('Cancel');
@@ -2772,27 +3024,35 @@
   }
 
   function downloadButton() {
-    var $button = $$2('<button>').appendTo($$2('#bsbi-atlas-download-left'));
+    var $button = $$1('<button>').appendTo($$1('#bsbi-atlas-download-left'));
     $button.addClass('btn btn-default');
     $button.text('Download selected');
     $button.on('click', function () {
       clearCharts();
       var filename = taxonToFile(currentTaxon.shortName, currentTaxon.identifier);
       var staticMap = getStaticMap();
-      if ($$2('#download-map').is(':checked')) staticMap.saveMap(true, null, "".concat(filename, "map"));
-      if ($$2('#download-apparency').is(':checked')) phen1.saveImage(true, "".concat(filename, "apparency"));
-      if ($$2('#download-phenology').is(':checked')) phen2.saveImage(true, "".concat(filename, "phenology"));
-      if ($$2('#download-altlat').is(':checked')) altlat.saveImage(true, "".concat(filename, "altlat"));
+      if ($$1('#download-map').is(':checked')) staticMap.saveMap(true, null, "".concat(filename, "map"));
+      if ($$1('#download-apparency').is(':checked')) phen1.saveImage(true, "".concat(filename, "apparency"));
+      if ($$1('#download-phenology').is(':checked')) phen2.saveImage(true, "".concat(filename, "phenology"));
+      if ($$1('#download-altlat').is(':checked')) altlat.saveImage(true, "".concat(filename, "altlat"));
+
+      if ($$1('#download-trend').is(':checked')) {
+        console.log('checked');
+        trendSave('bsbi-trend-summary-gb', "".concat(filename, "altlat-gb"));
+        trendSave('bsbi-trend-summary-ir', "".concat(filename, "altlat-ir"));
+      } else {
+        console.log('not checked');
+      }
     });
   }
 
   function makeCheckbox(id, label) {
-    $$2("<input type=\"checkbox\" id=\"download-".concat(id, "\" style=\"margin:0.5em\" checked>")).appendTo($$2('#bsbi-atlas-download-left'));
-    $$2("<label for=\"download-".concat(id, "\">").concat(label, "</label>")).appendTo($$2('#bsbi-atlas-download-left'));
+    $$1("<input type=\"checkbox\" id=\"download-".concat(id, "\" style=\"margin:0.5em\" checked>")).appendTo($$1('#bsbi-atlas-download-left'));
+    $$1("<label for=\"download-".concat(id, "\">").concat(label, "</label>")).appendTo($$1('#bsbi-atlas-download-left'));
   }
 
   function mapping() {
-    $$2('<div id="bsbiMapDownloadDiv" style="max-width: 500px">').appendTo($$2('#bsbi-atlas-download-left'));
+    $$1('<div id="bsbiMapDownloadDiv" style="max-width: 500px">').appendTo($$1('#bsbi-atlas-download-left'));
     createMaps("#bsbiMapDownloadDiv");
     var staticMap = getStaticMap(); // Transorm, grid style and boundary style are all set when map is initialised, but
     // backdrop is not so do it here.
@@ -2823,7 +3083,7 @@
             case 0:
               staticMap = getStaticMap();
 
-              if (!$$2('#download-map').is(':checked')) {
+              if (!$$1('#download-map').is(':checked')) {
                 _context3.next = 9;
                 break;
               }
@@ -2856,7 +3116,7 @@
   }
 
   function apparencyChart() {
-    var $apparency = $$2('<div>').appendTo($$2('#bsbi-atlas-download-left'));
+    var $apparency = $$1('<div>').appendTo($$1('#bsbi-atlas-download-left'));
     $apparency.attr('id', 'bsbi-apparency-chart').css('max-width', '400px');
     phen1 = brccharts.phen1({
       selector: '#bsbi-apparency-chart',
@@ -2886,56 +3146,39 @@
 
   function _apparencyUpdate() {
     _apparencyUpdate = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee3(taxonId, taxon) {
-      var apparencyRoot, file, data, fileDefault;
+      var apparencyRoot, file, data;
       return regeneratorRuntime.wrap(function _callee3$(_context4) {
         while (1) {
           switch (_context4.prev = _context4.next) {
             case 0:
-              if (!$$2('#download-apparency').is(':checked')) {
-                _context4.next = 16;
+              if (!$$1('#download-apparency').is(':checked')) {
+                _context4.next = 11;
                 break;
               }
 
               apparencyRoot = "".concat(ds$1.bsbi_atlas.dataRoot, "bsbi/apparency/");
               file = apparencyRoot + 'all/' + taxonId.replace(/\./g, "_") + '.csv';
               _context4.next = 5;
-              return d3.csv(file + "?prevent-cache=".concat(pcache))["catch"](function () {
-                return null;
-              });
+              return d3.csv(file + "?prevent-cache=".concat(pcache));
 
             case 5:
               data = _context4.sent;
+              _context4.next = 8;
+              return apparency(phen1, data);
 
-              if (data) {
+            case 8:
+              if (!taxon) {
                 _context4.next = 11;
                 break;
               }
 
-              // TEMPORARY CODE FOR TESTING so that a file always returned 
-              fileDefault = apparencyRoot + 'all/dummy.csv';
-              _context4.next = 10;
-              return d3.csv(fileDefault + '?prevent-cache=');
-
-            case 10:
-              data = _context4.sent;
-
-            case 11:
-              _context4.next = 13;
-              return apparency(phen1, data);
-
-            case 13:
-              if (!taxon) {
-                _context4.next = 16;
-                break;
-              }
-
-              _context4.next = 16;
+              _context4.next = 11;
               return phen1.saveImage(true, "".concat(taxonToFile(taxon, taxonId), "apparency"));
 
-            case 16:
+            case 11:
               return _context4.abrupt("return", Promise.resolve());
 
-            case 17:
+            case 12:
             case "end":
               return _context4.stop();
           }
@@ -2946,7 +3189,7 @@
   }
 
   function phenologyChart() {
-    var $phenology = $$2('<div>').appendTo($$2('#bsbi-atlas-download-left'));
+    var $phenology = $$1('<div>').appendTo($$1('#bsbi-atlas-download-left'));
     $phenology.attr('id', 'bsbi-phenology-chart').css('max-width', '400px');
     phen2 = brccharts.phen2({
       selector: '#bsbi-phenology-chart',
@@ -2955,6 +3198,7 @@
       metrics: [],
       width: 400,
       height: 25,
+      split: true,
       headPad: 35,
       chartPad: 35,
       perRow: 1,
@@ -2970,56 +3214,39 @@
 
   function _phenologyUpdate() {
     _phenologyUpdate = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee4(taxonId, taxon) {
-      var captionRoot, file, data, fileDefault;
+      var captionRoot, file, data;
       return regeneratorRuntime.wrap(function _callee4$(_context5) {
         while (1) {
           switch (_context5.prev = _context5.next) {
             case 0:
-              if (!$$2('#download-phenology').is(':checked')) {
-                _context5.next = 16;
-                break;
-              }
-
-              captionRoot = ds$1.bsbi_atlas.dataRoot + 'bsbi/captions/';
-              file = "".concat(captionRoot).concat(currentTaxon.identifier.replace(/\./g, "_"), ".csv");
-              _context5.next = 5;
-              return d3.csv(file + "?prevent-cache=".concat(pcache))["catch"](function () {
-                return null;
-              });
-
-            case 5:
-              data = _context5.sent;
-
-              if (data) {
+              if (!$$1('#download-phenology').is(':checked')) {
                 _context5.next = 11;
                 break;
               }
 
-              // TEMPORARY CODE FOR TESTING so that a file always returned 
-              fileDefault = phenologyRoot + 'dummy-phenology.csv';
-              _context5.next = 10;
-              return d3.csv(fileDefault + "?prevent-cache=".concat(pcache));
+              captionRoot = ds$1.bsbi_atlas.dataRoot + 'bsbi/captions/';
+              file = "".concat(captionRoot).concat(taxonId.replace(/\./g, "_"), ".csv");
+              _context5.next = 5;
+              return d3.csv(file + "?prevent-cache=".concat(pcache));
 
-            case 10:
+            case 5:
               data = _context5.sent;
-
-            case 11:
-              _context5.next = 13;
+              _context5.next = 8;
               return phenology(phen2, data, null);
 
-            case 13:
+            case 8:
               if (!taxon) {
-                _context5.next = 16;
+                _context5.next = 11;
                 break;
               }
 
-              _context5.next = 16;
+              _context5.next = 11;
               return phen2.saveImage(true, "".concat(taxonToFile(taxon, taxonId), "phenology"));
 
-            case 16:
+            case 11:
               return _context5.abrupt("return", Promise.resolve());
 
-            case 17:
+            case 12:
             case "end":
               return _context5.stop();
           }
@@ -3030,7 +3257,7 @@
   }
 
   function altlatChart() {
-    var $altlat = $$2('<div>').appendTo($$2('#bsbi-atlas-download-left'));
+    var $altlat = $$1('<div>').appendTo($$1('#bsbi-atlas-download-left'));
     $altlat.attr('id', 'bsbi-altlat-chart').css('max-width', '600px');
     var opts = {
       selector: '#bsbi-altlat-chart',
@@ -3097,7 +3324,7 @@
         while (1) {
           switch (_context6.prev = _context6.next) {
             case 0:
-              if (!$$2('#download-altlat').is(':checked')) {
+              if (!$$1('#download-altlat').is(':checked')) {
                 _context6.next = 11;
                 break;
               }
@@ -3134,30 +3361,106 @@
     return _altlatUpdate.apply(this, arguments);
   }
 
+  function trendIndicators() {
+    var $trendGb = $$1('<div>').appendTo($$1('#bsbi-atlas-download-left'));
+    $trendGb.attr('id', 'bsbi-trend-summary-gb').css('max-width', '600px');
+    var $trendIr = $$1('<div>').appendTo($$1('#bsbi-atlas-download-left'));
+    $trendIr.attr('id', 'bsbi-trend-summary-ir').css('max-width', '600px');
+  }
+
+  function trendsUpdate(_x9, _x10) {
+    return _trendsUpdate.apply(this, arguments);
+  }
+
+  function _trendsUpdate() {
+    _trendsUpdate = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee6(taxonId, taxon) {
+      var trendRoot, trendGb, trendIr, pGb, pIr;
+      return regeneratorRuntime.wrap(function _callee6$(_context7) {
+        while (1) {
+          switch (_context7.prev = _context7.next) {
+            case 0:
+              $$1('#bsbi-trend-summary-gb').html('');
+              $$1('#bsbi-trend-summary-ir').html('');
+              trendRoot = ds$1.bsbi_atlas.dataRoot + 'bsbi/trends/long/trends-summaries';
+              trendGb = "".concat(trendRoot, "/Britain/").concat(taxonId.replace(/\./g, "_"), ".csv?prevent-cache=").concat(pcache);
+              trendIr = "".concat(trendRoot, "/Ireland/").concat(taxonId.replace(/\./g, "_"), ".csv?prevent-cache=").concat(pcache);
+              pGb = new Promise(function (resolve) {
+                d3.csv(trendGb).then(function (d) {
+                  trendSummary2('bsbi-trend-summary-gb');
+                  updateTrendSummary2('bsbi-trend-summary-gb', d[0], 'rgb(0,255,255)');
+                })["catch"](function () {//console.log('Error reading trend summary file', trendGb)
+                })["finally"](function () {
+                  resolve('');
+                });
+              });
+              pIr = new Promise(function (resolve) {
+                d3.csv(trendIr).then(function (d) {
+                  trendSummary2('bsbi-trend-summary-ir');
+                  updateTrendSummary2('bsbi-trend-summary-ir', d[0], 'rgb(0,255,255)');
+                })["catch"](function () {//console.log('Error reading trend summary file', trendIr)
+                })["finally"](function () {
+                  resolve('');
+                });
+              });
+
+              if (!taxon) {
+                _context7.next = 14;
+                break;
+              }
+
+              _context7.next = 10;
+              return Promise.all([pGb, pIr]);
+
+            case 10:
+              _context7.next = 12;
+              return trendSave('bsbi-trend-summary-gb', "".concat(taxonToFile(taxon, taxonId), "altlat-gb"));
+
+            case 12:
+              _context7.next = 14;
+              return trendSave('bsbi-trend-summary-ir', "".concat(taxonToFile(taxon, taxonId), "altlat-gb"));
+
+            case 14:
+              return _context7.abrupt("return", Promise.all([pGb, pIr]));
+
+            case 15:
+            case "end":
+              return _context7.stop();
+          }
+        }
+      }, _callee6);
+    }));
+    return _trendsUpdate.apply(this, arguments);
+  }
+
   function clearCharts() {
-    if (!$$2('#download-map').is(':checked')) {
+    if (!$$1('#download-map').is(':checked')) {
       var staticMap = getStaticMap(); //console.log('clear map')
 
       staticMap.clearMap();
     }
 
-    if (!$$2('#download-apparency').is(':checked')) phen1.setChartOpts({
+    if (!$$1('#download-apparency').is(':checked')) phen1.setChartOpts({
       data: []
     });
-    if (!$$2('#download-phenology').is(':checked')) phen2.setChartOpts({
+    if (!$$1('#download-phenology').is(':checked')) phen2.setChartOpts({
       data: []
     });
-    if (!$$2('#download-altlat').is(':checked')) altlat.setChartOpts({
+    if (!$$1('#download-altlat').is(':checked')) altlat.setChartOpts({
       data: []
     });
+
+    if (!$$1('#download-trend').is(':checked')) {
+      $$1('#bsbi-trend-summary-gb').html('');
+      $$1('#bsbi-trend-summary-ir').html('');
+    }
   }
 
   function taxonSelectors() {
     // Overall control container
-    var $container = $$2('<div>').appendTo($$2('.bsbi-atlas-taxon-selector'));
+    var $container = $$1('<div>').appendTo($$1('.bsbi-atlas-taxon-selector'));
     $container.addClass('atlas-taxon-selector-div'); // Selector
 
-    var $sel = $$2('<select>').appendTo($container);
+    var $sel = $$1('<select>').appendTo($container);
     $sel.addClass('atlas-taxon-selector-sel');
     d3.csv(ds$1.bsbi_atlas.dataRoot + "bsbi/taxon_list.csv?prevent-cache=".concat(pcache)).then(function (data) {
       var taxaList = data;
@@ -3169,7 +3472,7 @@
         }
 
         name = name + d['formattedName'];
-        var $opt = $$2('<option>');
+        var $opt = $$1('<option>');
         $opt.attr('data-content', name);
         $opt.attr('value', d['ddbid']);
         $opt.attr('data-taxon-name', d['taxonName']); //$opt.attr('data-vernacular', d['vernacular'])
@@ -3183,20 +3486,21 @@
       $sel.attr('title', 'Select a taxon');
       $sel.selectpicker();
       $sel.on('changed.bs.select', function () {
-        console.log('Identifier:', $$2(this).val());
+        console.log('Identifier:', $$1(this).val());
         clearCharts();
-        currentTaxon.identifier = $$2(this).val();
-        currentTaxon.name = $$2(this).find(":selected").attr("data-content");
-        currentTaxon.shortName = $$2(this).find(":selected").attr("data-taxon-name");
-        currentTaxon.isHybrid = $$2(this).find(":selected").attr("data-is-hybrid") === 't'; // Ensure that status is set correctly for mapping
+        currentTaxon.identifier = $$1(this).val();
+        currentTaxon.name = $$1(this).find(":selected").attr("data-content");
+        currentTaxon.shortName = $$1(this).find(":selected").attr("data-taxon-name");
+        currentTaxon.isHybrid = $$1(this).find(":selected").attr("data-is-hybrid") === 't'; // Ensure that status is set correctly for mapping
 
-        var isHybrid = $$2(this).find(":selected").attr("data-is-hybrid") === 't';
-        var noStatus = aNoStatus.indexOf($$2(this).val()) > -1;
+        var isHybrid = $$1(this).find(":selected").attr("data-is-hybrid") === 't';
+        var noStatus = aNoStatus.indexOf($$1(this).val()) > -1;
         bsbiDataAccess.showStatus = !isHybrid && !noStatus;
         mappingUpdate(currentTaxon.identifier);
         apparencyUpdate(currentTaxon.identifier);
         phenologyUpdate(currentTaxon.identifier);
         altlatUpdate(currentTaxon.identifier);
+        trendsUpdate(currentTaxon.identifier);
       }); // For batch mapping
 
       aIsHybrid = data.map(function (t) {
@@ -3213,73 +3517,11 @@
     });
   }
 
-  var $$1 = jQuery; // eslint-disable-line no-undef
-
-  function updateTrendSummary(id, d, rgbColourString) {
-    var baseColour = rgbColourString.substring(0, rgbColourString.length - 1).replace('rgb', 'rgba');
-    $$1("#".concat(id, "_decline_strong")).css('background-color', "".concat(baseColour, ",").concat(Number(d.declineStrong) / 100, ")"));
-    $$1("#".concat(id, "_decline_mod")).css('background-color', "".concat(baseColour, ",").concat(Number(d.declineMod) / 100, ")"));
-    $$1("#".concat(id, "_stable")).css('background-color', "".concat(baseColour, ",").concat(Number(d.stable) / 100, ")"));
-    $$1("#".concat(id, "_increase_mod")).css('background-color', "".concat(baseColour, ",").concat(Number(d.increaseMod) / 100, ")"));
-    $$1("#".concat(id, "_increase_strong")).css('background-color', "".concat(baseColour, ",").concat(Number(d.increaseStrong) / 100, ")"));
-  }
-  function trendSummary(id) {
-    var $divParent = $$1('<div>');
-    $divParent.attr('id', id); // Graphic
-
-    var maxWidth = '160px';
-    var $tg = $$1('<div>').appendTo($divParent);
-    $tg.css('display', 'flex');
-    $tg.css('font-weight', 'bold');
-    $tg.css('max-width', maxWidth);
-    tgSwatch('--', 'Strong decline', "".concat(id, "_decline_strong"));
-    tgSwatch('-', 'Moderate decline', "".concat(id, "_decline_mod"));
-    tgSwatch('0', 'Stable', "".concat(id, "_stable"));
-    tgSwatch('+', 'Moderate decline', "".concat(id, "_increase_mod"));
-    tgSwatch('++', 'Strong decline', "".concat(id, "_increase_strong"));
-    var $tgt = $$1('<div>').appendTo($divParent);
-    $tgt.css('display', 'flex');
-    $tgt.css('font-size', '0.8em');
-    $tgt.css('margin-bottom', '1em');
-    $tgt.css('max-width', maxWidth);
-    var $tgt1 = $$1('<div>').appendTo($tgt);
-    $tgt1.css('flex', '2');
-    $tgt1.css('text-align', 'center');
-    $tgt1.text('decrease <<');
-    var $tgt2 = $$1('<div>').appendTo($tgt);
-    $tgt2.css('flex', '1');
-    var $tgt3 = $$1('<div>').appendTo($tgt);
-    $tgt3.css('flex', '2');
-    $tgt3.css('text-align', 'center');
-    $tgt3.text(' >> increase');
-    return $divParent;
-
-    function tgSwatch(text, tip, id) {
-      var $tgs = $$1('<div>').appendTo($tg);
-      $tgs.attr('id', id);
-      $tgs.css('flex', '1');
-      $tgs.css('height', '30px');
-      $tgs.css('text-align', 'center');
-      $tgs.css('line-height', '30px');
-      $tgs.css('vertical-align', 'middle');
-      $tgs.css('border-left', '1px solid silver');
-      $tgs.css('border-top', '1px solid silver');
-      $tgs.css('border-bottom', '1px solid silver');
-
-      if (text === '++') {
-        $tgs.css('border-right', '1px solid silver');
-      }
-
-      $tgs.text(text);
-      $tgs.prop('title', tip);
-    }
-  }
-
   var $ = jQuery; // eslint-disable-line no-undef
 
   var ds = drupalSettings; // eslint-disable-line no-undef
 
-  var develSummaryTrendColour = 'rgb(255,0,0)';
+  var develSummaryTrendColour = 'rgb(0,255,255)';
   function main() {
     var taxaList = [];
     var currentTaxon = {
@@ -3606,7 +3848,7 @@
       var $sect = $('#bsbi-atlas-section-' + id);
       $sect.append('<div id="bsbi-gallery" class="inline-gallery-container"></div>');
       var $copyright = $('<div id="bsbi-gallery-copyright"></div>').appendTo($sect);
-      $copyright.text("TODO - Copyright text to acknowledge Rob Still and Chris Gibson");
+      $copyright.text("Copyright Rob Still/Chris Gibson");
       $('#bsbi-gallery-copyright').hide();
     }
 
@@ -3694,28 +3936,33 @@
 
 
         if (d[0].atlasSpeciesTrends) {
-          $caption.append('<h4>Trends</h4>'); // Graphic
-
-          $('<div>').text('Summary Great Britain').appendTo($caption);
-          var $graphicGb = trendSummary('trend-sum-gb');
-          $graphicGb.appendTo($caption);
-          $('<div>').text('Summary Ireland').appendTo($caption);
-          var $graphicIr = trendSummary('trend-sum-ir');
-          $graphicIr.appendTo($caption);
+          $caption.append('<h4>Trends</h4>');
+          var $gbTrend = $('<div>').attr('id', 'trend-sum-gb2');
+          $gbTrend.hide();
+          $gbTrend.appendTo($caption);
+          var $irTrend = $('<div>').attr('id', 'trend-sum-ir2');
+          $irTrend.hide();
+          $irTrend.appendTo($caption);
           var trendRoot = ds.bsbi_atlas.dataRoot + 'bsbi/trends/long/trends-summaries';
           var trendGb = "".concat(trendRoot, "/Britain/").concat(currentTaxon.identifier.replace(/\./g, "_"), ".csv?prevent-cache=").concat(pcache);
           var trendIr = "".concat(trendRoot, "/Ireland/").concat(currentTaxon.identifier.replace(/\./g, "_"), ".csv?prevent-cache=").concat(pcache);
           d3__namespace.csv(trendGb).then(function (d) {
-            console.log(d[0]);
-            updateTrendSummary('trend-sum-gb', d[0], develSummaryTrendColour);
+            $('<div>').text('Britain Post-1930 10 km modelled trend').appendTo($gbTrend);
+            $gbTrend.show();
+            trendSummary2('trend-sum-gb2');
+            updateTrendSummary2('trend-sum-gb2', d[0], develSummaryTrendColour);
+            $('#trend-sum-gb2').show();
           })["catch"](function () {
             console.log('Error reading trend summary file', trendGb);
           });
           d3__namespace.csv(trendIr).then(function (d) {
-            console.log(d[0]);
-            updateTrendSummary('trend-sum-ir', d[0], develSummaryTrendColour);
+            $('<div>').text('Ireland Post-1930 10 km modelled trend').appendTo($irTrend);
+            $irTrend.show();
+            trendSummary2('trend-sum-ir2');
+            updateTrendSummary2('trend-sum-ir2', d[0], develSummaryTrendColour);
+            $('#trend-sum-ir2').show();
           })["catch"](function () {
-            console.log('Error reading trend summary file', trendGb);
+            console.log('Error reading trend summary file', trendIr);
           }); // Text
 
           $p = $('<p>').appendTo($caption);
