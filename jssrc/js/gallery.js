@@ -19,14 +19,14 @@ export function createGallery(id, ddbid) {
       .then(function(d) {
         // Filter out empty image strings
         const dynamicEl = d[0].images.split(';').filter(i => i).map(img => {
-          console.log(img.replace('{PIXELSIZE}', '192'))
+          //console.log(img.replace('{PIXELSIZE}', '192'))
           return {
             src: img.replace('{PIXELSIZE}', '1920'),
             thumb: img.replace('{PIXELSIZE}', '192'),
             subHtml: `
               <div class="lightGallery-captions">
                 <div style="background-color: black; opacity: 0.7">
-                <p style="margin: 0.3em">TODO - Copyright text to acknowledge Rob Still and Chris Gibson</p>
+                <p style="margin: 0.3em">Copyright Rob Still/Chris Gibson</p>
                 <div>
               </div>`
           }

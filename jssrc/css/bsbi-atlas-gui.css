@@ -58,7 +58,7 @@
     margin-bottom: 1em;
 }
 
-.atlas-map-control-row {
+.atlas-map-control-row, .atlas-trend-control-row {
     margin-bottom: 1em;
 }
 
@@ -234,8 +234,13 @@ taxon {
   padding-bottom: 65%;
 }
 
+.bsbi-selected-taxon-name.bsbi-section-summary .taxon,
+.bsbi-selected-taxon-name.bsbi-section-summary .taxon-authority {
+  display: block;
+}
+
 .taxon-authority {
-  color: grey
+  color: grey;
 }
 
 #bsbi-phenology-source .publication-title {

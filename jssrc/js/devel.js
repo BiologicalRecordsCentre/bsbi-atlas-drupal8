@@ -11,7 +11,7 @@ export function develTrendSummary(selector, changeSwatchColour) {
   $('<input type="text" style="width: 120px" id="trendSwatchColour">').appendTo($divTrendSwatch)
   $('<label for="trendSwatchColour" style="margin-left: 1em">Trend summary colour</label>').appendTo($divTrendSwatch)
   const trendSwatchColour = new JSColor('#trendSwatchColour', {onChange: colourChange})
-  trendSwatchColour.fromString('rgb(255,0,0)')
+  trendSwatchColour.fromString('rgb(0,255,255)')
 
   function colourChange() {
     changeSwatchColour(trendSwatchColour.toRGBString())

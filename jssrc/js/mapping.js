@@ -41,39 +41,39 @@ const periods = [
     min: 1930,
     max: 1969,
     access: 'status_30_69',
-    caption: '1930 - 1969'
+    caption: '1930–1969'
   },
   {
     min: 1970,
     max: 1986,
     access: 'status_70_86',
-    caption: '1970 - 1986'
+    caption: '1970–1986'
   },
   {
     min: 1987,
     max: 1999,
     access: 'status_87_99',
-    caption: '1987 - 1999'
+    caption: '1987–1999'
   },
   {
     min: 2000,
     max: 2019,
     access: 'status_00_19',
-    caption: '2000 - 2019'
+    caption: '2000–2019'
   }
 ]
 const trends = [
   {
-    lower: '1930-69',
-    upper: '2000-19',
+    lower: '1930–69',
+    upper: '2000–19',
     access: 'change_1930_1969_vs_2000_2019',
-    caption: '1930-69 vs 2000-19'
+    caption: '1930–69 vs 2000–19'
   },
   {
-    lower: '1987-99',
-    upper: '2000-19',
+    lower: '1987–99',
+    upper: '2000–19',
     access: 'change_1987_1999_vs_2000_2019',
-    caption: '1987-99 vs 2000-19'
+    caption: '1987–99 vs 2000–19'
   }
 ]
 

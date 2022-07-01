@@ -58,7 +58,7 @@
     margin-bottom: 1em;
 }
 
-.atlas-map-control-row {
+.atlas-map-control-row, .atlas-trend-control-row {
     margin-bottom: 1em;
 }
 

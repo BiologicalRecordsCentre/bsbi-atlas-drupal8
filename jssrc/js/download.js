@@ -1,6 +1,7 @@
 import { createMaps, getStaticMap, changeMap, mapSetCurrentTaxon } from './mapping'
 import { bsbiDataAccess } from './dataAccessAtlas'
 import { apparency, phenology, altLat } from './ecology'
+import { updateTrendSummary2, trendSummary2, trendSave } from './trendSummary'
 import { pcache } from './gen'
 import { getCookie } from './utils'
 
@@ -55,11 +56,13 @@ export function downloadPage() {
   makeCheckbox('apparency', 'Apparency')
   makeCheckbox('phenology', 'Phenology')
   makeCheckbox('altlat', 'Alt/Lat')
+  makeCheckbox('trend', 'Trends')
 
   mapping()
   apparencyChart()
   phenologyChart()
   altlatChart()
+  trendIndicators()
 }
 
 function taxonToFile(taxon, id) {
@@ -87,7 +90,7 @@ async function downloadTaxa() {
     const filename = taxonToFile(t.taxon, t.taxonId)
 
     // For reporting errors
-    let eMapping, eApparency, ePhenology, eAltlat
+    let eMapping, eApparency, ePhenology, eAltlat, eTrends
 
     // Ensure that status is set correctly for mapping
     const isHybrid = aIsHybrid.indexOf(t.taxonId) > -1
@@ -99,8 +102,9 @@ async function downloadTaxa() {
     const p2 = apparencyUpdate(t.taxonId, filename).catch(e => eApparency = e)
     const p3 = phenologyUpdate(t.taxonId, filename).catch(e => ePhenology = e)
     const p4 = altlatUpdate(t.taxonId, filename).catch(e => eAltlat = e)
+    const p5 = trendsUpdate(t.taxonId, filename).catch(e => eTrends = e)
 
-    await Promise.all([p1, p2, p3, p4]).then(() => {
+    await Promise.all([p1, p2, p3, p4, p5]).then(() => {
 
       if (eMapping || eApparency  || ePhenology || eAltlat) {
         let html=(`<b>Problems for ${t.taxon} (${t.taxonId})</b>`)
@@ -112,11 +116,13 @@ async function downloadTaxa() {
           html += '<li>Apparency chart failed</li>'
         }
         if (ePhenology) {
+          //console.log(ePhenology)
           html += '<li>Phenology chart failed</li>'
         }
         if (eAltlat) {
           html += '<li>Altlat chart failed</li>'
         }
+        // Doesn't report missing trends since there are lots of these
 
         $('<div>').appendTo($('#bsbi-atlas-download-right')).html(html)
       }
@@ -183,6 +189,13 @@ function downloadButton() {
       phen2.saveImage(true, `${filename}phenology`)
     if ($('#download-altlat').is(':checked')) 
       altlat.saveImage(true, `${filename}altlat`)
+    if ($('#download-trend').is(':checked')) {
+      console.log('checked')
+      trendSave('bsbi-trend-summary-gb', `${filename}altlat-gb`)
+      trendSave('bsbi-trend-summary-ir', `${filename}altlat-ir`)
+    } else {
+      console.log('not checked')
+    }
   })
 }
 
@@ -250,12 +263,12 @@ async function apparencyUpdate(taxonId ,taxon) {
   if ($('#download-apparency').is(':checked')) {
     const apparencyRoot = `${ds.bsbi_atlas.dataRoot}bsbi/apparency/`
     const file = apparencyRoot + 'all/' + taxonId.replace(/\./g, "_") + '.csv'
-    let data = await d3.csv(file + `?prevent-cache=${pcache}`).catch(() => null)
-    if (!data) {
-      // TEMPORARY CODE FOR TESTING so that a file always returned 
-      const fileDefault = apparencyRoot + 'all/dummy.csv'
-      data = await d3.csv(fileDefault + '?prevent-cache=')
-    }
+    let data = await d3.csv(file + `?prevent-cache=${pcache}`) //.catch(() => null)
+    // if (!data) {
+    //   // TEMPORARY CODE FOR TESTING so that a file always returned 
+    //   const fileDefault = apparencyRoot + 'all/dummy.csv'
+    //   data = await d3.csv(fileDefault + '?prevent-cache=')
+    // }
     await apparency(phen1, data)
     if (taxon) {
       await phen1.saveImage(true, `${taxonToFile(taxon, taxonId)}apparency`)
@@ -275,6 +288,7 @@ function phenologyChart() {
     metrics: [],
     width: 400,
     height: 25,
+    split: true,
     headPad: 35,
     chartPad: 35,
     perRow: 1,
@@ -287,13 +301,13 @@ function phenologyChart() {
 async function phenologyUpdate(taxonId ,taxon) {
   if ($('#download-phenology').is(':checked')) {
     const captionRoot = ds.bsbi_atlas.dataRoot + 'bsbi/captions/'
-    const file = `${captionRoot}${currentTaxon.identifier.replace(/\./g, "_")}.csv`
-    let data = await d3.csv(file + `?prevent-cache=${pcache}`).catch(() => null)
-    if (!data) {
-      // TEMPORARY CODE FOR TESTING so that a file always returned 
-      const fileDefault = phenologyRoot + 'dummy-phenology.csv'
-      data = await d3.csv(fileDefault + `?prevent-cache=${pcache}`)
-    }
+    const file = `${captionRoot}${taxonId.replace(/\./g, "_")}.csv`
+    let data = await d3.csv(file + `?prevent-cache=${pcache}`) //.catch(() => null)
+    // if (!data) {
+    //   // TEMPORARY CODE FOR TESTING so that a file always returned 
+    //   const fileDefault = phenologyRoot + 'dummy-phenology.csv'
+    //   data = await d3.csv(fileDefault + `?prevent-cache=${pcache}`)
+    // }
     await phenology(phen2, data, null)
     if (taxon) {
       await phen2.saveImage(true, `${taxonToFile(taxon, taxonId)}phenology`)
@@ -377,6 +391,57 @@ async function altlatUpdate(taxonId ,taxon) {
   return Promise.resolve()
 }
 
+function trendIndicators() {
+
+  const $trendGb = $('<div>').appendTo($('#bsbi-atlas-download-left'))
+  $trendGb.attr('id', 'bsbi-trend-summary-gb').css('max-width', '600px')
+
+  const $trendIr = $('<div>').appendTo($('#bsbi-atlas-download-left'))
+  $trendIr.attr('id', 'bsbi-trend-summary-ir').css('max-width', '600px')
+}
+
+async function trendsUpdate(taxonId, taxon) {
+
+  $('#bsbi-trend-summary-gb').html('')
+  $('#bsbi-trend-summary-ir').html('')
+
+  const trendRoot = ds.bsbi_atlas.dataRoot + 'bsbi/trends/long/trends-summaries'
+  const trendGb = `${trendRoot}/Britain/${taxonId.replace(/\./g, "_")}.csv?prevent-cache=${pcache}`
+  const trendIr = `${trendRoot}/Ireland/${taxonId.replace(/\./g, "_")}.csv?prevent-cache=${pcache}`
+  
+  const pGb = new Promise((resolve) => {
+    d3.csv(trendGb)
+      .then(function(d) {
+          trendSummary2('bsbi-trend-summary-gb')
+          updateTrendSummary2('bsbi-trend-summary-gb', d[0], 'rgb(0,255,255)')
+      }).catch(function(){
+        //console.log('Error reading trend summary file', trendGb)
+      }).finally(() => {
+        resolve('')
+      })
+  })
+
+  const pIr = new Promise((resolve) => {
+    d3.csv(trendIr)
+      .then(function(d) {
+          trendSummary2('bsbi-trend-summary-ir')
+          updateTrendSummary2('bsbi-trend-summary-ir', d[0], 'rgb(0,255,255)')
+      }).catch(function(){
+        //console.log('Error reading trend summary file', trendIr)
+      }).finally(() => {
+        resolve('')
+      })
+  })
+
+  if (taxon) {
+    await Promise.all([pGb, pIr])
+    await trendSave('bsbi-trend-summary-gb', `${taxonToFile(taxon, taxonId)}altlat-gb`)
+    await trendSave('bsbi-trend-summary-ir', `${taxonToFile(taxon, taxonId)}altlat-gb`)
+  }
+
+  return Promise.all([pGb, pIr])
+}
+
 function clearCharts() {
   if (!$('#download-map').is(':checked')) {
     const staticMap = getStaticMap()
@@ -389,6 +454,10 @@ function clearCharts() {
     phen2.setChartOpts({data: []})
   if (!$('#download-altlat').is(':checked')) 
     altlat.setChartOpts({data: []})
+  if (!$('#download-trend').is(':checked')) {
+    $('#bsbi-trend-summary-gb').html('')
+    $('#bsbi-trend-summary-ir').html('')
+  }
 }
 
 function taxonSelectors() {
@@ -446,6 +515,7 @@ function taxonSelectors() {
       apparencyUpdate(currentTaxon.identifier)
       phenologyUpdate(currentTaxon.identifier)
       altlatUpdate(currentTaxon.identifier)
+      trendsUpdate(currentTaxon.identifier)
     })
 
     // For batch mapping

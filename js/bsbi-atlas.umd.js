@@ -1515,7 +1515,280 @@
     });
   }
 
+  function copyToClipboard(textToCopy) {
+    // https://stackoverflow.com/questions/51805395/navigator-clipboard-is-undefined
+    // navigator clipboard api needs a secure context (https)
+    // return a promise
+    if (navigator.clipboard && window.isSecureContext) {
+      // navigator clipboard api method'
+      return navigator.clipboard.writeText(textToCopy);
+    } else {
+      // text area method
+      var textArea = document.createElement("textarea");
+      textArea.value = textToCopy; // make the textarea out of viewport
+
+      textArea.style.position = "fixed";
+      textArea.style.left = "-999999px";
+      textArea.style.top = "-999999px";
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      return new Promise(function (res, rej) {
+        // here the magic happens
+        document.execCommand('copy') ? res() : rej();
+        textArea.remove();
+      });
+    }
+  }
+  function setCookie(cname, cvalue, exdays) {
+    var d = new Date();
+    d.setTime(d.getTime() + exdays * 24 * 60 * 60 * 1000);
+    var expires = "expires=" + d.toUTCString();
+    document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+  }
+  function getCookie(cname) {
+    var name = cname + "=";
+    var decodedCookie = decodeURIComponent(document.cookie);
+    var ca = decodedCookie.split(';');
+
+    for (var i = 0; i < ca.length; i++) {
+      var c = ca[i];
+
+      while (c.charAt(0) == ' ') {
+        c = c.substring(1);
+      }
+
+      if (c.indexOf(name) == 0) {
+        return c.substring(name.length, c.length);
+      }
+    }
+
+    return "";
+  }
+  function getCitation(currentTaxon, forImageDownload) {
+    if (forImageDownload) {
+      return "<i>".concat(currentTaxon.shortName.replace(/\s/g, '</i> <i>'), "</i> in <i>BSBI</i> <i>Online</i> <i>Atlas</i> <i>2020</i>, eds P.A. Stroh, T. A. Humphrey, R.J. Burkmar, O.L. Pescott, D.B. Roy, & K.J. Walker. ").concat(location.origin, "/atlas/").concat(currentTaxon.identifier, " [Accessed ").concat(new Date().toLocaleDateString('en-GB'), "]");
+    } else {
+      return "<i>".concat(currentTaxon.shortName, "</i> in <i>BSBI Online Plant Atlas 2020</i>, eds P.A. Stroh, T. A. Humphrey, R.J. Burkmar, O.L. Pescott, D.B. Roy, & K.J. Walker. ").concat(location.origin, "/atlas/").concat(currentTaxon.identifier, " [Accessed ").concat(new Date().toLocaleDateString('en-GB'), "]");
+    }
+  }
+
   var $$4 = jQuery; // eslint-disable-line no-undef
+
+  var ds$4 = drupalSettings; // eslint-disable-line no-undef
+
+  var gam, linmod;
+  var regionType = getCookie('trend-region') ? getCookie('trend-region') : 'Britain';
+  var termType = getCookie('trend-term') ? getCookie('trend-term') : 'long';
+  var currentTaxon$2;
+  function createTrends(sel) {
+    $$4('<h4>').appendTo($$4(sel)).text('Population trends');
+    var $p1 = $$4('<p>').appendTo($$4(sel));
+    $p1.text("Explanation of trends charts. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque blandit dui vel mauris maximus interdum. Aliquam orci eros, venenatis vel purus nec, venenatis congue leo. Pellentesque rhoncus metus eros, tincidunt congue massa volutpat facilisis. Curabitur pellentesque turpis velit, quis ornare mauris ullamcorper a.");
+    var $trends = $$4('<div>').appendTo($$4(sel));
+    $trends.css('display', 'flex');
+    var $gam = $$4('<div>').appendTo($trends);
+    $gam.css('flex', '1');
+    $gam.attr('id', 'bsbi-gam-chart').css('max-width', '400px');
+    gam = brccharts.trend2({
+      selector: '#bsbi-gam-chart',
+      data: [],
+      means: [],
+      yearMin: 1947,
+      yearMax: 2022,
+      width: 400,
+      height: 280,
+      margin: {
+        left: 50,
+        right: 10,
+        top: 10,
+        bottom: 55
+      },
+      expand: true,
+      axisLeft: 'tick',
+      axisBottom: 'tick',
+      axisRight: 'on',
+      axisTop: 'on',
+      axisLeftLabel: 'Relative index',
+      axisLabelFontSize: 12,
+      style: {
+        vStroke: 'blue',
+        vStrokeWidth: 2,
+        cStroke: 'grey',
+        cStrokeWidth: 0.5,
+        cFill: 'rgb(230,230,230)',
+        mRad: 3,
+        mFill: 'white',
+        mStroke: 'black',
+        sdStroke: 'black'
+      }
+    });
+    var $linmod = $$4('<div>').appendTo($trends);
+    $linmod.css('flex', '1');
+    $linmod.attr('id', 'bsbi-linmod-chart').css('max-width', '400px');
+    linmod = brccharts.trend3({
+      selector: '#bsbi-linmod-chart',
+      data: [],
+      means: [],
+      yearMin: 1947,
+      yearMax: 2022,
+      width: 400,
+      height: 280,
+      margin: {
+        left: 50,
+        right: 10,
+        top: 10,
+        bottom: 55
+      },
+      expand: true,
+      axisLeft: 'tick',
+      axisBottom: 'tick',
+      axisRight: 'on',
+      axisTop: 'on',
+      axisLeftLabel: 'Relative index',
+      axisLabelFontSize: 12,
+      style: {
+        vStroke: 'blue',
+        vStrokeWidth: 2,
+        vOpacity: 0.05,
+        mRad: 3,
+        mFill: 'white',
+        mStroke: 'black',
+        sdStroke: 'black'
+      }
+    });
+  }
+  function changeTrends(taxon) {
+    if (taxon) {
+      currentTaxon$2 = taxon;
+    }
+
+    if (!currentTaxon$2) return;
+    loadData().then(function (d) {
+      var gamData = d[0].status === 'fulfilled' ? d[0].value : [];
+      var linmodData = d[1].status === 'fulfilled' ? d[1].value : [];
+      var means = d[2].status === 'fulfilled' ? d[2].value : [];
+      gam.updateChart(gamData, means);
+      linmod.updateChart(linmodData, means);
+    });
+  }
+
+  function loadData() {
+    var trendsRoot = ds$4.bsbi_atlas.dataRoot + 'bsbi/trends/';
+    var pGam = d3__namespace.csv("".concat(trendsRoot).concat(termType, "/trends-gam/").concat(regionType, "/").concat(currentTaxon$2.identifier.replace(/\./g, "_"), ".csv?").concat(pcache), function (d) {
+      return {
+        year: Number(d.year),
+        value: Number(d.x50),
+        upper: Number(d.x95),
+        lower: Number(d.x5)
+      };
+    });
+    var pLinmod = d3__namespace.csv("".concat(trendsRoot).concat(termType, "/trends-linmod/").concat(regionType, "/").concat(currentTaxon$2.identifier.replace(/\./g, "_"), ".csv?").concat(pcache), function (d) {
+      return {
+        gradient: Number(d.gradient),
+        intercept: Number(d.intercept)
+      };
+    });
+    var pMeans = d3__namespace.csv("".concat(trendsRoot).concat(termType, "/trends-lt-mean-sd/").concat(regionType, "/").concat(currentTaxon$2.identifier.replace(/\./g, "_"), ".csv?").concat(pcache), function (d) {
+      return {
+        year: Number(d.year),
+        mean: Number(d.mean),
+        sd: Number(d.std)
+      };
+    });
+    return Promise.allSettled([pGam, pLinmod, pMeans]);
+  }
+
+  function createTrendControls(selector) {
+    regionSelector(trendControlRow(selector));
+    termSelector(trendControlRow(selector));
+  }
+
+  function trendControlRow(selector, classname) {
+    var $div = $$4('<div>').appendTo($$4(selector));
+    $div.addClass('atlas-trend-control-row');
+
+    if (classname) {
+      $div.addClass(classname);
+    }
+
+    return $div;
+  }
+
+  function regionSelector($parent) {
+    var regions = [{
+      caption: 'Britain',
+      val: 'Britain'
+    }, {
+      caption: 'Ireland',
+      val: 'Ireland'
+    }, {
+      caption: 'England',
+      val: 'England'
+    }, {
+      caption: 'Scotland',
+      val: 'Scotland'
+    }, {
+      caption: 'Wales',
+      val: 'Wales'
+    }, {
+      caption: 'Northern Ireland',
+      val: 'Northern'
+    }, {
+      caption: 'Republic of Ireland',
+      val: 'Republic'
+    }]; // Region selector
+
+    var $sel = $$4('<select>').appendTo($parent);
+    $sel.addClass('selectpicker');
+    $sel.addClass('atlas-trends-regions-control');
+    $sel.attr('data-width', '100%');
+    $sel.on('changed.bs.select', function () {
+      regionType = $$4(this).val();
+      setCookie('trend-region', regionType, 30);
+      changeTrends();
+    });
+    regions.forEach(function (b) {
+      var $opt = b.selected ? $$4('<option>') : $$4('<option>');
+      $opt.attr('value', b.val);
+      $opt.html(b.caption).appendTo($sel);
+    });
+    $sel.val(regionType); // This seems to be necessary if interface regenerated,
+    // e.g. changing from tabbed to non-tabbed display.
+
+    $sel.selectpicker();
+  }
+
+  function termSelector($parent) {
+    var terms = [{
+      caption: 'Long term trend',
+      val: 'long'
+    }, {
+      caption: 'Short term trend',
+      val: 'short'
+    }]; // Term type selector
+
+    var $sel = $$4('<select>').appendTo($parent);
+    $sel.addClass('selectpicker');
+    $sel.addClass('atlas-trends-term-control');
+    $sel.attr('data-width', '100%');
+    $sel.on('changed.bs.select', function () {
+      termType = $$4(this).val();
+      setCookie('trend-term', termType, 30);
+      changeTrends();
+    });
+    terms.forEach(function (b) {
+      var $opt = b.selected ? $$4('<option>') : $$4('<option>');
+      $opt.attr('value', b.val);
+      $opt.html(b.caption).appendTo($sel);
+    });
+    $sel.val(termType); // This seems to be necessary if interface regenerated,
+    // e.g. changing from tabbed to non-tabbed display.
+
+    $sel.selectpicker();
+  }
+
+  var $$3 = jQuery; // eslint-disable-line no-undef
 
   var ds$3 = drupalSettings; // eslint-disable-line no-undef
 
@@ -1575,75 +1848,17 @@
 
           setTimeout(function () {
             inlineGallery.openGallery();
-            $$4('#bsbi-gallery-copyright').show();
+            $$3('#bsbi-gallery-copyright').show();
           }, 200);
         } else {
           lgContainer.innerHTML = "<i>No images are available for this taxon.</i>";
-          $$4('#bsbi-gallery-copyright').hide();
+          $$3('#bsbi-gallery-copyright').hide();
         }
       });
     }
   }
 
-  function copyToClipboard(textToCopy) {
-    // https://stackoverflow.com/questions/51805395/navigator-clipboard-is-undefined
-    // navigator clipboard api needs a secure context (https)
-    // return a promise
-    if (navigator.clipboard && window.isSecureContext) {
-      // navigator clipboard api method'
-      return navigator.clipboard.writeText(textToCopy);
-    } else {
-      // text area method
-      var textArea = document.createElement("textarea");
-      textArea.value = textToCopy; // make the textarea out of viewport
-
-      textArea.style.position = "fixed";
-      textArea.style.left = "-999999px";
-      textArea.style.top = "-999999px";
-      document.body.appendChild(textArea);
-      textArea.focus();
-      textArea.select();
-      return new Promise(function (res, rej) {
-        // here the magic happens
-        document.execCommand('copy') ? res() : rej();
-        textArea.remove();
-      });
-    }
-  }
-  function setCookie(cname, cvalue, exdays) {
-    var d = new Date();
-    d.setTime(d.getTime() + exdays * 24 * 60 * 60 * 1000);
-    var expires = "expires=" + d.toUTCString();
-    document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
-  }
-  function getCookie(cname) {
-    var name = cname + "=";
-    var decodedCookie = decodeURIComponent(document.cookie);
-    var ca = decodedCookie.split(';');
-
-    for (var i = 0; i < ca.length; i++) {
-      var c = ca[i];
-
-      while (c.charAt(0) == ' ') {
-        c = c.substring(1);
-      }
-
-      if (c.indexOf(name) == 0) {
-        return c.substring(name.length, c.length);
-      }
-    }
-
-    return "";
-  }
-  function getCitation(currentTaxon, forImageDownload) {
-    if (forImageDownload) {
-      return "<i>".concat(currentTaxon.shortName.replace(/\s/g, '</i> <i>'), "</i> in <i>BSBI</i> <i>Online</i> <i>Atlas</i> <i>2020</i>, eds P.A. Stroh, T. A. Humphrey, R.J. Burkmar, O.L. Pescott, D.B. Roy, & K.J. Walker. ").concat(location.origin, "/atlas/").concat(currentTaxon.identifier, " [Accessed ").concat(new Date().toLocaleDateString('en-GB'), "]");
-    } else {
-      return "<i>".concat(currentTaxon.shortName, "</i> in <i>BSBI Online Plant Atlas 2020</i>, eds P.A. Stroh, T. A. Humphrey, R.J. Burkmar, O.L. Pescott, D.B. Roy, & K.J. Walker. ").concat(location.origin, "/atlas/").concat(currentTaxon.identifier, " [Accessed ").concat(new Date().toLocaleDateString('en-GB'), "]");
-    }
-  }
-
-  var $$3 = jQuery; // eslint-disable-line no-undef
+  var $$2 = jQuery; // eslint-disable-line no-undef
 
   var ds$2 = drupalSettings; // eslint-disable-line no-undef
 
@@ -1712,7 +1927,7 @@
   }];
 
   function mapControlRow(selector, classname) {
-    var $div = $$3('<div>').appendTo($$3(selector));
+    var $div = $$2('<div>').appendTo($$2(selector));
     $div.addClass('atlas-map-control-row');
 
     if (classname) {
@@ -1725,48 +1940,48 @@
   function setControlState() {
     // map display
     if (displayedMapType === "static") {
-      $$3('#slippyAtlasMain').hide();
-      $$3('#staticAtlasMain').show();
+      $$2('#slippyAtlasMain').hide();
+      $$2('#staticAtlasMain').show();
     } else {
-      $$3('#staticAtlasMain').hide();
-      $$3('#slippyAtlasMain').show();
+      $$2('#staticAtlasMain').hide();
+      $$2('#slippyAtlasMain').show();
     } // save map image button
 
 
     if (displayedMapType === 'static') {
-      $$3('.atlas-save-map-image').show();
+      $$2('.atlas-save-map-image').show();
     } else {
-      $$3('.atlas-save-map-image').hide();
+      $$2('.atlas-save-map-image').hide();
     } // download map data button
 
 
-    $$3('.atlas-download-map-data').show();
+    $$2('.atlas-download-map-data').show();
 
     if (mapType === 'allclass' && resolution === 'hectad') {
-      $$3('.atlas-download-map-data input, .atlas-download-map-data button').attr('disabled', false);
+      $$2('.atlas-download-map-data input, .atlas-download-map-data button').attr('disabled', false);
     } else {
-      $$3('.atlas-download-map-data input, .atlas-download-map-data button').attr('disabled', true);
+      $$2('.atlas-download-map-data input, .atlas-download-map-data button').attr('disabled', true);
     } // backdrop selector
 
 
     if (displayedMapType === "static") {
-      $$3('.atlas-backdrop-selector').show();
+      $$2('.atlas-backdrop-selector').show();
     } else {
-      $$3('.atlas-backdrop-selector').hide();
+      $$2('.atlas-backdrop-selector').hide();
     } // inset control
 
 
     if (displayedMapType === "static") {
-      $$3('.atlas-inset-control').show();
+      $$2('.atlas-inset-control').show();
     } else {
-      $$3('.atlas-inset-control').hide();
+      $$2('.atlas-inset-control').hide();
     } // grid type control
 
 
     if (displayedMapType === "static") {
-      $$3('.atlas-grid-type-control').show();
+      $$2('.atlas-grid-type-control').show();
     } else {
-      $$3('.atlas-grid-type-control').hide();
+      $$2('.atlas-grid-type-control').hide();
     } // boundary type control
     // if (displayedMapType === "static") {
     //   $('.atlas-boundaries-control').show()
@@ -1777,30 +1992,30 @@
 
 
     if (mapType === 'status') {
-      $$3('.atlas-period-slider-control').show();
+      $$2('.atlas-period-slider-control').show();
     } else {
-      $$3('.atlas-period-slider-control').hide();
+      $$2('.atlas-period-slider-control').hide();
     } // trend slider control
 
 
     if (mapType === 'trends') {
-      $$3('.atlas-trend-slider-control').show();
+      $$2('.atlas-trend-slider-control').show();
     } else {
-      $$3('.atlas-trend-slider-control').hide();
+      $$2('.atlas-trend-slider-control').hide();
     } // show status checkbox
 
 
     if (mapType === 'allclass' || mapType === 'slippy') {
-      $$3('.atlas-status-checkbox-control').show();
+      $$2('.atlas-status-checkbox-control').show();
     } else {
-      $$3('.atlas-status-checkbox-control').hide();
+      $$2('.atlas-status-checkbox-control').hide();
     } // show opacity slider
 
 
     if (displayedMapType === 'slippy') {
-      $$3('.atlas-opacity-slider-control').show();
+      $$2('.atlas-opacity-slider-control').show();
     } else {
-      $$3('.atlas-opacity-slider-control').hide();
+      $$2('.atlas-opacity-slider-control').hide();
     } // status checkbox enabled and checked value
 
 
@@ -1810,28 +2025,28 @@
     if (disableStatus || isHybrid) {
       showStatus = false;
       bsbiDataAccess.showStatus = false;
-      $$3('.atlas-status-checkbox-control span').text('No status info for this taxon');
-      $$3('.atlas-status-checkbox-control span').css('color', 'silver');
+      $$2('.atlas-status-checkbox-control span').text('No status info for this taxon');
+      $$2('.atlas-status-checkbox-control span').css('color', 'silver');
     } else {
-      $$3('.atlas-status-checkbox-control span').text('Show status');
-      $$3('.atlas-status-checkbox-control span').css('color', 'black');
+      $$2('.atlas-status-checkbox-control span').text('Show status');
+      $$2('.atlas-status-checkbox-control span').css('color', 'black');
     }
 
     if (disableStatus || isHybrid || displayedMapType === 'slippy' && mapType === 'allclass' && resolution !== 'hectad') {
       // Uncheck and disable status checkbutton if not hectad resolution or no status info
-      $$3('.atlas-status-checkbox').prop('checked', false);
-      $$3('.atlas-status-checkbox').attr('disabled', true);
+      $$2('.atlas-status-checkbox').prop('checked', false);
+      $$2('.atlas-status-checkbox').attr('disabled', true);
     } else {
       // Display and set checked status to current value of showStatus global
-      $$3('.atlas-status-checkbox').attr('disabled', false);
-      $$3('.atlas-status-checkbox').prop('checked', showStatus);
+      $$2('.atlas-status-checkbox').attr('disabled', false);
+      $$2('.atlas-status-checkbox').prop('checked', showStatus);
     } // atlas resolution control visibility
 
 
     if (displayedMapType === "slippy" && mapType === 'allclass') {
-      $$3('.atlas-resolution-control').show();
+      $$2('.atlas-resolution-control').show();
     } else {
-      $$3('.atlas-resolution-control').hide();
+      $$2('.atlas-resolution-control').hide();
     } // atlas resolution control value and global variables
 
 
@@ -1843,7 +2058,7 @@
       // }
       bsbiDataAccess.resolution = resolution; // Ensure right option is selected
 
-      $$3('.bsbi-resolution-' + resolution).prop('checked', true); // Enable/disable tetrad option as appropriate
+      $$2('.bsbi-resolution-' + resolution).prop('checked', true); // Enable/disable tetrad option as appropriate
       // if (currentTaxon.tetrad) {
       //   $('.bsbi-resolution-tetrad').attr('disabled', false)
       // } else {
@@ -1854,7 +2069,7 @@
     } // Enable/disable the hybrid map type option as appropriate
 
 
-    var $hybridopts = $$3('.atlas-map-type-selector option[value="hybrid"]');
+    var $hybridopts = $$2('.atlas-map-type-selector option[value="hybrid"]');
 
     if (isHybrid) {
       $hybridopts.show();
@@ -1863,12 +2078,12 @@
 
       if (mapType === 'hybrid') {
         $hybridopts.prop('selected', false);
-        $$3('.atlas-map-type-selector option[value="allclass"]').prop('selected', true);
+        $$2('.atlas-map-type-selector option[value="allclass"]').prop('selected', true);
         mapType = 'allclass';
       }
     }
 
-    $$3('.atlas-map-type-selector').selectpicker('refresh');
+    $$2('.atlas-map-type-selector').selectpicker('refresh');
   }
 
   function gridStyleSelector($parent) {
@@ -1883,17 +2098,17 @@
       val: 'none'
     }]; // Main type selector
 
-    var $sel = $$3('<select>').appendTo($parent);
+    var $sel = $$2('<select>').appendTo($parent);
     $sel.addClass('selectpicker');
     $sel.addClass('atlas-grid-type-control');
     $sel.attr('data-width', '100%');
     $sel.on('changed.bs.select', function () {
-      gridStyle = $$3(this).val();
+      gridStyle = $$2(this).val();
       setCookie('gridstyle', gridStyle, 30);
       staticMap.setGridLineStyle(gridStyle);
     });
     gridStyles.forEach(function (s) {
-      var $opt = s.selected ? $$3('<option>') : $$3('<option>');
+      var $opt = s.selected ? $$2('<option>') : $$2('<option>');
       $opt.attr('value', s.val);
       $opt.html(s.caption).appendTo($sel);
     });
@@ -1946,12 +2161,12 @@
       val: 'none'
     }]; // Main type selector
 
-    var $sel = $$3('<select>').appendTo($parent);
+    var $sel = $$2('<select>').appendTo($parent);
     $sel.addClass('selectpicker');
     $sel.addClass('atlas-boundaries-control');
     $sel.attr('data-width', '100%');
     $sel.on('changed.bs.select', function () {
-      boundaryType = $$3(this).val();
+      boundaryType = $$2(this).val();
       setCookie('boundaries', boundaryType, 30);
 
       if (boundaryType === 'none') {
@@ -1975,7 +2190,7 @@
       }
     });
     boundaries.forEach(function (b) {
-      var $opt = b.selected ? $$3('<option>') : $$3('<option>');
+      var $opt = b.selected ? $$2('<option>') : $$2('<option>');
       $opt.attr('value', b.val);
       $opt.html(b.caption).appendTo($sel);
     });
@@ -1986,25 +2201,25 @@
   }
 
   function mapInterfaceToggle($parent) {
-    var $container = $$3('<div style="display: flex">').appendTo($parent); // Buttons
+    var $container = $$2('<div style="display: flex">').appendTo($parent); // Buttons
 
-    var $bgrp = $$3('<div class="btn-group" data-toggle="buttons">').appendTo($container);
-    var $staticLabel = $$3('<label class="btn btn-primary active">').appendTo($bgrp);
-    $$3('<input type="radio" name="mapType" value="static" checked>').appendTo($staticLabel);
+    var $bgrp = $$2('<div class="btn-group" data-toggle="buttons">').appendTo($container);
+    var $staticLabel = $$2('<label class="btn btn-primary active">').appendTo($bgrp);
+    $$2('<input type="radio" name="mapType" value="static" checked>').appendTo($staticLabel);
     $staticLabel.append("Overview");
-    var $slippyLabel = $$3('<label class="btn btn-primary">').appendTo($bgrp);
-    $$3('<input type="radio" name="mapType" value="slippy">').appendTo($slippyLabel);
+    var $slippyLabel = $$2('<label class="btn btn-primary">').appendTo($bgrp);
+    $$2('<input type="radio" name="mapType" value="slippy">').appendTo($slippyLabel);
     $slippyLabel.append("Zoomable"); // Busy indicator
 
-    var $loader = $$3('<div id="atlas-loader" style="display: none">').appendTo($container);
-    $$3('<div class="atlas-loader">').appendTo($loader);
-    $$3('input[type=radio][name="mapType"]').change(function () {
-      displayedMapType = $$3(this).val();
+    var $loader = $$2('<div id="atlas-loader" style="display: none">').appendTo($container);
+    $$2('<div class="atlas-loader">').appendTo($loader);
+    $$2('input[type=radio][name="mapType"]').change(function () {
+      displayedMapType = $$2(this).val();
       bsbiDataAccess.displayedMapType = displayedMapType;
 
       if (displayedMapType === "slippy") {
         // Get current width of static map
-        var $svg = $$3('#staticAtlasMain svg');
+        var $svg = $$2('#staticAtlasMain svg');
         var w = $svg.width();
         var h = $svg.height();
         slippyMap.setSize(w, h);
@@ -2021,12 +2236,12 @@
 
   function mapTypeSelector($parent) {
     // Main type selector
-    var $sel = $$3('<select>').appendTo($parent);
+    var $sel = $$2('<select>').appendTo($parent);
     $sel.addClass('selectpicker');
     $sel.addClass('atlas-map-type-selector');
     $sel.attr('data-width', '100%');
     $sel.on('changed.bs.select', function () {
-      mapType = $$3(this).val();
+      mapType = $$2(this).val();
       setControlState();
       changeMap();
     });
@@ -2047,7 +2262,7 @@
       val: 'hybrid'
     }];
     types.forEach(function (t) {
-      var $opt = $$3('<option>');
+      var $opt = $$2('<option>');
       $opt.attr('value', t.val);
       $opt.html(t.caption).appendTo($sel);
     }); // This seems to be necessary if interface regenerated,
@@ -2070,7 +2285,7 @@
       val: 'grey_elevation_300'
     }]; // Main type selector
 
-    var $sel = $$3('<select>').appendTo($parent);
+    var $sel = $$2('<select>').appendTo($parent);
     $sel.addClass('selectpicker'); //$sel.addClass('atlas-backdrop-selector')
 
     $sel.attr('data-width', '100%');
@@ -2082,7 +2297,7 @@
         }
       }); // Display selected backdrop
 
-      backdrop = $$3(this).val();
+      backdrop = $$2(this).val();
       setCookie('backdrop', backdrop, 30);
 
       if (backdrop !== 'none') {
@@ -2090,7 +2305,7 @@
       }
     });
     backdrops.forEach(function (b) {
-      var $opt = $$3('<option>');
+      var $opt = $$2('<option>');
       $opt.attr('value', b.val);
       $opt.html(b.caption).appendTo($sel);
     });
@@ -2108,15 +2323,15 @@
   function mapImageButton($parent, i) {
     var imageType = 'png'; // Overall control container
 
-    var $container = $$3('<div>').appendTo($parent);
+    var $container = $$2('<div>').appendTo($parent);
     $container.addClass('atlas-save-map-image');
     $container.hide();
-    var $svg = $$3('<svg>').appendTo($container);
-    var $t = $$3('<text>').appendTo($svg);
+    var $svg = $$2('<svg>').appendTo($container);
+    var $t = $$2('<text>').appendTo($svg);
     $t.attr('x', '10');
     $t.attr('y', '20');
-    $$3('<br>').appendTo($container);
-    var $button = $$3('<button>').appendTo($container);
+    $$2('<br>').appendTo($container);
+    var $button = $$2('<button>').appendTo($container);
     $button.addClass('btn btn-default');
     $button.text('Download image');
     $button.on('click', function () {
@@ -2132,14 +2347,14 @@
     makeRadio('SVG', 'svg', false);
 
     function makeRadio(label, val, checked) {
-      var $div = $$3('<div>').appendTo($container);
+      var $div = $$2('<div>').appendTo($container);
       $div.css('display', 'inline-block');
       $div.css('margin-left', '0.5em');
       $div.attr('class', 'radio');
-      var $label = $$3('<label>').appendTo($div);
+      var $label = $$2('<label>').appendTo($div);
       $label.css('padding-left', '0');
-      var $radio = $$3('<input>').appendTo($label);
-      var $span = $$3('<span>').appendTo($label);
+      var $radio = $$2('<input>').appendTo($label);
+      var $span = $$2('<span>').appendTo($label);
       $span.text(label);
       $span.css('padding-left', '20px');
       $radio.attr('type', 'radio');
@@ -2150,7 +2365,7 @@
       if (checked) $radio.prop('checked', true);
       $radio.change(function () {
         // Update controls mirrored in other blocks
-        $$3('.img-download-type-' + val).prop("checked", true);
+        $$2('.img-download-type-' + val).prop("checked", true);
         imageType = val;
       });
     }
@@ -2159,10 +2374,10 @@
   function mapDownloadButton($parent, i) {
     var downloadType = 'csv'; // Overall control container
 
-    var $container = $$3('<div>').appendTo($parent);
+    var $container = $$2('<div>').appendTo($parent);
     $container.addClass('atlas-download-map-data');
     $container.hide();
-    var $button = $$3('<button>').appendTo($container);
+    var $button = $$2('<button>').appendTo($container);
     $button.addClass('btn btn-default');
     $button.text('Download data');
     $button.on('click', function () {
@@ -2180,14 +2395,14 @@
     makeRadio('GJson', 'geojson', false);
 
     function makeRadio(label, val, checked) {
-      var $div = $$3('<div>').appendTo($container);
+      var $div = $$2('<div>').appendTo($container);
       $div.css('display', 'inline-block');
       $div.css('margin-left', '0.5em');
       $div.attr('class', 'radio');
-      var $label = $$3('<label>').appendTo($div);
+      var $label = $$2('<label>').appendTo($div);
       $label.css('padding-left', '0');
-      var $radio = $$3('<input>').appendTo($label);
-      var $span = $$3('<span>').appendTo($label);
+      var $radio = $$2('<input>').appendTo($label);
+      var $span = $$2('<span>').appendTo($label);
       $span.text(label);
       $span.css('padding-left', '20px');
       $radio.attr('type', 'radio');
@@ -2198,7 +2413,7 @@
       if (checked) $radio.prop('checked', true);
       $radio.change(function () {
         // Update controls mirrored in other blocks
-        $$3('.download-type-' + val).prop("checked", true);
+        $$2('.download-type-' + val).prop("checked", true);
         downloadType = val;
       });
     }
@@ -2206,37 +2421,37 @@
 
   function opacitySlider($parent) {
     var initOpacity = 70;
-    $$3('#atlas-leaflet-svg').css('opacity', initOpacity / 100); // Overall control container
+    $$2('#atlas-leaflet-svg').css('opacity', initOpacity / 100); // Overall control container
 
-    var $container = $$3('<div>').appendTo($parent);
+    var $container = $$2('<div>').appendTo($parent);
     $container.addClass('atlas-opacity-slider-control');
     $container.hide(); // Label
 
-    var $sliderLabel = $$3('<div>').appendTo($container);
+    var $sliderLabel = $$2('<div>').appendTo($container);
     $sliderLabel.addClass('atlas-opacity-slider-label');
     $sliderLabel.text('Opacity:'); // Slider
 
-    var $sliderContainer = $$3('<div>').appendTo($container);
+    var $sliderContainer = $$2('<div>').appendTo($container);
     $sliderContainer.addClass('slidecontainer');
     $sliderContainer.addClass('atlas-opacity-slider-slider');
-    var $slider = $$3('<input>').appendTo($sliderContainer);
+    var $slider = $$2('<input>').appendTo($sliderContainer);
     $slider.addClass('slider');
     $slider.attr('type', 'range').attr('min', '1').attr('max', '100').attr('value', initOpacity).attr('id', 'atlas-opacity-slider');
     $slider.change(function () {
-      $$3('#atlas-leaflet-svg').css('opacity', $$3(this).val() / 100);
+      $$2('#atlas-leaflet-svg').css('opacity', $$2(this).val() / 100);
     });
   }
 
   function statusCheckbox($parent) {
     // Overall control container
-    var $container = $$3('<div>').appendTo($parent);
+    var $container = $$2('<div>').appendTo($parent);
     $container.addClass('atlas-status-checkbox-control'); // Status on/off toggle
 
-    var $checDiv = $$3('<div class="checkbox">').appendTo($container); //$checDiv.css('margin-top', '4.3em')
+    var $checDiv = $$2('<div class="checkbox">').appendTo($container); //$checDiv.css('margin-top', '4.3em')
 
-    $$3('<label><input type="checkbox" class="atlas-status-checkbox"/><span>Show status</span></label>').appendTo($checDiv);
-    $$3('.atlas-status-checkbox').change(function () {
-      showStatus = $$3(this).is(':checked');
+    $$2('<label><input type="checkbox" class="atlas-status-checkbox"/><span>Show status</span></label>').appendTo($checDiv);
+    $$2('.atlas-status-checkbox').change(function () {
+      showStatus = $$2(this).is(':checked');
       bsbiDataAccess.showStatus = showStatus;
       changeMap();
     });
@@ -2244,7 +2459,7 @@
 
   function statusControl($parent) {
     // Overall control container
-    var $container = $$3('<div>').appendTo($parent);
+    var $container = $$2('<div>').appendTo($parent);
     $container.addClass('atlas-period-slider-control');
     $container.hide(); // Period display
     // const $indicator = $('<div>').appendTo($container)
@@ -2253,26 +2468,26 @@
     // $indicator.text(periods[periods.length - 1].caption)
     // Slider
 
-    var $sliderContainer = $$3('<div>').appendTo($container);
+    var $sliderContainer = $$2('<div>').appendTo($container);
     $sliderContainer.addClass('slidecontainer');
-    var $slider = $$3('<input>').appendTo($sliderContainer);
+    var $slider = $$2('<input>').appendTo($sliderContainer);
     $slider.addClass('slider');
     $slider.attr('type', 'range').attr('min', '1').attr('max', periods.length).attr('id', 'atlas-range-select');
     $slider.change(function () {
-      atlasRangeIndex = $$3(this).val();
+      atlasRangeIndex = $$2(this).val();
       changeMap();
     });
-    var $scaleContainer = $$3('<div>').appendTo($sliderContainer);
+    var $scaleContainer = $$2('<div>').appendTo($sliderContainer);
     $scaleContainer.addClass('atlas-range-tick-container');
     $scaleContainer.css('margin-bottom', '4.3em');
     periods.forEach(function (p, i) {
-      var $tick = $$3('<span>').appendTo($scaleContainer);
+      var $tick = $$2('<span>').appendTo($scaleContainer);
       $tick.addClass('atlas-range-tick');
       var percent = i / (periods.length - 1) * 100;
       $tick.css('left', percent.toString() + '%');
       $tick.text('|');
       $tick.append('<br>');
-      var $tickText = $$3('<span>').appendTo($tick);
+      var $tickText = $$2('<span>').appendTo($tick);
       $tickText.addClass('atlas-range-tick-text');
       $tickText.html((p.min ? p.min : 'pre') + '<br>' + (p.max === 1929 ? 1930 : p.max)); //$tickText.html(p.min + '<br>' + p.max)
     }); // // Status on/off toggle
@@ -2288,25 +2503,25 @@
 
   function resolutionControl($parent, i) {
     // Overall control container
-    var $container = $$3('<div>').appendTo($parent);
+    var $container = $$2('<div>').appendTo($parent);
 
     function makeRadio(label, val, checked) {
-      var $div = $$3('<div>').appendTo($container);
+      var $div = $$2('<div>').appendTo($container);
       $div.attr('class', 'radio');
-      var $radio = $$3('<input>').appendTo($div);
+      var $radio = $$2('<input>').appendTo($div);
       $radio.attr('type', 'radio');
       $radio.attr('name', 'bsbi-resolution-' + i);
       $radio.attr('class', 'bsbi-resolution-' + val);
       $radio.attr('value', val);
       $radio.css('margin-left', 0);
       if (checked) $radio.prop('checked', true);
-      var $label = $$3('<label>').appendTo($div);
+      var $label = $$2('<label>').appendTo($div);
       $label.attr('for', 'bsbi-resolution-' + val);
       $label.text(label);
       $radio.change(function () {
-        resolution = $$3(this).val(); // Update controls mirrored in other blocks
+        resolution = $$2(this).val(); // Update controls mirrored in other blocks
 
-        $$3('.bsbi-resolution-' + resolution).prop("checked", true);
+        $$2('.bsbi-resolution-' + resolution).prop("checked", true);
         setControlState();
         changeMap();
       });
@@ -2318,7 +2533,7 @@
 
   function trendControl($parent) {
     // Overall control container
-    var $container = $$3('<div>').appendTo($parent);
+    var $container = $$2('<div>').appendTo($parent);
     $container.addClass('atlas-trend-slider-control');
     $container.hide(); // Trend display
     // const $indicator = $('<div>').appendTo($container)
@@ -2327,26 +2542,26 @@
     // $indicator.text(trends[trends.length - 1].caption)
     // Slider
 
-    var $sliderContainer = $$3('<div>').appendTo($container);
+    var $sliderContainer = $$2('<div>').appendTo($container);
     $sliderContainer.addClass('slidecontainer');
     $sliderContainer.addClass('atlas-trend-select-container');
-    var $slider = $$3('<input>').appendTo($sliderContainer);
+    var $slider = $$2('<input>').appendTo($sliderContainer);
     $slider.addClass('slider');
     $slider.attr('type', 'range').attr('min', '1').attr('max', trends.length).addClass('atlas-trend-select');
     $slider.change(function () {
-      atlasTrendIndex = $$3(this).val();
+      atlasTrendIndex = $$2(this).val();
       changeMap();
     });
-    var $scaleContainer = $$3('<div>').appendTo($sliderContainer);
+    var $scaleContainer = $$2('<div>').appendTo($sliderContainer);
     $scaleContainer.addClass('atlas-trend-tick-container');
     trends.forEach(function (p, i) {
-      var $tick = $$3('<span>').appendTo($scaleContainer);
+      var $tick = $$2('<span>').appendTo($scaleContainer);
       $tick.addClass('atlas-trend-tick');
       var percent = i / (trends.length - 1) * 100;
       $tick.css('left', percent.toString() + '%');
       $tick.text('|');
       $tick.append('<br>');
-      var $tickText = $$3('<span>').appendTo($tick);
+      var $tickText = $$2('<span>').appendTo($tick);
       $tickText.addClass('atlas-trend-tick-text');
       $tickText.addClass('atlas-trend-tick-text-' + i);
       $tickText.html(p.lower + '<br>v.<br>' + p.upper);
@@ -2366,19 +2581,19 @@
       val: 'BI4'
     }]; // Main type selector
 
-    var $sel = $$3('<select>').appendTo($parent);
+    var $sel = $$2('<select>').appendTo($parent);
     $sel.addClass('selectpicker');
     $sel.addClass('atlas-inset-control'); //$sel.addClass('atlas-backdrop-selector')
 
     $sel.attr('data-width', '100%');
     $sel.on('changed.bs.select', function () {
-      insetType = $$3(this).val();
+      insetType = $$2(this).val();
       staticMap.setTransform(insetType);
       setCookie('inset', insetType, 30);
       changeMap();
     });
     inserts.forEach(function (i) {
-      var $opt = i.selected ? $$3('<option>') : $$3('<option>');
+      var $opt = i.selected ? $$2('<option>') : $$2('<option>');
       $opt.attr('value', i.val);
       $opt.html(i.caption).appendTo($sel);
     });
@@ -2528,7 +2743,7 @@
       showVcs: boundaryType === 'vc',
       showCountries: boundaryType === 'country'
     });
-    $$3('#slippyAtlasMain').hide();
+    $$2('#slippyAtlasMain').hide();
   }
   function changeMap(retPromise) {
     var displayedMap;
@@ -2583,7 +2798,7 @@
     } // Initialise dot caption
 
 
-    $$3('#dotCaption').html(bsbiDataAccess.dotCaption);
+    $$2('#dotCaption').html(bsbiDataAccess.dotCaption);
   }
   function createMapControls(selector) {
     mapInterfaceToggle(mapControlRow(selector));
@@ -2596,14 +2811,14 @@
     gridStyleSelector(mapControlRow(selector));
     boundarySelector(mapControlRow(selector));
     opacitySlider(mapControlRow(selector));
-    $$3(selector).each(function (i) {
+    $$2(selector).each(function (i) {
       // We loop through the selection so that we can use the
       // index value to differentiate the equivalent controls
       // from different blocks. This is vital for radio controls
       // otherwise value can only be selected in one block and
       // therefore initialisation may be wrong.
       var sel = 'bsbi-atlas-map-controls-' + i;
-      var $div = $$3('<div>').appendTo($$3(this));
+      var $div = $$2('<div>').appendTo($$2(this));
       $div.addClass(sel);
       sel = '.' + sel; // Potentially we can also use this to ensure that selection
       // in one block is mirrored in the other. This is only important
@@ -2627,26 +2842,8 @@
   //   mapType = type
   // }
 
-  var $$2 = jQuery; // eslint-disable-line no-undef
-  function develTrendSummary(selector, changeSwatchColour) {
-    // Colours
-    var $colours = $$2('<div style="margin-top: 1em">').appendTo($$2(selector)); // No trend swatch base colour
-
-    var $divTrendSwatch = $$2('<div>').appendTo($colours);
-    $$2('<input type="text" style="width: 120px" id="trendSwatchColour">').appendTo($divTrendSwatch);
-    $$2('<label for="trendSwatchColour" style="margin-left: 1em">Trend summary colour</label>').appendTo($divTrendSwatch);
-    var trendSwatchColour = new JSColor('#trendSwatchColour', {
-      onChange: colourChange
-    });
-    trendSwatchColour.fromString('rgb(0,255,255)');
-
-    function colourChange() {
-      changeSwatchColour(trendSwatchColour.toRGBString());
-    }
-  }
-
   jQuery; // eslint-disable-line no-undef
-  function updateTrendSummary2(id, d, rgbColourString) {
+  function updateTrendSummary2(id, d) {
     setColour("".concat(id, "_decline_strong"), d.declineStrong);
     setColour("".concat(id, "_decline_mod"), d.declineMod);
     setColour("".concat(id, "_stable"), d.stable);
@@ -2654,13 +2851,17 @@
     setColour("".concat(id, "_increase_strong"), d.increaseStrong);
 
     function setColour(id, val) {
-      var baseColour = rgbColourString.substring(0, rgbColourString.length - 1).replace('rgb', 'rgba');
+      //const baseColour = rgbColourString.substring(0,rgbColourString.length-1).replace('rgb', 'rgba')
+      //d3.select(`#${id}`).attr('fill', `${baseColour},${Number(val)/100})`)
+      d3.select("#".concat(id)).attr('fill', "rgb(".concat(255 - 255 * Number(val) / 100, ",255,255)"));
       var grey = 220 - Math.floor(val / 100 * 220);
-      d3.select("#".concat(id)).attr('fill', "".concat(baseColour, ",").concat(Number(val) / 100, ")"));
       d3.select("#".concat(id, "-path")).attr('fill', "rgb(".concat(grey, ",").concat(grey, ",").concat(grey, ")"));
+      var title = d3.select("#".concat(id)).select('title').attr('data-title');
+      d3.select("#".concat(id)).select('title').text("".concat(title, ": ").concat(val, "%"));
+      d3.select("#".concat(id, "-path")).select('title').text("".concat(title, ": ").concat(val, "%"));
     }
   }
-  function trendSummary2(id) {
+  function trendSummary2(id, asCircle) {
     var svgArrow = "M 2250 7256 l 0 -2813 l -61 -7 c -34 -3 -526 -6 -1093 -6 l -1031 -1 l 66 -62 c 36 -34 756 -714 1600 -1512 c 844 -797 1820 -1719 2169 -2049 c 349 -329 667 -630 705 -668 l 70 -68 l 230 217 c 1454 1373 3719 3512 4012 3790 l 373 353 l -1090 0 l -1090 0 l 0 2820 l 0 2820 l -2430 0 l -2430 0 l 0 -2814 z";
     var svgSquare = "M 5 3968 c -3 -7 -4 -897 -3 -1978 l 3 -1965 l 2080 0 l 2080 0 l 0 1975 l 0 1975 l -2078 3 c -1657 2 -2079 0 -2082 -10 z";
     var ss = 25;
@@ -2703,19 +2904,25 @@
     }]; // Graphic
 
     var divParent = d3.select("#".concat(id));
-    var svg = divParent.append('svg').attr('width', ss * 5).attr('height', ss).style('overflow', 'visible'); // Swatches
+    var svg = divParent.append('svg').attr('width', ss * 5).attr('height', ss) //.attr('stroke', asCircle ? 'none' : 'grey')
+    .style('overflow', 'visible').style('vertical-align', 'bottom');
+
+    if (!asCircle) {
+      svg.append('rect').attr('width', ss * 5).attr('height', ss).attr('stroke', 'grey').attr('fill', 'none').style('vertical-align', 'bottom');
+    } // Swatches
+
 
     swatches.forEach(function (s, i) {
-      // const indicator = svg.append('rect')
-      //   .attr('id', s.id)
-      //   .attr('width', ss)
-      //   .attr('height', ss)
-      //   .attr('x', i * ss)
-      //   .attr('stroke', 'grey')
-      //   .attr('fill', 'white')
-      //   .style('stroke-dasharray', s.da.toString())
-      var indicator = svg.append('circle').attr('id', s.id).attr('r', sr / 2).attr('cx', i * ss + ss / 2).attr('cy', ss / 2).attr('stroke', 'grey').attr('fill', 'white').attr('clip-path', 'circle()');
-      indicator.append('title').text(s.text);
+      var indicator;
+
+      if (asCircle) {
+        indicator = svg.append('circle').attr('id', s.id).attr('r', sr / 2).attr('cx', i * ss + ss / 2).attr('cy', ss / 2).attr('stroke', 'grey').attr('fill', 'white').attr('clip-path', 'circle()');
+      } else {
+        indicator = svg.append('rect').attr('id', s.id).attr('width', ss).attr('height', ss).attr('x', i * ss).attr('fill', 'white'); //.attr('stroke', 'grey')
+        //.style('stroke-dasharray', s.da.toString())
+      }
+
+      indicator.append('title').attr('data-title', s.text).text(s.text);
 
       if (s.svg) {
         var path = svg.append('path').attr('d', s.svg).style('visibility', 'hidden');
@@ -3387,7 +3594,7 @@
               pGb = new Promise(function (resolve) {
                 d3.csv(trendGb).then(function (d) {
                   trendSummary2('bsbi-trend-summary-gb');
-                  updateTrendSummary2('bsbi-trend-summary-gb', d[0], 'rgb(0,255,255)');
+                  updateTrendSummary2('bsbi-trend-summary-gb', d[0]);
                 })["catch"](function () {//console.log('Error reading trend summary file', trendGb)
                 })["finally"](function () {
                   resolve('');
@@ -3396,7 +3603,7 @@
               pIr = new Promise(function (resolve) {
                 d3.csv(trendIr).then(function (d) {
                   trendSummary2('bsbi-trend-summary-ir');
-                  updateTrendSummary2('bsbi-trend-summary-ir', d[0], 'rgb(0,255,255)');
+                  updateTrendSummary2('bsbi-trend-summary-ir', d[0]);
                 })["catch"](function () {//console.log('Error reading trend summary file', trendIr)
                 })["finally"](function () {
                   resolve('');
@@ -3520,8 +3727,8 @@
   var $ = jQuery; // eslint-disable-line no-undef
 
   var ds = drupalSettings; // eslint-disable-line no-undef
+  //let develSummaryTrendColour = 'rgb(0,255,255)'
 
-  var develSummaryTrendColour = 'rgb(0,255,255)';
   function main() {
     var taxaList = [];
     var currentTaxon = {
@@ -3552,12 +3759,11 @@
         mainAtlasContent(); // Devel block
         //develChangeMapColours('#bsbi-atlas-development', changeMap)
         //develMainMapStyles('#bsbi-atlas-development', changeMap)
-
-        develTrendSummary('#bsbi-atlas-development', function (colour) {
-          console.log(colour);
-          develSummaryTrendColour = colour;
-          changeCaption();
-        });
+        // develTrendSummary('#bsbi-atlas-development', (colour) => {
+        //   console.log(colour)
+        //   develSummaryTrendColour = colour
+        //   changeCaption()
+        // })
       }
     });
 
@@ -3578,6 +3784,11 @@
         id: 'gallery',
         title: 'Gallery',
         fn: sectionGallery
+      }, {
+        group: null,
+        id: 'trends',
+        title: 'Trends',
+        fn: sectionTrends
       }, {
         group: 'CHARACTERISTICS',
         id: 'ecology',
@@ -3608,7 +3819,9 @@
       var selected = 'summary'; // Clear current content (including dialog boxes from SVG maps)
 
       $('.brc-atlas-map-opts').remove();
-      $('#bsbi-atlas-gui').html(null); // Make the section tabs
+      $('#bsbi-atlas-gui').html(null); // Other inits
+
+      $('.bsbi-atlas-trend-controls').hide(); // Make the section tabs
 
       var $ul = $('<ul class="nav nav-tabs"></ul>').appendTo($('#bsbi-atlas-gui'));
       sections.forEach(function (s) {
@@ -3637,14 +3850,25 @@
         if (target === '#bsbi-atlas-section-summary') {
           $('.bsbi-atlas-map-controls').show(); // Regenerate map (to deal with bad legend display if map hidden when created)
 
-          changeMap();
+          changeMap(); // Regenerate summary trends because they will not be correctly displayed
+          // if hidden when created
+
+          updateSummaryTrends();
         } else {
           $('.bsbi-atlas-map-controls').hide();
         }
 
         if (target === '#bsbi-atlas-section-ecology') {
-          // Regenerate graphics (to deal with bad legend display if map hidden when created)
+          // Regenerate graphics
           changeEcologyTab();
+        }
+
+        if (target === '#bsbi-atlas-section-trends') {
+          $('.bsbi-atlas-trend-controls').show(); // Regenerate graphics
+
+          changeTrendsTab();
+        } else {
+          $('.bsbi-atlas-trend-controls').hide();
         }
 
         if (target === '#bsbi-atlas-section-gallery') {
@@ -3738,6 +3962,7 @@
             changeCaption(); //Also changes taxon name display in sections
 
             changeEcologyTab();
+            changeTrendsTab();
             createGallery('bsbi-gallery', currentTaxon.identifier);
           }
         }); // If identifier passed in URL, set the value and add to history
@@ -3838,6 +4063,13 @@
       setControlState();
     }
 
+    function sectionTrends(id) {
+      var $sect = $('#bsbi-atlas-section-' + id);
+      $sect.append('<div id="bsbi-trends"></div>');
+      createTrends("#bsbi-trends");
+      createTrendControls('.bsbi-atlas-trend-controls');
+    }
+
     function sectionEcology(id) {
       var $sect = $('#bsbi-atlas-section-' + id);
       $sect.append('<div id="bsbi-phenology"></div>');
@@ -3872,6 +4104,53 @@
 
     function changeEcologyTab() {
       changeEcology(ds.bsbi_atlas.dataRoot, currentTaxon.identifier);
+    }
+
+    function changeTrendsTab() {
+      changeTrends(currentTaxon);
+    }
+
+    function updateSummaryTrends() {
+      if (!currentTaxon.identifier) return;
+      var trendRoot = ds.bsbi_atlas.dataRoot + 'bsbi/trends/long/trends-summaries';
+      var trendGb = "".concat(trendRoot, "/Britain/").concat(currentTaxon.identifier.replace(/\./g, "_"), ".csv?prevent-cache=").concat(pcache);
+      var trendIr = "".concat(trendRoot, "/Ireland/").concat(currentTaxon.identifier.replace(/\./g, "_"), ".csv?prevent-cache=").concat(pcache);
+      var $trends = $('#trend-summaries');
+      $trends.html('');
+      $trends.css('font-weight', 'bold');
+      $('<div>').text('Post-1930 effort-adjusted 10 km trends').appendTo($trends);
+      var $table = $('<table>').appendTo($trends);
+      var pTrendGb = d3__namespace.csv(trendGb).then(function (d) {
+        //$gbTrend.show()
+        var $tr = $('<tr>').appendTo($table);
+        $('<td>').appendTo($tr).text('Britain:');
+        $('<td>').attr('id', 'trend-sum-gb2').css('padding', '0.3em 0 0.3em 0.3em').appendTo($tr);
+        trendSummary2('trend-sum-gb2'); //updateTrendSummary2('trend-sum-gb2', d[0], develSummaryTrendColour)
+
+        updateTrendSummary2('trend-sum-gb2', d[0]);
+        $('#trend-sum-gb2').show();
+      });
+      var pTrendIr = d3__namespace.csv(trendIr).then(function (d) {
+        //$irTrend.show()
+        var $tr = $('<tr>').appendTo($table);
+        $('<td>').appendTo($tr).text('Ireland:');
+        $('<td>').attr('id', 'trend-sum-ir2').css('padding', '0.3em 0 0.3em 0.3em').appendTo($tr);
+        trendSummary2('trend-sum-ir2', true); //updateTrendSummary2('trend-sum-ir2', d[0], develSummaryTrendColour)
+
+        updateTrendSummary2('trend-sum-ir2', d[0]);
+        $('#trend-sum-ir2').show();
+      });
+      Promise.allSettled([pTrendGb, pTrendIr]).then(function (p) {
+        if (p[0].status === 'rejected') ;
+
+        if (p[1].status === 'rejected') ;
+
+        if (p[0].status === 'rejected' && p[1].status === 'rejected') {
+          $trends.hide();
+        } else {
+          $trends.show();
+        }
+      });
     }
 
     function changeCaption() {
@@ -3937,33 +4216,8 @@
 
         if (d[0].atlasSpeciesTrends) {
           $caption.append('<h4>Trends</h4>');
-          var $gbTrend = $('<div>').attr('id', 'trend-sum-gb2');
-          $gbTrend.hide();
-          $gbTrend.appendTo($caption);
-          var $irTrend = $('<div>').attr('id', 'trend-sum-ir2');
-          $irTrend.hide();
-          $irTrend.appendTo($caption);
-          var trendRoot = ds.bsbi_atlas.dataRoot + 'bsbi/trends/long/trends-summaries';
-          var trendGb = "".concat(trendRoot, "/Britain/").concat(currentTaxon.identifier.replace(/\./g, "_"), ".csv?prevent-cache=").concat(pcache);
-          var trendIr = "".concat(trendRoot, "/Ireland/").concat(currentTaxon.identifier.replace(/\./g, "_"), ".csv?prevent-cache=").concat(pcache);
-          d3__namespace.csv(trendGb).then(function (d) {
-            $('<div>').text('Britain Post-1930 10 km modelled trend').appendTo($gbTrend);
-            $gbTrend.show();
-            trendSummary2('trend-sum-gb2');
-            updateTrendSummary2('trend-sum-gb2', d[0], develSummaryTrendColour);
-            $('#trend-sum-gb2').show();
-          })["catch"](function () {
-            console.log('Error reading trend summary file', trendGb);
-          });
-          d3__namespace.csv(trendIr).then(function (d) {
-            $('<div>').text('Ireland Post-1930 10 km modelled trend').appendTo($irTrend);
-            $irTrend.show();
-            trendSummary2('trend-sum-ir2');
-            updateTrendSummary2('trend-sum-ir2', d[0], develSummaryTrendColour);
-            $('#trend-sum-ir2').show();
-          })["catch"](function () {
-            console.log('Error reading trend summary file', trendIr);
-          }); // Text
+          $('<div>').attr('id', 'trend-summaries').appendTo($caption);
+          updateSummaryTrends(); // Text
 
           $p = $('<p>').appendTo($caption);
           $p.append(postProcessCaptionText(d[0].atlasSpeciesTrends));

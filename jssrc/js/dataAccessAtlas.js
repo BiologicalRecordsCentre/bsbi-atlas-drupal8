@@ -381,10 +381,10 @@ function distAllClasses(identifier) {
   const legendText = {
     "pre-1970": "pre-1970",
     "to 1929": "pre-1930",
-    "1930 - 1969": "1930-69",
-    "1970 - 1986": "1970-86",
-    "1987 - 1999": "1987-99",
-    "2000 - 2019": "2000-19"
+    "1930 - 1969": "1930–69",
+    "1970 - 1986": "1970–86",
+    "1987 - 1999": "1987–99",
+    "2000 - 2019": "2000–19"
   }
 
   const opacities = {
@@ -664,7 +664,7 @@ function distAllClassesMonad(identifier) {
 }
 
 function getPeriodText(p) {
-  return p === "to 1929" ? "pre-1930" : p.replace(" - ", "-")
+  return p === "to 1929" ? "pre-1930" : p.replace(" - ", "–")
 }
 
 function nativeSpeciesStatus(identifier, period) {
@@ -760,13 +760,13 @@ function nativeSpeciesStatus(identifier, period) {
 }
 
 bsbiDataAccess.change_1987_1999_vs_2000_2019 = function(identifier) {
-  return change(identifier, ['1987 - 1999'], ['2000 - 2009', '2010 - 2019'], 'Change from 1987-1999 to 2000-2019')
+  return change(identifier, ['1987 - 1999'], ['2000 - 2009', '2010 - 2019'], 'Change from 1987–1999 to 2000–2019')
 }
 
 bsbiDataAccess.change_1930_1969_vs_2000_2019 = function(identifier) {
-  //return change(identifier, ['1930 - 1949', '1950 - 1969'], ['2000 - 2009', '2010 - 2019'], 'Change from 1930-1969 to 2000-2019')
-  //return change(identifier, ['to 1929', '1930 - 1969'], ['2000 - 2009', '2010 - 2019'], 'Change from 1930-1969 to 2000-2019')
-  return change(identifier, ['1930 - 1969'], ['2000 - 2009', '2010 - 2019'], 'Change from 1930-1969 to 2000-2019')
+  //return change(identifier, ['1930 - 1949', '1950 - 1969'], ['2000 - 2009', '2010 - 2019'], 'Change from 1930–1969 to 2000–2019')
+  //return change(identifier, ['to 1929', '1930 - 1969'], ['2000 - 2009', '2010 - 2019'], 'Change from 1930–1969 to 2000–2019')
+  return change(identifier, ['1930 - 1969'], ['2000 - 2009', '2010 - 2019'], 'Change from 1930–1969 to 2000–2019')
 }
 
 function change(identifier, early, late, legendTitle) {
@@ -877,19 +877,19 @@ bsbiDataAccess.bsbiHectadDateTetFreq = function(identifier) {
           precision: 10000,
           opacity: 1,
           lines: [{
-            text: '1-5',
+            text: '1–5',
             size: Math.sqrt(5)/5 * legendSizeFact,
           }, {
-            text: '6-10',
+            text: '6–10',
             size: Math.sqrt(10)/5 * legendSizeFact,
           },{
-            text: '11-15',
+            text: '11–15',
             size: Math.sqrt(15)/5 * legendSizeFact,
           }, {
-            text: '16-20',
+            text: '16–20',
             size: Math.sqrt(20)/5 * legendSizeFact,
           }, {
-            text: '21-25',
+            text: '21–25',
             size: Math.sqrt(25)/5 * legendSizeFact,
           }]
         }

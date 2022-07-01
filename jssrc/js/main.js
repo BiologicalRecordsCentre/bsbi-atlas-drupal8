@@ -3,18 +3,19 @@ import * as d3 from 'd3'
 import { bsbiDataAccess } from './dataAccessAtlas'
 import { setBaseMetaTags, addMetaTags } from './metaTags'
 import { createEcology, changeEcology } from './ecology'
+import { createTrends, changeTrends, createTrendControls } from './trends'
 import { createGallery } from './gallery'
 import { copyToClipboard,  getCitation } from './utils'
 import { mapSetCurrentTaxon, createMaps, changeMap, createMapControls, setControlState, updateBsbiDataAccess} from './mapping'
-import { develTrendSummary } from './devel'
+//import { develTrendSummary } from './devel'
 import { downloadPage } from './download'
-import { trendSummary, updateTrendSummary } from './trendSummary'
+import { updateTrendSummary2, trendSummary2 } from './trendSummary'
 import { pcache } from './gen'
 
 const $ = jQuery // eslint-disable-line no-undef
 const ds = drupalSettings // eslint-disable-line no-undef
 
-let develSummaryTrendColour = 'rgb(255,0,0)'
+//let develSummaryTrendColour = 'rgb(0,255,255)'
 
 export function main() {
 
@@ -55,11 +56,11 @@ export function main() {
       // Devel block
       //develChangeMapColours('#bsbi-atlas-development', changeMap)
       //develMainMapStyles('#bsbi-atlas-development', changeMap)
-      develTrendSummary('#bsbi-atlas-development', (colour) => {
-        console.log(colour)
-        develSummaryTrendColour = colour
-        changeCaption()
-      })
+      // develTrendSummary('#bsbi-atlas-development', (colour) => {
+      //   console.log(colour)
+      //   develSummaryTrendColour = colour
+      //   changeCaption()
+      // })
     }
   })
 
@@ -85,6 +86,12 @@ export function main() {
         id: 'gallery',
         title: 'Gallery',
         fn: sectionGallery,
+      },
+      {
+        group: null,
+        id: 'trends',
+        title: 'Trends',
+        fn: sectionTrends,
       },
       {
         group: 'CHARACTERISTICS',
@@ -124,6 +131,9 @@ export function main() {
     $('.brc-atlas-map-opts').remove()
     $('#bsbi-atlas-gui').html(null)
 
+    // Other inits
+    $('.bsbi-atlas-trend-controls').hide()
+
     // Make the section tabs
     const $ul = $('<ul class="nav nav-tabs"></ul>').appendTo($('#bsbi-atlas-gui'))
     sections.forEach(function(s){
@@ -157,13 +167,24 @@ export function main() {
         $('.bsbi-atlas-map-controls').show()
         // Regenerate map (to deal with bad legend display if map hidden when created)
         changeMap()
+        // Regenerate summary trends because they will not be correctly displayed
+        // if hidden when created
+        updateSummaryTrends()
       } else {
         $('.bsbi-atlas-map-controls').hide()
       }
 
       if (target === '#bsbi-atlas-section-ecology') {
-        // Regenerate graphics (to deal with bad legend display if map hidden when created)
+        // Regenerate graphics
         changeEcologyTab()
+      }
+
+      if (target === '#bsbi-atlas-section-trends') {
+        $('.bsbi-atlas-trend-controls').show()
+        // Regenerate graphics
+        changeTrendsTab()
+      } else {
+        $('.bsbi-atlas-trend-controls').hide()
       }
 
       if (target === '#bsbi-atlas-section-gallery') {
@@ -268,6 +289,7 @@ export function main() {
           changeMap()
           changeCaption() //Also changes taxon name display in sections
           changeEcologyTab()
+          changeTrendsTab()
           createGallery('bsbi-gallery', currentTaxon.identifier)
         }
       })
@@ -369,6 +391,14 @@ export function main() {
     setControlState()
   }
 
+  function sectionTrends(id) {
+    const $sect = $('#bsbi-atlas-section-' + id)
+    $sect.append('<div id="bsbi-trends"></div>')
+
+    createTrends("#bsbi-trends")
+    createTrendControls('.bsbi-atlas-trend-controls')
+  }
+
   function sectionEcology(id) {
     const $sect = $('#bsbi-atlas-section-' + id)
     $sect.append('<div id="bsbi-phenology"></div>')
@@ -380,7 +410,7 @@ export function main() {
     const $sect = $('#bsbi-atlas-section-' + id)
     $sect.append('<div id="bsbi-gallery" class="inline-gallery-container"></div>')
     const $copyright = $('<div id="bsbi-gallery-copyright"></div>').appendTo($sect)
-    $copyright.text("TODO - Copyright text to acknowledge Rob Still and Chris Gibson")
+    $copyright.text("Copyright Rob Still/Chris Gibson")
     $('#bsbi-gallery-copyright').hide()
   }
 
@@ -409,6 +439,64 @@ export function main() {
   function changeEcologyTab() {
    
     changeEcology(ds.bsbi_atlas.dataRoot, currentTaxon.identifier)
+  }
+
+  function changeTrendsTab() {
+    changeTrends(currentTaxon)
+  }
+
+  function updateSummaryTrends() {
+
+    if (!currentTaxon.identifier) return
+
+    const trendRoot = ds.bsbi_atlas.dataRoot + 'bsbi/trends/long/trends-summaries'
+    const trendGb = `${trendRoot}/Britain/${currentTaxon.identifier.replace(/\./g, "_")}.csv?prevent-cache=${pcache}`
+    const trendIr = `${trendRoot}/Ireland/${currentTaxon.identifier.replace(/\./g, "_")}.csv?prevent-cache=${pcache}`
+
+    const $trends = $('#trend-summaries')
+    $trends.html('')
+    $trends.css('font-weight', 'bold')
+    $('<div>').text('Post-1930 effort-adjusted 10 km trends').appendTo($trends)
+    const $table = $('<table>').appendTo($trends)
+    
+    const pTrendGb = d3.csv(trendGb)
+      .then(function(d) {
+        //$gbTrend.show()
+        const $tr = $('<tr>').appendTo($table)
+        $('<td>').appendTo($tr).text('Britain:')
+        $('<td>').attr('id', 'trend-sum-gb2').css('padding', '0.3em 0 0.3em 0.3em').appendTo($tr)
+        trendSummary2('trend-sum-gb2')
+        //updateTrendSummary2('trend-sum-gb2', d[0], develSummaryTrendColour)
+        updateTrendSummary2('trend-sum-gb2', d[0])
+        $('#trend-sum-gb2').show()
+    })
+
+    const pTrendIr = d3.csv(trendIr)
+      .then(function(d) {
+        //$irTrend.show()
+        const $tr = $('<tr>').appendTo($table)
+        $('<td>').appendTo($tr).text('Ireland:')
+        $('<td>').attr('id', 'trend-sum-ir2').css('padding', '0.3em 0 0.3em 0.3em').appendTo($tr)
+        trendSummary2('trend-sum-ir2', true)
+        //updateTrendSummary2('trend-sum-ir2', d[0], develSummaryTrendColour)
+        updateTrendSummary2('trend-sum-ir2', d[0])
+        $('#trend-sum-ir2').show()
+    })
+
+    Promise.allSettled([pTrendGb, pTrendIr]).then(p => {
+
+      if (p[0].status === 'rejected') {
+        //console.log('Error reading trend summary file', trendGb)
+      }
+      if (p[1].status === 'rejected') {
+        //console.log('Error reading trend summary file', trendIr)
+      }
+      if (p[0].status === 'rejected' && p[1].status === 'rejected') {
+        $trends.hide()
+      } else {
+        $trends.show()
+      }
+    })
   }
 
   function changeCaption() {
@@ -473,36 +561,11 @@ export function main() {
         // Trends
         if (d[0].atlasSpeciesTrends) {
           $caption.append('<h4>Trends</h4>')
-         
-          // Graphic
-          $('<div>').text('Summary Great Britain').appendTo($caption)
-          const $graphicGb = trendSummary('trend-sum-gb')
-          $graphicGb.appendTo($caption)
-          $('<div>').text('Summary Ireland').appendTo($caption)
-          const $graphicIr = trendSummary('trend-sum-ir')
-          $graphicIr.appendTo($caption)
 
-          const trendRoot = ds.bsbi_atlas.dataRoot + 'bsbi/trends/long/trends-summaries'
-          const trendGb = `${trendRoot}/Britain/${currentTaxon.identifier.replace(/\./g, "_")}.csv?prevent-cache=${pcache}`
-          const trendIr = `${trendRoot}/Ireland/${currentTaxon.identifier.replace(/\./g, "_")}.csv?prevent-cache=${pcache}`
-          
-          d3.csv(trendGb)
-            .then(function(d) {
-              console.log(d[0])
-              updateTrendSummary('trend-sum-gb', d[0], develSummaryTrendColour)
-          }).catch(function(){
-            console.log('Error reading trend summary file', trendGb)
-          })
+          $('<div>').attr('id', 'trend-summaries').appendTo($caption)
 
-          d3.csv(trendIr)
-            .then(function(d) {
-              console.log(d[0])
-              updateTrendSummary('trend-sum-ir', d[0], develSummaryTrendColour)
-          }).catch(function(){
-            console.log('Error reading trend summary file', trendGb)
-          })
+          updateSummaryTrends()
 
-          
           // Text
           $p = $('<p>').appendTo($caption)
           $p.append(postProcessCaptionText(d[0].atlasSpeciesTrends))
