@@ -458,13 +458,13 @@ export function main() {
     $trends.css('font-weight', 'bold')
     $('<div>').text('Post-1930 effort-adjusted 10 km trends').appendTo($trends)
     const $table = $('<table>').appendTo($trends)
+    const $trBritain = $('<tr>').appendTo($table)
+    const $trIreland = $('<tr>').appendTo($table)
     
     const pTrendGb = d3.csv(trendGb)
       .then(function(d) {
-        //$gbTrend.show()
-        const $tr = $('<tr>').appendTo($table)
-        $('<td>').appendTo($tr).text('Britain:')
-        $('<td>').attr('id', 'trend-sum-gb2').css('padding', '0.3em 0 0.3em 0.3em').appendTo($tr)
+        $('<td>').appendTo($trBritain).text('Britain:')
+        $('<td>').attr('id', 'trend-sum-gb2').css('padding', '0.3em 0 0.3em 0.3em').appendTo($trBritain)
         trendSummary2('trend-sum-gb2')
         //updateTrendSummary2('trend-sum-gb2', d[0], develSummaryTrendColour)
         updateTrendSummary2('trend-sum-gb2', d[0])
@@ -473,11 +473,9 @@ export function main() {
 
     const pTrendIr = d3.csv(trendIr)
       .then(function(d) {
-        //$irTrend.show()
-        const $tr = $('<tr>').appendTo($table)
-        $('<td>').appendTo($tr).text('Ireland:')
-        $('<td>').attr('id', 'trend-sum-ir2').css('padding', '0.3em 0 0.3em 0.3em').appendTo($tr)
-        trendSummary2('trend-sum-ir2', true)
+        $('<td>').appendTo($trIreland).text('Ireland:')
+        $('<td>').attr('id', 'trend-sum-ir2').css('padding', '0.3em 0 0.3em 0.3em').appendTo($trIreland)
+        trendSummary2('trend-sum-ir2')
         //updateTrendSummary2('trend-sum-ir2', d[0], develSummaryTrendColour)
         updateTrendSummary2('trend-sum-ir2', d[0])
         $('#trend-sum-ir2').show()
@@ -521,7 +519,9 @@ export function main() {
           $p = $('<p>').appendTo($caption)
           $p.append(postProcessCaptionText(d[0].atlasSpeciesDescription))
           $p = $('<p>').appendTo($caption)
-          $p.append('TODO - overall status')
+
+          let status = d[0].overallStatus
+          $p.append(`${status.charAt(0).toUpperCase()}${status.slice(1)}.`)
         }
 
         // Taxa covered

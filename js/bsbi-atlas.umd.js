@@ -1044,7 +1044,7 @@
     }
   }
 
-  var pcache = '20062022x1';
+  var pcache = '20220704-9';
 
   var $$5 = jQuery; // eslint-disable-line no-undef
 
@@ -1152,27 +1152,27 @@
         min: 1,
         max: 10,
         radius: 11,
-        legend: '1-10%'
+        legend: '1–10%'
       }, {
         min: 10.00001,
         max: 30,
         radius: 14,
-        legend: '11-30%'
+        legend: '11–30%'
       }, {
         min: 30.00001,
         max: 40,
         radius: 16,
-        legend: '31-40%'
+        legend: '31–40%'
       }, {
         min: 40.00001,
         max: 50,
         radius: 18,
-        legend: '41-50%'
+        legend: '41–50%'
       }, {
         min: 50.00001,
         max: 100,
         radius: 20,
-        legend: '51-100%'
+        legend: '51–100%'
       }],
       taxa: ['dummy'],
       width: 600,
@@ -1577,27 +1577,44 @@
 
   var ds$4 = drupalSettings; // eslint-disable-line no-undef
 
-  var gam, linmod;
+  var gam, linmod, bar;
+  var $gamNoData, $linmodNoData, $barNoData;
   var regionType = getCookie('trend-region') ? getCookie('trend-region') : 'Britain';
   var termType = getCookie('trend-term') ? getCookie('trend-term') : 'long';
+  var scaleType = getCookie('trend-scale') ? getCookie('trend-scale') : 'within';
   var currentTaxon$2;
   function createTrends(sel) {
-    $$4('<h4>').appendTo($$4(sel)).text('Population trends');
+    $$4('<h4>').appendTo($$4(sel)).text('Effort-adjusted 10 km distribution trends');
+    var $trends1 = $$4('<div>').appendTo($$4(sel));
+    $trends1.attr('class', 'phenRow');
+    var $trends2 = $$4('<div>').appendTo($$4(sel));
+    $trends2.attr('class', 'phenRow');
     var $p1 = $$4('<p>').appendTo($$4(sel));
-    $p1.text("Explanation of trends charts. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque blandit dui vel mauris maximus interdum. Aliquam orci eros, venenatis vel purus nec, venenatis congue leo. Pellentesque rhoncus metus eros, tincidunt congue massa volutpat facilisis. Curabitur pellentesque turpis velit, quis ornare mauris ullamcorper a.");
-    var $trends = $$4('<div>').appendTo($$4(sel));
-    $trends.css('display', 'flex');
-    var $gam = $$4('<div>').appendTo($trends);
-    $gam.css('flex', '1');
-    $gam.attr('id', 'bsbi-gam-chart').css('max-width', '400px');
+    $p1.html("\n  The trends above rely on the frequency scaling using local occupancy (\u201CFrescalo\u201D) approach of Hill (2012). \n  The method was designed to adjust for locally variable recording effort across time periods, \n  and has been used on many distribution datasets (Pescott et al., 2019). Here, we apply \n  Frescalo to vascular plant data gridded at the 10 km scale within the following time \n  periods: 1930\u201369; 1987\u201399; 2000\u201309; 2010\u201319. These are a subset of the \u201Cdate-classes\u201D used \n  by the BSBI to organise their data, and roughly designate multi-year periods within which \n  specific national recording projects occurred (Preston et al., 2002).\n  ");
+    var $p2 = $$4('<p>').appendTo($$4(sel));
+    $p2.html("\n  Outputs from the Frescalo model include per taxon/time period estimates of mean relative occupancy and \n  their standard deviations. Below, we plot these estimates (filled white circles with black lines) \n  in Figures 1 and 2, along with a GAM smoother (Fig. 1) and a Monte Carlo-based 100-member set of \n  linear regressions compatible with these (Fig. 2). The trend magnitude frequency chart in Figure \n  3 is based on discretising the compatible linear trend set displayed in Figure 2, in order to \n  more clearly display the model-based uncertainty associated with the Frescalo outputs. \n  Pescott et al. (2022) describe the rationale for this in more detail. Finally, Figure 4 \u2026 [TO BE COMPLETED].\n  ");
+    var $p3 = $$4('<p>').appendTo($$4(sel));
+    $p3.html("\n  [NEW PARAGRAPH: OTHER TEXT ABOUT DECISIONS WITH REGARDS TO INCLUDING AND EXCLUDING SPECIES IN MODELLING AND/OR DISPLAY]\n  ");
+    $$4('<h4>').appendTo($$4(sel)).text('References');
+    var $ref;
+    $ref = $$4('<p>').appendTo($$4(sel));
+    $ref.html("\n  Hill, M.O. 2012. Local frequency as a key to interpreting species occurrence data when recording effort is not known. \n  <i>Methods in Ecology and Evolution</i> 3, 195\u2013205.\n  ");
+    $ref = $$4('<p>').appendTo($$4(sel));
+    $ref.html("\n  Pescott, O.L., Humphrey, T.A., Stroh, P.A., Walker, K.J. 2019. Temporal changes in distributions and the species \n  atlas: How can British and Irish plant data shoulder the inferential burden? <i>British & Irish Botany</i> 1, 250\u2013282. \n  <a href=\"https://doi.org/10.33928/bib.2019.01.250\" target=\"_blank\">https://doi.org/10.33928/bib.2019.01.250</a>\n  ");
+    $ref = $$4('<p>').appendTo($$4(sel));
+    $ref.html("\n  Pescott, O.L., Stroh, P.A., Humphrey, T.A. and Walker, K.J. 2022. Simple methods for improving the communication \n  of uncertainty in species\u2019 temporal trends. <i>Ecological Indicators</i>, 141, 109117. \n  <a href=\"https://doi.org/10.1016/j.ecolind.2022.109117\" target=\"_blank\">https://doi.org/10.1016/j.ecolind.2022.109117</a>\n  ");
+    $ref = $$4('<p>').appendTo($$4(sel));
+    $ref.html("\n  Preston, C.D., Pearman, D.A., Dines, T.D. (Eds.) 2002. <i>New Atlas of the British and Irish Flora</i>. Oxford University \n  Press, Oxford, England.\n  ");
+    var $gam = $$4('<div>').appendTo($trends1);
+    $gam.attr('id', 'bsbi-gam-chart').attr('class', 'phenColumn').css('max-width', '400px').css('position', 'relative').text('Figure 1');
     gam = brccharts.trend2({
       selector: '#bsbi-gam-chart',
       data: [],
       means: [],
       yearMin: 1947,
       yearMax: 2022,
-      width: 400,
-      height: 280,
+      width: 350,
+      height: 250,
       margin: {
         left: 50,
         right: 10,
@@ -1623,17 +1640,18 @@
         sdStroke: 'black'
       }
     });
-    var $linmod = $$4('<div>').appendTo($trends);
-    $linmod.css('flex', '1');
-    $linmod.attr('id', 'bsbi-linmod-chart').css('max-width', '400px');
+    $gamNoData = $$4('<div>').appendTo($gam);
+    $gamNoData.text('No trend available for this combination').css('position', 'absolute').css('margin', '3em').css('top', '0px').css('left', '50px').css('display', 'none');
+    var $linmod = $$4('<div>').appendTo($trends1);
+    $linmod.attr('id', 'bsbi-linmod-chart').attr('class', 'phenColumn').css('max-width', '400px').css('position', 'relative').text('Figure 2');
     linmod = brccharts.trend3({
       selector: '#bsbi-linmod-chart',
       data: [],
       means: [],
       yearMin: 1947,
       yearMax: 2022,
-      width: 400,
-      height: 280,
+      width: 350,
+      height: 250,
       margin: {
         left: 50,
         right: 10,
@@ -1657,23 +1675,103 @@
         sdStroke: 'black'
       }
     });
+    $linmodNoData = $$4('<div>').appendTo($linmod);
+    $linmodNoData.text('No trend available for this combination').css('position', 'absolute').css('margin', '3em').css('top', '0px').css('left', '50px').css('display', 'none'); // Trend overview
+
+    var $bar = $$4('<div>').appendTo($trends2);
+    $bar.attr('id', 'bsbi-bar-chart').attr('class', 'phenColumn').css('max-width', '400px').css('position', 'relative').text('Figure 3');
+    bar = brccharts.bar({
+      selector: '#bsbi-bar-chart',
+      data: [],
+      width: 350,
+      height: 250,
+      padding: 0.1,
+      margin: {
+        left: 50,
+        right: 10,
+        top: 10,
+        bottom: 85
+      },
+      expand: true,
+      axisLeft: 'tick',
+      axisBottom: 'tick',
+      axisRight: 'none',
+      axisTop: 'none',
+      //axisLeftLabel: 'Relative index',
+      labelPosition: {
+        'text-anchor': 'end',
+        dx: '-1em',
+        dy: '0.2em',
+        transform: 'rotate(-55)'
+      }
+    });
+    $barNoData = $$4('<div>').appendTo($bar);
+    $barNoData.text('No trend available for this combination').css('position', 'absolute').css('margin', '3em').css('top', '0px').css('left', '50px').css('display', 'none'); // 4th chart - placeholder
+
+    var $ph = $$4('<div>').appendTo($trends2);
+    $ph.attr('id', 'bsbi-ph-chart').attr('class', 'phenColumn').css('max-width', '400px').css('position', 'relative').text('Figure 4');
+    var svgPh = d3__namespace.select('#bsbi-ph-chart').append('svg');
+    svgPh.attr("viewBox", "0 0 350 250");
   }
   function changeTrends(taxon) {
     if (taxon) {
       currentTaxon$2 = taxon;
     }
 
-    if (!currentTaxon$2) return;
+    if (!currentTaxon$2.identifier) return; //scaleType
+
     loadData().then(function (d) {
-      var gamData = d[0].status === 'fulfilled' ? d[0].value : [];
-      var linmodData = d[1].status === 'fulfilled' ? d[1].value : [];
+      var gamData, linmodData, barData;
+
+      if (d[0].status === 'fulfilled') {
+        gamData = d[0].value;
+        $gamNoData.hide();
+      } else {
+        gamData = [];
+        $gamNoData.show();
+      }
+
+      if (d[1].status === 'fulfilled') {
+        linmodData = d[1].value;
+        $linmodNoData.hide();
+      } else {
+        linmodData = [];
+        $linmodNoData.show();
+      }
+
       var means = d[2].status === 'fulfilled' ? d[2].value : [];
-      gam.updateChart(gamData, means);
-      linmod.updateChart(linmodData, means);
+
+      if (d[3].status === 'fulfilled') {
+        barData = d[3].value[0];
+        $barNoData.hide();
+      } else {
+        barData = [];
+        $barNoData.show();
+      }
+
+      var yMin, yMax;
+
+      if (scaleType === 'across') {
+        yMin = -0.2;
+        yMax = 1;
+      }
+
+      gam.updateChart(gamData, means, yMin, yMax, true, [{
+        y: 0,
+        stroke: 'rgb(210,210,210)',
+        strokeWidth: 2
+      }]);
+      linmod.updateChart(linmodData, means, yMin, yMax, true, [{
+        y: 0,
+        stroke: 'rgb(210,210,210)',
+        strokeWidth: 2
+      }]);
+      bar.updateChart(barData);
     });
   }
 
   function loadData() {
+    //if (!currentTaxon.identifier) return Promise.all([Promise.reject(), Promise.reject(), Promise.reject()])
     var trendsRoot = ds$4.bsbi_atlas.dataRoot + 'bsbi/trends/';
     var pGam = d3__namespace.csv("".concat(trendsRoot).concat(termType, "/trends-gam/").concat(regionType, "/").concat(currentTaxon$2.identifier.replace(/\./g, "_"), ".csv?").concat(pcache), function (d) {
       return {
@@ -1696,12 +1794,46 @@
         sd: Number(d.std)
       };
     });
-    return Promise.allSettled([pGam, pLinmod, pMeans]);
+    var pSummaries = d3__namespace.csv("".concat(trendsRoot).concat(termType, "/trends-summaries/").concat(regionType, "/").concat(currentTaxon$2.identifier.replace(/\./g, "_"), ".csv?").concat(pcache), function (d) {
+      return [{
+        value: Number(d.declineStrong),
+        label: 'Strong decline',
+        stroke: 'grey',
+        strokeWidth: 1,
+        fill: 'rgb(230,230,230)'
+      }, {
+        value: Number(d.declineMod),
+        label: 'Moderate decline',
+        stroke: 'grey',
+        strokeWidth: 1,
+        fill: 'rgb(230,230,230)'
+      }, {
+        value: Number(d.stable),
+        label: 'Stable',
+        stroke: 'grey',
+        strokeWidth: 1,
+        fill: 'rgb(230,230,230)'
+      }, {
+        value: Number(d.increaseMod),
+        label: 'Moderate increase',
+        stroke: 'grey',
+        strokeWidth: 1,
+        fill: 'rgb(230,230,230)'
+      }, {
+        value: Number(d.increaseStrong),
+        label: 'Strong increase',
+        stroke: 'grey',
+        strokeWidth: 1,
+        fill: 'rgb(230,230,230)'
+      }];
+    });
+    return Promise.allSettled([pGam, pLinmod, pMeans, pSummaries]);
   }
 
   function createTrendControls(selector) {
     regionSelector(trendControlRow(selector));
     termSelector(trendControlRow(selector));
+    scalingSelector(trendControlRow(selector));
   }
 
   function trendControlRow(selector, classname) {
@@ -1761,10 +1893,10 @@
 
   function termSelector($parent) {
     var terms = [{
-      caption: 'Long term trend',
+      caption: 'Long-term trend (post-1930)',
       val: 'long'
     }, {
-      caption: 'Short term trend',
+      caption: 'Short-term trend (post-1987)',
       val: 'short'
     }]; // Term type selector
 
@@ -1783,6 +1915,35 @@
       $opt.html(b.caption).appendTo($sel);
     });
     $sel.val(termType); // This seems to be necessary if interface regenerated,
+    // e.g. changing from tabbed to non-tabbed display.
+
+    $sel.selectpicker();
+  }
+
+  function scalingSelector($parent) {
+    var scales = [{
+      caption: 'Scale to species',
+      val: 'within'
+    }, {
+      caption: 'Scale across species',
+      val: 'across'
+    }]; // Scale (y axis) selector
+
+    var $sel = $$4('<select>').appendTo($parent);
+    $sel.addClass('selectpicker');
+    $sel.addClass('atlas-trends-scale-control');
+    $sel.attr('data-width', '100%');
+    $sel.on('changed.bs.select', function () {
+      scaleType = $$4(this).val();
+      setCookie('trend-scale', scaleType, 30);
+      changeTrends();
+    });
+    scales.forEach(function (b) {
+      var $opt = b.selected ? $$4('<option>') : $$4('<option>');
+      $opt.attr('value', b.val);
+      $opt.html(b.caption).appendTo($sel);
+    });
+    $sel.val(scaleType); // This seems to be necessary if interface regenerated,
     // e.g. changing from tabbed to non-tabbed display.
 
     $sel.selectpicker();
@@ -2617,7 +2778,7 @@
     transOptsSel.BI1.bounds.xmin = -230000, //No insets
     transOptsSel.BI2.bounds.xmin = -230000, //CI inset
     // Init
-    bsbiDataAccess.bsbiDataRoot = ds$2.bsbi_atlas.dataRoot + 'bsbi/20220606/';
+    bsbiDataAccess.bsbiDataRoot = ds$2.bsbi_atlas.dataRoot + 'bsbi/20220704/';
     bsbiDataAccess.showStatus = false; // Data access 
 
     var mapTypesSel = {
@@ -4120,22 +4281,20 @@
       $trends.css('font-weight', 'bold');
       $('<div>').text('Post-1930 effort-adjusted 10 km trends').appendTo($trends);
       var $table = $('<table>').appendTo($trends);
+      var $trBritain = $('<tr>').appendTo($table);
+      var $trIreland = $('<tr>').appendTo($table);
       var pTrendGb = d3__namespace.csv(trendGb).then(function (d) {
-        //$gbTrend.show()
-        var $tr = $('<tr>').appendTo($table);
-        $('<td>').appendTo($tr).text('Britain:');
-        $('<td>').attr('id', 'trend-sum-gb2').css('padding', '0.3em 0 0.3em 0.3em').appendTo($tr);
+        $('<td>').appendTo($trBritain).text('Britain:');
+        $('<td>').attr('id', 'trend-sum-gb2').css('padding', '0.3em 0 0.3em 0.3em').appendTo($trBritain);
         trendSummary2('trend-sum-gb2'); //updateTrendSummary2('trend-sum-gb2', d[0], develSummaryTrendColour)
 
         updateTrendSummary2('trend-sum-gb2', d[0]);
         $('#trend-sum-gb2').show();
       });
       var pTrendIr = d3__namespace.csv(trendIr).then(function (d) {
-        //$irTrend.show()
-        var $tr = $('<tr>').appendTo($table);
-        $('<td>').appendTo($tr).text('Ireland:');
-        $('<td>').attr('id', 'trend-sum-ir2').css('padding', '0.3em 0 0.3em 0.3em').appendTo($tr);
-        trendSummary2('trend-sum-ir2', true); //updateTrendSummary2('trend-sum-ir2', d[0], develSummaryTrendColour)
+        $('<td>').appendTo($trIreland).text('Ireland:');
+        $('<td>').attr('id', 'trend-sum-ir2').css('padding', '0.3em 0 0.3em 0.3em').appendTo($trIreland);
+        trendSummary2('trend-sum-ir2'); //updateTrendSummary2('trend-sum-ir2', d[0], develSummaryTrendColour)
 
         updateTrendSummary2('trend-sum-ir2', d[0]);
         $('#trend-sum-ir2').show();
@@ -4171,7 +4330,8 @@
           $p = $('<p>').appendTo($caption);
           $p.append(postProcessCaptionText(d[0].atlasSpeciesDescription));
           $p = $('<p>').appendTo($caption);
-          $p.append('TODO - overall status');
+          var status = d[0].overallStatus;
+          $p.append("".concat(status.charAt(0).toUpperCase()).concat(status.slice(1), "."));
         } // Taxa covered
 
 

@@ -114,31 +114,31 @@ export function createEcology(sel) {
         min: 1,
         max: 10,
         radius: 11,
-        legend: '1-10%'
+        legend: '1–10%'
       },
       {
         min: 10.00001,
         max: 30,
         radius: 14,
-        legend: '11-30%'
+        legend: '11–30%'
       },
       {
         min: 30.00001,
         max: 40,
         radius: 16,
-        legend: '31-40%'
+        legend: '31–40%'
       },
       {
         min: 40.00001,
         max: 50,
         radius: 18,
-        legend: '41-50%'
+        legend: '41–50%'
       },
       {
         min: 50.00001,
         max: 100,
         radius: 20,
-        legend: '51-100%'
+        legend: '51–100%'
       }
     ],
     taxa: ['dummy'],

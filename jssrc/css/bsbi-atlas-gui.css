@@ -243,6 +243,14 @@ taxon {
   color: grey;
 }
 
+.taxon-qualifier {
+  font-style: normal;
+}
+
+.taxon-qualifier .latin {
+  font-style: italic;
+}
+
 #bsbi-phenology-source .publication-title {
   font-style: italic;
 }
