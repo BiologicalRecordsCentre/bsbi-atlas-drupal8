@@ -4,13 +4,14 @@ import { setCookie, getCookie } from './utils'
 const $ = jQuery // eslint-disable-line no-undef
 const ds = drupalSettings // eslint-disable-line no-undef
 
-let gam, linmod, bar
-let $gamNoData, $linmodNoData, $barNoData
+let gam, linmod, bar, density
+let $gamNoData, $linmodNoData, $barNoData, $densityNoData
 import { pcache } from './gen'
 
 let regionType = getCookie('trend-region') ? getCookie('trend-region') : 'Britain'
 let termType = getCookie('trend-term') ? getCookie('trend-term') : 'long'
 let scaleType = getCookie('trend-scale') ? getCookie('trend-scale') : 'within'
+let scaleTypeDensity = getCookie('trend-scale-density') ? getCookie('trend-scale-density') : 'max'
 let currentTaxon
 
 export function createTrends(sel) {
@@ -84,8 +85,8 @@ export function createTrends(sel) {
     selector: '#bsbi-gam-chart',
     data: [], 
     means: [],
-    yearMin: 1947,
-    yearMax: 2022,
+    // yearMin: 1947,
+    // yearMax: 2022,
     width: 350,
     height: 250,
     margin: {left: 50, right: 10, top: 10, bottom: 55},
@@ -128,8 +129,8 @@ export function createTrends(sel) {
     selector: '#bsbi-linmod-chart',
     data: [], 
     means: [], 
-    yearMin: 1947,
-    yearMax: 2022,
+    // yearMin: 1947,
+    // yearMax: 2022,
     width: 350,
     height: 250,
     margin: {left: 50, right: 10, top: 10, bottom: 55},
@@ -159,13 +160,49 @@ export function createTrends(sel) {
     .css('left', '50px')
     .css('display', 'none')
 
+  // Trend density plot
+  const $density = $('<div>').appendTo($trends2)
+  $density.attr('id', 'bsbi-density-chart')
+    .attr('class', 'phenColumn')
+    .css('max-width', '400px')
+    .css('position', 'relative')
+    .text('Figure 3')
+    
+  density = brccharts.density({
+    selector: '#bsbi-density-chart',
+    data: [], 
+    ylines:[],
+    xlines:[],
+    width: 350,
+    height: 250,
+    padding: 0.1,
+    margin: {left: 50, right: 10, top: 10, bottom: 45},
+    expand: true,
+    axisLeft: 'on',
+    axisBottom: 'tick',
+    axisRight: 'on',
+    axisTop: 'on',
+    axisLeftLabel: 'Density',
+    axisBottomLabel: 'Slope',
+    axisLabelFontSize: 12,
+    styles: [{stroke: 'blue', strokeWidth: 1}, {stroke: 'grey', strokeWidth: 1}]
+  })
+
+  $densityNoData = $('<div>').appendTo($density)
+  $densityNoData.text('No trend available for this combination')
+    .css('position', 'absolute')
+    .css('margin', '3em')
+    .css('top', '0px')
+    .css('left', '50px')
+    .css('display', 'none')
+
   // Trend overview
   const $bar = $('<div>').appendTo($trends2)
   $bar.attr('id', 'bsbi-bar-chart')
     .attr('class', 'phenColumn')
     .css('max-width', '400px')
     .css('position', 'relative')
-    .text('Figure 3')
+    .text('Figure 4')
     
   bar = brccharts.bar({
     selector: '#bsbi-bar-chart',
@@ -179,7 +216,8 @@ export function createTrends(sel) {
     axisBottom: 'tick',
     axisRight: 'none',
     axisTop: 'none',
-    //axisLeftLabel: 'Relative index',
+    axisLeftLabel: 'Frequency',
+    axisLabelFontSize: 12,
     labelPosition: {'text-anchor': 'end', dx: '-1em', dy: '0.2em', transform: 'rotate(-55)'}
   })
 
@@ -190,17 +228,6 @@ export function createTrends(sel) {
     .css('top', '0px')
     .css('left', '50px')
     .css('display', 'none')
-
-  // 4th chart - placeholder
-  const $ph = $('<div>').appendTo($trends2)
-  $ph.attr('id', 'bsbi-ph-chart')
-    .attr('class', 'phenColumn')
-    .css('max-width', '400px')
-    .css('position', 'relative')
-    .text('Figure 4')
-
-  const svgPh = d3.select('#bsbi-ph-chart').append('svg')
-  svgPh.attr("viewBox", `0 0 350 250`)
 }
 
 export function changeTrends(taxon) {
@@ -213,22 +240,45 @@ export function changeTrends(taxon) {
   //scaleType
 
   loadData().then(d => {
-    let gamData, linmodData, barData
+    let gamData, linmodData, barData, densityData
     if (d[0].status === 'fulfilled') {
-      gamData = d[0].value
+      
       $gamNoData.hide()
+      // If termType is short, add extra points to start of array to make 
+      // for smooth transitions between long and short term trends
+      if (termType === 'short') {
+        gamData = []
+        for (let i=0; i<44; i++) {
+          gamData.push(d[0].value[0])
+        }
+        gamData = [...gamData, ...d[0].value]
+      } else {
+        gamData = d[0].value
+      }
     } else {
       gamData = []
       $gamNoData.show()
     }
     if (d[1].status === 'fulfilled') {
       linmodData = d[1].value
+      densityData = [linmodData.map(d => {return {slope: Number(d.gradient)}})]
       $linmodNoData.hide()
+      $densityNoData.hide()
     } else {
       linmodData = []
+      densityData = []
       $linmodNoData.show()
+      $densityNoData.show()
     }
+    const meanLinmodData = d[4].status === 'fulfilled' ? d[4].value : []
+    if (densityData.length) {
+      densityData.push(meanLinmodData)
+    }
+    const linmodCentiles = d[5].status === 'fulfilled' ? d[5].value : []
     const means = d[2].status === 'fulfilled' ? d[2].value : []
+    // Reverse the order of means to make for smooth transitions between
+    // short and long term trends
+    means.reverse()
     if (d[3].status === 'fulfilled') {
       barData = d[3].value[0]
       $barNoData.hide()
@@ -236,16 +286,29 @@ export function changeTrends(taxon) {
       barData = []
       $barNoData.show()
     }
-
     let yMin, yMax
     if (scaleType === 'across') {
       yMin = -0.2
       yMax = 1
     }
-
-    gam.updateChart(gamData, means, yMin, yMax, true, [{y: 0, stroke: 'rgb(210,210,210)', strokeWidth: 2}])
-    linmod.updateChart(linmodData, means, yMin, yMax, true, [{y: 0, stroke: 'rgb(210,210,210)', strokeWidth: 2}])
+    gam.updateChart(gamData, means, termType === 'long' ? 1947 : 1990, 2022, yMin, yMax, true, [{y: 0, stroke: 'rgb(210,210,210)', strokeWidth: 1}])
+    linmod.updateChart(linmodData, means, termType === 'long' ? 1947 : 1990, 2022, yMin, yMax, true, [{y: 0, stroke: 'rgb(210,210,210)', strokeWidth: 1}])
     bar.updateChart(barData)
+  
+    const xlines = [
+      {x: -0.004, stroke: 'silver', strokeWidth: 1, strokeDasharray: '3 3'},
+      {x: -0.001, stroke: 'silver', strokeWidth: 1, strokeDasharray: '3 3'},
+      {x: 0, stroke: 'silver', strokeWidth: 1},
+      {x: 0.001, stroke: 'silver', strokeWidth: 1, strokeDasharray: '3 3'},
+      {x: 0.004, stroke: 'silver', strokeWidth: 1, strokeDasharray: '3 3'}
+    ]
+    const limmodCentile = linmodCentiles.find(l => l.region === regionType)
+    //console.log('centiles', limmodCentile)
+    if (densityData.length) {
+      density.updateChart(densityData, limmodCentile.c5, limmodCentile.c95, xlines, null, scaleTypeDensity==='max')
+    } else {
+      density.updateChart([])
+    }
   })
 }
 
@@ -284,7 +347,19 @@ function loadData() {
       {value: Number(d.increaseStrong), label: 'Strong increase', stroke: 'grey', strokeWidth: 1, fill: 'rgb(230,230,230)'}
     ]
   })
-  return Promise.allSettled([pGam, pLinmod, pMeans, pSummaries])
+  const pLinmodMeans = d3.csv(`${trendsRoot}${termType}/trends-linmod/${regionType}/mean-gradients.csv?${pcache}`, function(d){
+    return {
+      slope: Number(d.gradient)
+    }
+  })
+  const pLinmodCentiles = d3.csv(`${trendsRoot}${termType}/trends-linmod/centiles.csv?${pcache}`, function(d){
+    return {
+      region: d.region,
+      c5: Number(d.c5),
+      c95: Number(d.c95)
+    }
+  })
+  return Promise.allSettled([pGam, pLinmod, pMeans, pSummaries, pLinmodMeans, pLinmodCentiles])
 }
 
 export function createTrendControls(selector) {
@@ -292,6 +367,7 @@ export function createTrendControls(selector) {
   regionSelector(trendControlRow(selector))
   termSelector(trendControlRow(selector))
   scalingSelector((trendControlRow(selector)))
+  scalingSelector2((trendControlRow(selector)))
 }
 
 function trendControlRow(selector, classname) {
@@ -405,11 +481,11 @@ function scalingSelector($parent) {
 
   const scales = [
     {
-      caption: 'Scale to species',
+      caption: 'Scale trends to species',
       val: 'within'
     },
     {
-      caption: 'Scale across species',
+      caption: 'Scale trends across species',
       val: 'across'
     },
   ]
@@ -434,6 +510,45 @@ function scalingSelector($parent) {
   })
  
   $sel.val(scaleType)
+
+  // This seems to be necessary if interface regenerated,
+  // e.g. changing from tabbed to non-tabbed display.
+  $sel.selectpicker()
+}
+
+function scalingSelector2($parent) {
+
+  const scales = [
+    {
+      caption: 'Scale density plot to max',
+      val: 'max'
+    },
+    {
+      caption: 'Scale density plot to area',
+      val: 'area'
+    },
+  ]
+
+  // Scale (y axis) selector
+  const $sel = $('<select>').appendTo($parent)
+  $sel.addClass('selectpicker')
+  $sel.addClass('atlas-trends-density-scale-control')
+  $sel.attr('data-width', '100%')
+  $sel.on('changed.bs.select', function () {
+
+    scaleTypeDensity = $(this).val()
+    setCookie('trend-scale-density', scaleTypeDensity, 30)
+
+    changeTrends()
+  })
+
+  scales.forEach(function(b){
+    const $opt = b.selected  ? $('<option>') : $('<option>')
+    $opt.attr('value', b.val)
+    $opt.html(b.caption).appendTo($sel)
+  })
+ 
+  $sel.val(scaleTypeDensity)
 
   // This seems to be necessary if interface regenerated,
   // e.g. changing from tabbed to non-tabbed display.

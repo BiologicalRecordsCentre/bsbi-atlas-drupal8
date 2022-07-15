@@ -2,7 +2,7 @@ import * as d3 from 'd3'
 // import lightGallery from 'lightGallery'
 import { bsbiDataAccess } from './dataAccessAtlas'
 import { setBaseMetaTags, addMetaTags } from './metaTags'
-import { createEcology, changeEcology } from './ecology'
+import { createEcology, changeEcology, createPhenology, changePhenology, createPhenologyControls } from './ecology'
 import { createTrends, changeTrends, createTrendControls } from './trends'
 import { createGallery } from './gallery'
 import { copyToClipboard,  getCitation } from './utils'
@@ -78,7 +78,7 @@ export function main() {
       {
         group: null,
         id: 'conservation',
-        title: 'Conservation status',
+        title: 'Conservation',
         fn: sectionEmpty,
       },
       {
@@ -95,8 +95,14 @@ export function main() {
       },
       {
         group: 'CHARACTERISTICS',
+        id: 'phenology',
+        title: 'Phenology',
+        fn: sectionPhenology,
+      },
+      {
+        group: 'CHARACTERISTICS',
         id: 'ecology',
-        title: 'Ecology',
+        title: 'Altitude',
         fn: sectionEcology,
       },
       {
@@ -133,6 +139,7 @@ export function main() {
 
     // Other inits
     $('.bsbi-atlas-trend-controls').hide()
+    $('.bsbi-atlas-phenology-controls').hide()
 
     // Make the section tabs
     const $ul = $('<ul class="nav nav-tabs"></ul>').appendTo($('#bsbi-atlas-gui'))
@@ -172,6 +179,14 @@ export function main() {
         updateSummaryTrends()
       } else {
         $('.bsbi-atlas-map-controls').hide()
+      }
+
+      if (target === '#bsbi-atlas-section-phenology') {
+        $('.bsbi-atlas-phenology-controls').show()
+        // Regenerate graphics
+        changePhenologyTab()
+      } else {
+        $('.bsbi-atlas-phenology-controls').hide()
       }
 
       if (target === '#bsbi-atlas-section-ecology') {
@@ -288,6 +303,7 @@ export function main() {
           setControlState()
           changeMap()
           changeCaption() //Also changes taxon name display in sections
+          changePhenologyTab()
           changeEcologyTab()
           changeTrendsTab()
           createGallery('bsbi-gallery', currentTaxon.identifier)
@@ -399,11 +415,19 @@ export function main() {
     createTrendControls('.bsbi-atlas-trend-controls')
   }
 
-  function sectionEcology(id) {
+  function sectionPhenology(id) {
     const $sect = $('#bsbi-atlas-section-' + id)
     $sect.append('<div id="bsbi-phenology"></div>')
 
-    createEcology("#bsbi-phenology")
+    createPhenology("#bsbi-phenology")
+    createPhenologyControls('.bsbi-atlas-phenology-controls')
+  }
+
+  function sectionEcology(id) {
+    const $sect = $('#bsbi-atlas-section-' + id)
+    $sect.append('<div id="bsbi-altitude"></div>')
+
+    createEcology("#bsbi-altitude")
   }
 
   function sectionGallery(id) {
@@ -436,6 +460,11 @@ export function main() {
     return `<b>${vernacular}</b> ${formatted}`
   }
 
+  function changePhenologyTab() {
+   
+    changePhenology(ds.bsbi_atlas.dataRoot, currentTaxon.identifier)
+  }
+
   function changeEcologyTab() {
    
     changeEcology(ds.bsbi_atlas.dataRoot, currentTaxon.identifier)
@@ -455,8 +484,10 @@ export function main() {
 
     const $trends = $('#trend-summaries')
     $trends.html('')
-    $trends.css('font-weight', 'bold')
-    $('<div>').text('Post-1930 effort-adjusted 10 km trends').appendTo($trends)
+    //$trends.css('font-weight', 'bold')
+    $trends.css('margin-bottom', '0.5em')
+    const $trendHeader = $('<div>').text('Post-1930 effort-adjusted 10 km trends').appendTo($trends)
+    $trendHeader.css('margin-bottom', '0.2em')
     const $table = $('<table>').appendTo($trends)
     const $trBritain = $('<tr>').appendTo($table)
     const $trIreland = $('<tr>').appendTo($table)
@@ -515,7 +546,7 @@ export function main() {
         // For caption, set the various sections
         // Description
         if (d[0].atlasSpeciesDescription) {
-          $caption.append('<h4>Description</h4>')
+          //$caption.append('<h4>Description</h4>')
           $p = $('<p>').appendTo($caption)
           $p.append(postProcessCaptionText(d[0].atlasSpeciesDescription))
           $p = $('<p>').appendTo($caption)
@@ -534,7 +565,7 @@ export function main() {
           ddbids.forEach(function(ddbid) {
             const $li = $('<li>').appendTo($ul)
             const taxon = taxaList.find(function(t) {return t['ddbid'] === ddbid})
-            console.log('taxon', taxon)
+            //console.log('taxon', taxon)
             if (taxon) {
               //$li.html(getFormattedTaxonName(taxon['vernacular'], taxon['formattedName']))
               const $i = $('<i>').appendTo($li)

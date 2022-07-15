@@ -321,7 +321,7 @@ function boundarySelector($parent) {
       val: 'country'
     },
     {
-      caption: 'Vice county boundaries',
+      caption: 'Vice-county boundaries',
       val: 'vc'
     },
     {
@@ -727,16 +727,19 @@ function resolutionControl($parent, i) {
   function makeRadio(label, val, checked) {
     const $div = $('<div>').appendTo($container)
     $div.attr('class', 'radio')
-    const $radio = $('<input>').appendTo($div)
+    const $label = $('<label>').appendTo($div)
+    $label.css('padding-left', '0')
+    const $radio = $('<input>').appendTo($label)
+    const $span = $('<span>').appendTo($label)
+    $span.text(label)
+    $span.css('padding-left', '20px')
     $radio.attr('type', 'radio')
     $radio.attr('name', 'bsbi-resolution-' + i)
     $radio.attr('class', 'bsbi-resolution-' + val)
     $radio.attr('value', val)
     $radio.css('margin-left', 0)
     if (checked) $radio.prop('checked', true)
-    const $label = $('<label>').appendTo($div)
-    $label.attr('for', 'bsbi-resolution-' + val)
-    $label.text(label)
+    
 
     $radio.change(function () {
 

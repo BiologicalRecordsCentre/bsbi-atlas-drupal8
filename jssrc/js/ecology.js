@@ -5,25 +5,29 @@ let phen1, phen2, phen3, altlat
 let apparencyByLatData
 import { pcache } from './gen'
 
-export function createEcology(sel) {
+export function createPhenology(sel) {
 
-  $('<h4>').appendTo($(sel)).text('Phenology & Apparency')
+  //$('<h4>').appendTo($(sel)).text('Phenology')
+
+  const $phenFlexParent = $('<div>').appendTo($(sel))
+
+  //const $phenSource = $('<div>').appendTo($phenFlexLeft)
+  const $phenSource = $('<div>').appendTo($(sel))
+  $phenSource.attr('id', 'bsbi-phenology-source')
+  $phenSource.css('font-size', '0.8em')
+  //$phenSource.css('padding-left', '32px')
+  //$phenSource.css('max-width', '400px')
+  $phenSource.css('margin-bottom', '0.8em')
 
   const $p1 = $('<p>').appendTo($(sel))
   $p1.text("Explanation of apparency and phenology charts. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque blandit dui vel mauris maximus interdum. Aliquam orci eros, venenatis vel purus nec, venenatis congue leo. Pellentesque rhoncus metus eros, tincidunt congue massa volutpat facilisis. Curabitur pellentesque turpis velit, quis ornare mauris ullamcorper a.")
-  
-  const $phenFlexParent = $('<div>').appendTo($(sel))
+
   $phenFlexParent.attr('class', 'phenRow')
   const $phenFlexLeft = $('<div>').appendTo($phenFlexParent)
   $phenFlexLeft.attr('class', 'phenColumn')
   const $phenFlexRight = $('<div>').appendTo($phenFlexParent)
   $phenFlexRight.attr('class', 'phenColumn')
   
-  $('<h4>').appendTo($(sel)).text('Altitude vs Latitude')
-  const $p2 = $('<p>').appendTo($(sel))
-  $p2.text("Explanation of latitude/altitude chart. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque blandit dui vel mauris maximus interdum. Aliquam orci eros, venenatis vel purus nec, venenatis congue leo. Pellentesque rhoncus metus eros, tincidunt congue massa volutpat facilisis. Curabitur pellentesque turpis velit, quis ornare mauris ullamcorper a.")
-  const $altlat = $('<div>').appendTo($(sel))
-
   const $apparency = $('<div>').appendTo($phenFlexLeft)
   $apparency.attr('id', 'bsbi-apparency-chart').css('max-width', '400px')
 
@@ -33,7 +37,7 @@ export function createEcology(sel) {
     taxa: ['taxon'],
     metrics: [{ prop: 'n', label: 'Apparency', colour: 'green', fill: '#ddffdd' }],
     width: 400,
-    height: 250,
+    height: 303,
     headPad: 35,
     perRow: 1,
     expand: true,
@@ -62,12 +66,6 @@ export function createEcology(sel) {
     interactivity: 'none'
   })
 
-  const $phenSource = $('<div>').appendTo($phenFlexLeft)
-  $phenSource.attr('id', 'bsbi-phenology-source')
-  $phenSource.css('font-size', '0.8em')
-  $phenSource.css('padding-left', '32px')
-  $phenSource.css('max-width', '400px')
-
   const $apparencyByLat = $('<div>').appendTo($phenFlexRight)
   $apparencyByLat.attr('id', 'bsbi-apparency-by-lat-chart').css('max-width', '400px')
 
@@ -94,8 +92,24 @@ export function createEcology(sel) {
   })
 
   //latPhenNormalizeCheckbox($phenFlexRight, phen3) 
-  latPhenDataTypeDropdown($phenFlexRight) 
+  //latPhenDataTypeDropdown($phenFlexRight) 
 
+  // Website style is overriding some charts style, so reset it
+  $('.brc-chart-phen1').css('overflow', 'visible')
+
+  // Chart line width - not currently a chart option
+  $('#bsbi-apparency-by-lat-chart .phen-path').css('stroke-width', 1)
+}
+
+export function createEcology(sel) {
+  
+  //$('<h4>').appendTo($(sel)).text('Altitude vs Latitude')
+
+  const $altlat = $('<div>').appendTo($(sel))
+
+  const $p2 = $('<p>').appendTo($(sel))
+  $p2.text("Explanation of latitude/altitude chart. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque blandit dui vel mauris maximus interdum. Aliquam orci eros, venenatis vel purus nec, venenatis congue leo. Pellentesque rhoncus metus eros, tincidunt congue massa volutpat facilisis. Curabitur pellentesque turpis velit, quis ornare mauris ullamcorper a.")
+  
   // Alt vs Lat visualisation
   $altlat.attr('id', 'bsbi-altlat-chart')
   $altlat.css('max-width', '600px')
@@ -155,12 +169,6 @@ export function createEcology(sel) {
   }
 
   altlat = brccharts.altlat(opts)
-
-  // Website style is overriding some charts style, so reset it
-  $('.brc-chart-phen1').css('overflow', 'visible')
-
-  // Chart line width - not currently a chart option
-  $('#bsbi-apparency-by-lat-chart .phen-path').css('stroke-width', 1)
 }
 
 function latPhenNormalizeCheckbox($parent, phenChart) {
@@ -179,6 +187,10 @@ function latPhenNormalizeCheckbox($parent, phenChart) {
     const normalize = $(this).is(':checked')
     phenChart.setChartOpts({ytype: normalize ? 'normalized' : 'count'})
   })
+}
+
+export function createPhenologyControls(selector) {
+  latPhenDataTypeDropdown($(selector))
 }
 
 function latPhenDataTypeDropdown($parent) {
@@ -200,11 +212,11 @@ function latPhenDataTypeDropdown($parent) {
 
   // Main type selector
   const $div = $('<div>').appendTo($parent)
-  $div.css('margin-left', '35px')
+  //$div.css('margin-left', '35px')
   const $sel = $('<select>').appendTo($div)
   $sel.attr('id', 'atlas-lat-phen-data-type')
   $sel.addClass('selectpicker')
-  //$sel.attr('data-width', '100%')
+  $sel.attr('data-width', '100%')
   $sel.on('changed.bs.select', function () {
     if (apparencyByLatData.length) {
       apparencyByLat(phen3, apparencyByLatData)
@@ -224,13 +236,12 @@ function latPhenDataTypeDropdown($parent) {
   $sel.selectpicker()
 }
 
-export function changeEcology(dataRoot, identifier) {
+export function changePhenology(dataRoot, identifier) {
    
   if (!identifier) return 
 
   const apparencyRoot = dataRoot + 'bsbi/apparency/'
   const captionRoot = dataRoot + 'bsbi/captions/'
-  const mapRoot = dataRoot + 'bsbi/20220606/'
 
   // Apparency all
   const fileAll = apparencyRoot + 'all/' + identifier.replace(/\./g, "_") + '.csv'
@@ -241,12 +252,6 @@ export function changeEcology(dataRoot, identifier) {
     .catch(function() {
       console.warn(`Apparency chart failed for ${fileAll}. Error message:`, e)
       phen1.setChartOpts({data: []})
-      // TEMPORARY CODE FOR TESTING so that a file always returned 
-      // const fileDefault = apparencyRoot + 'all/dummy.csv'
-      // d3.csv(fileDefault + '?prevent-cache=')
-      //   .then(function(data) {
-      //     apparency(phen1, data)
-      //   })
     })
 
   // Apparency by latitude
@@ -260,12 +265,6 @@ export function changeEcology(dataRoot, identifier) {
     .catch(function() {
       console.warn(`Apparency by latitude chart failed for ${fileLat}. Error message:`, e)
       phen3.setChartOpts({data: [], metrics: [], spread: false})
-      // TEMPORARY CODE FOR TESTING so that a file always returned 
-      // const fileDefault = apparencyRoot + 'byLat/dummy.csv'
-      // d3.csv(fileDefault + '?prevent-cache=')
-      //   .then(function(data) {
-      //     apparencyByLat(phen3, data)
-      //   })
     })
 
   // Phenology
@@ -275,23 +274,15 @@ export function changeEcology(dataRoot, identifier) {
     .then(function(data) {
       phenology(phen2, data, 'bsbi-phenology-source')
     })
-    // .catch(function() {
-    //   console.warn(`Phenology chart failed for ${file}. Error message:`, e)
-    //   phen2.setChartOpts({data: []})
-    // })
-  
+}
+
+export function changeEcology(dataRoot, identifier) {
+   
+  if (!identifier) return 
+
+  const mapRoot = dataRoot + 'bsbi/20220704/'
+
   // Alt/Lat
-
-  // Using raw tetrad mapping data
-  // const tetrads = `${mapRoot}tetrads/${identifier.replace(/\./g, "_")}.csv`
-  // d3.csv(tetrads, function(row) {
-  //   return row.tetrad
-  // }).then(function(data){
-  //   altlat.dataFromTetrads(data).then(function(data) {
-  //     altlat.setChartOpts({data: data })
-  //   })
-  // })
-
   // Using pre-processed altlat data
   const altlatdata = `${mapRoot}altlat/${identifier.replace(/\./g, "_")}.csv`
   d3.csv(altlatdata).then(function(data){
@@ -399,7 +390,8 @@ export function phenology(chart, data, textId) {
       source = `Data for flower phenology from ${flowerText}.`
     }
     if (flowerRange.length && leafRange.length) {
-      source = `${source}</br>`
+      //source = `${source}</br>`
+      source = `${source}  `
     }
     if (leafRange.length) {
       source = `${source}Data for leafing phenology from ${leafText}.`
@@ -439,7 +431,7 @@ export function phenology(chart, data, textId) {
     // Replace 'Poland, J. personal observation' with 'John Poland, personal observation'
     const $span1 = $tmp.children('span').eq(0)
     const $span2 = $tmp.children('span').eq(1)
-    if ($span1 && $span1 
+    if ($span1 && $span2 
       && $span1.text() === 'Poland, J.'
       && $span2.text() === 'personal observation') {
       $span1.text('John Poland,')

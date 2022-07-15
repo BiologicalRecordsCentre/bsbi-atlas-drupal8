@@ -107,6 +107,39 @@
     };
   }
 
+  function _toConsumableArray(arr) {
+    return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread();
+  }
+
+  function _arrayWithoutHoles(arr) {
+    if (Array.isArray(arr)) return _arrayLikeToArray(arr);
+  }
+
+  function _iterableToArray(iter) {
+    if (typeof Symbol !== "undefined" && iter[Symbol.iterator] != null || iter["@@iterator"] != null) return Array.from(iter);
+  }
+
+  function _unsupportedIterableToArray(o, minLen) {
+    if (!o) return;
+    if (typeof o === "string") return _arrayLikeToArray(o, minLen);
+    var n = Object.prototype.toString.call(o).slice(8, -1);
+    if (n === "Object" && o.constructor) n = o.constructor.name;
+    if (n === "Map" || n === "Set") return Array.from(o);
+    if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen);
+  }
+
+  function _arrayLikeToArray(arr, len) {
+    if (len == null || len > arr.length) len = arr.length;
+
+    for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i];
+
+    return arr2;
+  }
+
+  function _nonIterableSpread() {
+    throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
+  }
+
   // access structure. All the data access functions
   // are members of this structure.
 
@@ -1050,20 +1083,23 @@
 
   var phen1$1, phen2$1, phen3, altlat$1;
   var apparencyByLatData;
-  function createEcology(sel) {
-    $$5('<h4>').appendTo($$5(sel)).text('Phenology & Apparency');
+  function createPhenology(sel) {
+    //$('<h4>').appendTo($(sel)).text('Phenology')
+    var $phenFlexParent = $$5('<div>').appendTo($$5(sel)); //const $phenSource = $('<div>').appendTo($phenFlexLeft)
+
+    var $phenSource = $$5('<div>').appendTo($$5(sel));
+    $phenSource.attr('id', 'bsbi-phenology-source');
+    $phenSource.css('font-size', '0.8em'); //$phenSource.css('padding-left', '32px')
+    //$phenSource.css('max-width', '400px')
+
+    $phenSource.css('margin-bottom', '0.8em');
     var $p1 = $$5('<p>').appendTo($$5(sel));
     $p1.text("Explanation of apparency and phenology charts. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque blandit dui vel mauris maximus interdum. Aliquam orci eros, venenatis vel purus nec, venenatis congue leo. Pellentesque rhoncus metus eros, tincidunt congue massa volutpat facilisis. Curabitur pellentesque turpis velit, quis ornare mauris ullamcorper a.");
-    var $phenFlexParent = $$5('<div>').appendTo($$5(sel));
     $phenFlexParent.attr('class', 'phenRow');
     var $phenFlexLeft = $$5('<div>').appendTo($phenFlexParent);
     $phenFlexLeft.attr('class', 'phenColumn');
     var $phenFlexRight = $$5('<div>').appendTo($phenFlexParent);
     $phenFlexRight.attr('class', 'phenColumn');
-    $$5('<h4>').appendTo($$5(sel)).text('Altitude vs Latitude');
-    var $p2 = $$5('<p>').appendTo($$5(sel));
-    $p2.text("Explanation of latitude/altitude chart. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque blandit dui vel mauris maximus interdum. Aliquam orci eros, venenatis vel purus nec, venenatis congue leo. Pellentesque rhoncus metus eros, tincidunt congue massa volutpat facilisis. Curabitur pellentesque turpis velit, quis ornare mauris ullamcorper a.");
-    var $altlat = $$5('<div>').appendTo($$5(sel));
     var $apparency = $$5('<div>').appendTo($phenFlexLeft);
     $apparency.attr('id', 'bsbi-apparency-chart').css('max-width', '400px');
     phen1$1 = brccharts.phen1({
@@ -1077,7 +1113,7 @@
         fill: '#ddffdd'
       }],
       width: 400,
-      height: 250,
+      height: 303,
       headPad: 35,
       perRow: 1,
       expand: true,
@@ -1103,11 +1139,6 @@
       showTaxonLabel: false,
       interactivity: 'none'
     });
-    var $phenSource = $$5('<div>').appendTo($phenFlexLeft);
-    $phenSource.attr('id', 'bsbi-phenology-source');
-    $phenSource.css('font-size', '0.8em');
-    $phenSource.css('padding-left', '32px');
-    $phenSource.css('max-width', '400px');
     var $apparencyByLat = $$5('<div>').appendTo($phenFlexRight);
     $apparencyByLat.attr('id', 'bsbi-apparency-by-lat-chart').css('max-width', '400px'); // $apparencyByLat = $('<div>').appendTo($phenFlexRight)
     // $apparencyByLat.attr('id', 'bsbi-apparency-by-lat-chart').css('max-width', '400px')
@@ -1135,8 +1166,18 @@
       axisLeftLabel: 'Latitudinal band',
       axisLabelFontSize: 12
     }); //latPhenNormalizeCheckbox($phenFlexRight, phen3) 
+    //latPhenDataTypeDropdown($phenFlexRight) 
+    // Website style is overriding some charts style, so reset it
 
-    latPhenDataTypeDropdown($phenFlexRight); // Alt vs Lat visualisation
+    $$5('.brc-chart-phen1').css('overflow', 'visible'); // Chart line width - not currently a chart option
+
+    $$5('#bsbi-apparency-by-lat-chart .phen-path').css('stroke-width', 1);
+  }
+  function createEcology(sel) {
+    //$('<h4>').appendTo($(sel)).text('Altitude vs Latitude')
+    var $altlat = $$5('<div>').appendTo($$5(sel));
+    var $p2 = $$5('<p>').appendTo($$5(sel));
+    $p2.text("Explanation of latitude/altitude chart. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque blandit dui vel mauris maximus interdum. Aliquam orci eros, venenatis vel purus nec, venenatis congue leo. Pellentesque rhoncus metus eros, tincidunt congue massa volutpat facilisis. Curabitur pellentesque turpis velit, quis ornare mauris ullamcorper a."); // Alt vs Lat visualisation
 
     $altlat.attr('id', 'bsbi-altlat-chart');
     $altlat.css('max-width', '600px');
@@ -1191,11 +1232,11 @@
       legendFontSize: 10,
       interactivity: 'toggle'
     };
-    altlat$1 = brccharts.altlat(opts); // Website style is overriding some charts style, so reset it
+    altlat$1 = brccharts.altlat(opts);
+  }
 
-    $$5('.brc-chart-phen1').css('overflow', 'visible'); // Chart line width - not currently a chart option
-
-    $$5('#bsbi-apparency-by-lat-chart .phen-path').css('stroke-width', 1);
+  function createPhenologyControls(selector) {
+    latPhenDataTypeDropdown($$5(selector));
   }
 
   function latPhenDataTypeDropdown($parent) {
@@ -1210,12 +1251,12 @@
       val: 'density'
     }]; // Main type selector
 
-    var $div = $$5('<div>').appendTo($parent);
-    $div.css('margin-left', '35px');
+    var $div = $$5('<div>').appendTo($parent); //$div.css('margin-left', '35px')
+
     var $sel = $$5('<select>').appendTo($div);
     $sel.attr('id', 'atlas-lat-phen-data-type');
-    $sel.addClass('selectpicker'); //$sel.attr('data-width', '100%')
-
+    $sel.addClass('selectpicker');
+    $sel.attr('data-width', '100%');
     $sel.on('changed.bs.select', function () {
       if (apparencyByLatData.length) {
         apparencyByLat(phen3, apparencyByLatData);
@@ -1232,11 +1273,10 @@
     $sel.selectpicker();
   }
 
-  function changeEcology(dataRoot, identifier) {
+  function changePhenology(dataRoot, identifier) {
     if (!identifier) return;
     var apparencyRoot = dataRoot + 'bsbi/apparency/';
-    var captionRoot = dataRoot + 'bsbi/captions/';
-    var mapRoot = dataRoot + 'bsbi/20220606/'; // Apparency all
+    var captionRoot = dataRoot + 'bsbi/captions/'; // Apparency all
 
     var fileAll = apparencyRoot + 'all/' + identifier.replace(/\./g, "_") + '.csv';
     d3__namespace.csv(fileAll + '?prevent-cache=').then(function (data) {
@@ -1245,12 +1285,7 @@
       console.warn("Apparency chart failed for ".concat(fileAll, ". Error message:"), e);
       phen1$1.setChartOpts({
         data: []
-      }); // TEMPORARY CODE FOR TESTING so that a file always returned 
-      // const fileDefault = apparencyRoot + 'all/dummy.csv'
-      // d3.csv(fileDefault + '?prevent-cache=')
-      //   .then(function(data) {
-      //     apparency(phen1, data)
-      //   })
+      });
     }); // Apparency by latitude
 
     var fileLat = apparencyRoot + 'byLat/' + identifier.replace(/\./g, "_") + '.csv';
@@ -1265,31 +1300,17 @@
         data: [],
         metrics: [],
         spread: false
-      }); // TEMPORARY CODE FOR TESTING so that a file always returned 
-      // const fileDefault = apparencyRoot + 'byLat/dummy.csv'
-      // d3.csv(fileDefault + '?prevent-cache=')
-      //   .then(function(data) {
-      //     apparencyByLat(phen3, data)
-      //   })
+      });
     }); // Phenology
 
     var file = "".concat(captionRoot).concat(identifier.replace(/\./g, "_"), ".csv");
     d3__namespace.csv(file + "?prevent-cache=".concat(pcache)).then(function (data) {
       phenology(phen2$1, data, 'bsbi-phenology-source');
-    }); // .catch(function() {
-    //   console.warn(`Phenology chart failed for ${file}. Error message:`, e)
-    //   phen2.setChartOpts({data: []})
-    // })
-    // Alt/Lat
-    // Using raw tetrad mapping data
-    // const tetrads = `${mapRoot}tetrads/${identifier.replace(/\./g, "_")}.csv`
-    // d3.csv(tetrads, function(row) {
-    //   return row.tetrad
-    // }).then(function(data){
-    //   altlat.dataFromTetrads(data).then(function(data) {
-    //     altlat.setChartOpts({data: data })
-    //   })
-    // })
+    });
+  }
+  function changeEcology(dataRoot, identifier) {
+    if (!identifier) return;
+    var mapRoot = dataRoot + 'bsbi/20220704/'; // Alt/Lat
     // Using pre-processed altlat data
 
     var altlatdata = "".concat(mapRoot, "altlat/").concat(identifier.replace(/\./g, "_"), ".csv");
@@ -1394,7 +1415,8 @@
       }
 
       if (flowerRange.length && leafRange.length) {
-        source = "".concat(source, "</br>");
+        //source = `${source}</br>`
+        source = "".concat(source, "  ");
       }
 
       if (leafRange.length) {
@@ -1458,7 +1480,7 @@
       var $span1 = $tmp.children('span').eq(0);
       var $span2 = $tmp.children('span').eq(1);
 
-      if ($span1 && $span1 && $span1.text() === 'Poland, J.' && $span2.text() === 'personal observation') {
+      if ($span1 && $span2 && $span1.text() === 'Poland, J.' && $span2.text() === 'personal observation') {
         $span1.text('John Poland,');
       }
 
@@ -1577,11 +1599,12 @@
 
   var ds$4 = drupalSettings; // eslint-disable-line no-undef
 
-  var gam, linmod, bar;
-  var $gamNoData, $linmodNoData, $barNoData;
+  var gam, linmod, bar, density;
+  var $gamNoData, $linmodNoData, $barNoData, $densityNoData;
   var regionType = getCookie('trend-region') ? getCookie('trend-region') : 'Britain';
   var termType = getCookie('trend-term') ? getCookie('trend-term') : 'long';
   var scaleType = getCookie('trend-scale') ? getCookie('trend-scale') : 'within';
+  var scaleTypeDensity = getCookie('trend-scale-density') ? getCookie('trend-scale-density') : 'max';
   var currentTaxon$2;
   function createTrends(sel) {
     $$4('<h4>').appendTo($$4(sel)).text('Effort-adjusted 10 km distribution trends');
@@ -1611,8 +1634,8 @@
       selector: '#bsbi-gam-chart',
       data: [],
       means: [],
-      yearMin: 1947,
-      yearMax: 2022,
+      // yearMin: 1947,
+      // yearMax: 2022,
       width: 350,
       height: 250,
       margin: {
@@ -1648,8 +1671,8 @@
       selector: '#bsbi-linmod-chart',
       data: [],
       means: [],
-      yearMin: 1947,
-      yearMax: 2022,
+      // yearMin: 1947,
+      // yearMax: 2022,
       width: 350,
       height: 250,
       margin: {
@@ -1676,10 +1699,45 @@
       }
     });
     $linmodNoData = $$4('<div>').appendTo($linmod);
-    $linmodNoData.text('No trend available for this combination').css('position', 'absolute').css('margin', '3em').css('top', '0px').css('left', '50px').css('display', 'none'); // Trend overview
+    $linmodNoData.text('No trend available for this combination').css('position', 'absolute').css('margin', '3em').css('top', '0px').css('left', '50px').css('display', 'none'); // Trend density plot
+
+    var $density = $$4('<div>').appendTo($trends2);
+    $density.attr('id', 'bsbi-density-chart').attr('class', 'phenColumn').css('max-width', '400px').css('position', 'relative').text('Figure 3');
+    density = brccharts.density({
+      selector: '#bsbi-density-chart',
+      data: [],
+      ylines: [],
+      xlines: [],
+      width: 350,
+      height: 250,
+      padding: 0.1,
+      margin: {
+        left: 50,
+        right: 10,
+        top: 10,
+        bottom: 45
+      },
+      expand: true,
+      axisLeft: 'on',
+      axisBottom: 'tick',
+      axisRight: 'on',
+      axisTop: 'on',
+      axisLeftLabel: 'Density',
+      axisBottomLabel: 'Slope',
+      axisLabelFontSize: 12,
+      styles: [{
+        stroke: 'blue',
+        strokeWidth: 1
+      }, {
+        stroke: 'grey',
+        strokeWidth: 1
+      }]
+    });
+    $densityNoData = $$4('<div>').appendTo($density);
+    $densityNoData.text('No trend available for this combination').css('position', 'absolute').css('margin', '3em').css('top', '0px').css('left', '50px').css('display', 'none'); // Trend overview
 
     var $bar = $$4('<div>').appendTo($trends2);
-    $bar.attr('id', 'bsbi-bar-chart').attr('class', 'phenColumn').css('max-width', '400px').css('position', 'relative').text('Figure 3');
+    $bar.attr('id', 'bsbi-bar-chart').attr('class', 'phenColumn').css('max-width', '400px').css('position', 'relative').text('Figure 4');
     bar = brccharts.bar({
       selector: '#bsbi-bar-chart',
       data: [],
@@ -1697,7 +1755,8 @@
       axisBottom: 'tick',
       axisRight: 'none',
       axisTop: 'none',
-      //axisLeftLabel: 'Relative index',
+      axisLeftLabel: 'Frequency',
+      axisLabelFontSize: 12,
       labelPosition: {
         'text-anchor': 'end',
         dx: '-1em',
@@ -1706,12 +1765,7 @@
       }
     });
     $barNoData = $$4('<div>').appendTo($bar);
-    $barNoData.text('No trend available for this combination').css('position', 'absolute').css('margin', '3em').css('top', '0px').css('left', '50px').css('display', 'none'); // 4th chart - placeholder
-
-    var $ph = $$4('<div>').appendTo($trends2);
-    $ph.attr('id', 'bsbi-ph-chart').attr('class', 'phenColumn').css('max-width', '400px').css('position', 'relative').text('Figure 4');
-    var svgPh = d3__namespace.select('#bsbi-ph-chart').append('svg');
-    svgPh.attr("viewBox", "0 0 350 250");
+    $barNoData.text('No trend available for this combination').css('position', 'absolute').css('margin', '3em').css('top', '0px').css('left', '50px').css('display', 'none');
   }
   function changeTrends(taxon) {
     if (taxon) {
@@ -1721,11 +1775,23 @@
     if (!currentTaxon$2.identifier) return; //scaleType
 
     loadData().then(function (d) {
-      var gamData, linmodData, barData;
+      var gamData, linmodData, barData, densityData;
 
       if (d[0].status === 'fulfilled') {
-        gamData = d[0].value;
-        $gamNoData.hide();
+        $gamNoData.hide(); // If termType is short, add extra points to start of array to make 
+        // for smooth transitions between long and short term trends
+
+        if (termType === 'short') {
+          gamData = [];
+
+          for (var i = 0; i < 44; i++) {
+            gamData.push(d[0].value[0]);
+          }
+
+          gamData = [].concat(_toConsumableArray(gamData), _toConsumableArray(d[0].value));
+        } else {
+          gamData = d[0].value;
+        }
       } else {
         gamData = [];
         $gamNoData.show();
@@ -1733,13 +1799,31 @@
 
       if (d[1].status === 'fulfilled') {
         linmodData = d[1].value;
+        densityData = [linmodData.map(function (d) {
+          return {
+            slope: Number(d.gradient)
+          };
+        })];
         $linmodNoData.hide();
+        $densityNoData.hide();
       } else {
         linmodData = [];
+        densityData = [];
         $linmodNoData.show();
+        $densityNoData.show();
       }
 
-      var means = d[2].status === 'fulfilled' ? d[2].value : [];
+      var meanLinmodData = d[4].status === 'fulfilled' ? d[4].value : [];
+
+      if (densityData.length) {
+        densityData.push(meanLinmodData);
+      }
+
+      var linmodCentiles = d[5].status === 'fulfilled' ? d[5].value : [];
+      var means = d[2].status === 'fulfilled' ? d[2].value : []; // Reverse the order of means to make for smooth transitions between
+      // short and long term trends
+
+      means.reverse();
 
       if (d[3].status === 'fulfilled') {
         barData = d[3].value[0];
@@ -1756,17 +1840,51 @@
         yMax = 1;
       }
 
-      gam.updateChart(gamData, means, yMin, yMax, true, [{
+      gam.updateChart(gamData, means, termType === 'long' ? 1947 : 1990, 2022, yMin, yMax, true, [{
         y: 0,
         stroke: 'rgb(210,210,210)',
-        strokeWidth: 2
+        strokeWidth: 1
       }]);
-      linmod.updateChart(linmodData, means, yMin, yMax, true, [{
+      linmod.updateChart(linmodData, means, termType === 'long' ? 1947 : 1990, 2022, yMin, yMax, true, [{
         y: 0,
         stroke: 'rgb(210,210,210)',
-        strokeWidth: 2
+        strokeWidth: 1
       }]);
       bar.updateChart(barData);
+      var xlines = [{
+        x: -0.004,
+        stroke: 'silver',
+        strokeWidth: 1,
+        strokeDasharray: '3 3'
+      }, {
+        x: -0.001,
+        stroke: 'silver',
+        strokeWidth: 1,
+        strokeDasharray: '3 3'
+      }, {
+        x: 0,
+        stroke: 'silver',
+        strokeWidth: 1
+      }, {
+        x: 0.001,
+        stroke: 'silver',
+        strokeWidth: 1,
+        strokeDasharray: '3 3'
+      }, {
+        x: 0.004,
+        stroke: 'silver',
+        strokeWidth: 1,
+        strokeDasharray: '3 3'
+      }];
+      var limmodCentile = linmodCentiles.find(function (l) {
+        return l.region === regionType;
+      }); //console.log('centiles', limmodCentile)
+
+      if (densityData.length) {
+        density.updateChart(densityData, limmodCentile.c5, limmodCentile.c95, xlines, null, scaleTypeDensity === 'max');
+      } else {
+        density.updateChart([]);
+      }
     });
   }
 
@@ -1827,13 +1945,26 @@
         fill: 'rgb(230,230,230)'
       }];
     });
-    return Promise.allSettled([pGam, pLinmod, pMeans, pSummaries]);
+    var pLinmodMeans = d3__namespace.csv("".concat(trendsRoot).concat(termType, "/trends-linmod/").concat(regionType, "/mean-gradients.csv?").concat(pcache), function (d) {
+      return {
+        slope: Number(d.gradient)
+      };
+    });
+    var pLinmodCentiles = d3__namespace.csv("".concat(trendsRoot).concat(termType, "/trends-linmod/centiles.csv?").concat(pcache), function (d) {
+      return {
+        region: d.region,
+        c5: Number(d.c5),
+        c95: Number(d.c95)
+      };
+    });
+    return Promise.allSettled([pGam, pLinmod, pMeans, pSummaries, pLinmodMeans, pLinmodCentiles]);
   }
 
   function createTrendControls(selector) {
     regionSelector(trendControlRow(selector));
     termSelector(trendControlRow(selector));
     scalingSelector(trendControlRow(selector));
+    scalingSelector2(trendControlRow(selector));
   }
 
   function trendControlRow(selector, classname) {
@@ -1922,10 +2053,10 @@
 
   function scalingSelector($parent) {
     var scales = [{
-      caption: 'Scale to species',
+      caption: 'Scale trends to species',
       val: 'within'
     }, {
-      caption: 'Scale across species',
+      caption: 'Scale trends across species',
       val: 'across'
     }]; // Scale (y axis) selector
 
@@ -1944,6 +2075,35 @@
       $opt.html(b.caption).appendTo($sel);
     });
     $sel.val(scaleType); // This seems to be necessary if interface regenerated,
+    // e.g. changing from tabbed to non-tabbed display.
+
+    $sel.selectpicker();
+  }
+
+  function scalingSelector2($parent) {
+    var scales = [{
+      caption: 'Scale density plot to max',
+      val: 'max'
+    }, {
+      caption: 'Scale density plot to area',
+      val: 'area'
+    }]; // Scale (y axis) selector
+
+    var $sel = $$4('<select>').appendTo($parent);
+    $sel.addClass('selectpicker');
+    $sel.addClass('atlas-trends-density-scale-control');
+    $sel.attr('data-width', '100%');
+    $sel.on('changed.bs.select', function () {
+      scaleTypeDensity = $$4(this).val();
+      setCookie('trend-scale-density', scaleTypeDensity, 30);
+      changeTrends();
+    });
+    scales.forEach(function (b) {
+      var $opt = b.selected ? $$4('<option>') : $$4('<option>');
+      $opt.attr('value', b.val);
+      $opt.html(b.caption).appendTo($sel);
+    });
+    $sel.val(scaleTypeDensity); // This seems to be necessary if interface regenerated,
     // e.g. changing from tabbed to non-tabbed display.
 
     $sel.selectpicker();
@@ -2315,7 +2475,7 @@
       caption: 'Country boundaries',
       val: 'country'
     }, {
-      caption: 'Vice county boundaries',
+      caption: 'Vice-county boundaries',
       val: 'vc'
     }, {
       caption: 'No boundaries',
@@ -2669,16 +2829,18 @@
     function makeRadio(label, val, checked) {
       var $div = $$2('<div>').appendTo($container);
       $div.attr('class', 'radio');
-      var $radio = $$2('<input>').appendTo($div);
+      var $label = $$2('<label>').appendTo($div);
+      $label.css('padding-left', '0');
+      var $radio = $$2('<input>').appendTo($label);
+      var $span = $$2('<span>').appendTo($label);
+      $span.text(label);
+      $span.css('padding-left', '20px');
       $radio.attr('type', 'radio');
       $radio.attr('name', 'bsbi-resolution-' + i);
       $radio.attr('class', 'bsbi-resolution-' + val);
       $radio.attr('value', val);
       $radio.css('margin-left', 0);
       if (checked) $radio.prop('checked', true);
-      var $label = $$2('<label>').appendTo($div);
-      $label.attr('for', 'bsbi-resolution-' + val);
-      $label.text(label);
       $radio.change(function () {
         resolution = $$2(this).val(); // Update controls mirrored in other blocks
 
@@ -3697,7 +3859,7 @@
                 break;
               }
 
-              altlatRoot = ds$1.bsbi_atlas.dataRoot + 'bsbi/20220606/altlat/';
+              altlatRoot = ds$1.bsbi_atlas.dataRoot + 'bsbi/20220704/altlat/';
               altlatfile = "".concat(altlatRoot).concat(taxonId.replace(/\./g, "_"), ".csv?prevent-cache=").concat(pcache);
               _context6.next = 5;
               return d3.csv(altlatfile);
@@ -3938,7 +4100,7 @@
       }, {
         group: null,
         id: 'conservation',
-        title: 'Conservation status',
+        title: 'Conservation',
         fn: sectionEmpty
       }, {
         group: null,
@@ -3952,8 +4114,13 @@
         fn: sectionTrends
       }, {
         group: 'CHARACTERISTICS',
+        id: 'phenology',
+        title: 'Phenology',
+        fn: sectionPhenology
+      }, {
+        group: 'CHARACTERISTICS',
         id: 'ecology',
-        title: 'Ecology',
+        title: 'Altitude',
         fn: sectionEcology
       }, {
         group: 'EXTERNAL LINKS',
@@ -3982,7 +4149,8 @@
       $('.brc-atlas-map-opts').remove();
       $('#bsbi-atlas-gui').html(null); // Other inits
 
-      $('.bsbi-atlas-trend-controls').hide(); // Make the section tabs
+      $('.bsbi-atlas-trend-controls').hide();
+      $('.bsbi-atlas-phenology-controls').hide(); // Make the section tabs
 
       var $ul = $('<ul class="nav nav-tabs"></ul>').appendTo($('#bsbi-atlas-gui'));
       sections.forEach(function (s) {
@@ -4017,6 +4185,14 @@
           updateSummaryTrends();
         } else {
           $('.bsbi-atlas-map-controls').hide();
+        }
+
+        if (target === '#bsbi-atlas-section-phenology') {
+          $('.bsbi-atlas-phenology-controls').show(); // Regenerate graphics
+
+          changePhenologyTab();
+        } else {
+          $('.bsbi-atlas-phenology-controls').hide();
         }
 
         if (target === '#bsbi-atlas-section-ecology') {
@@ -4122,6 +4298,7 @@
             changeMap();
             changeCaption(); //Also changes taxon name display in sections
 
+            changePhenologyTab();
             changeEcologyTab();
             changeTrendsTab();
             createGallery('bsbi-gallery', currentTaxon.identifier);
@@ -4231,10 +4408,17 @@
       createTrendControls('.bsbi-atlas-trend-controls');
     }
 
-    function sectionEcology(id) {
+    function sectionPhenology(id) {
       var $sect = $('#bsbi-atlas-section-' + id);
       $sect.append('<div id="bsbi-phenology"></div>');
-      createEcology("#bsbi-phenology");
+      createPhenology("#bsbi-phenology");
+      createPhenologyControls('.bsbi-atlas-phenology-controls');
+    }
+
+    function sectionEcology(id) {
+      var $sect = $('#bsbi-atlas-section-' + id);
+      $sect.append('<div id="bsbi-altitude"></div>');
+      createEcology("#bsbi-altitude");
     }
 
     function sectionGallery(id) {
@@ -4263,6 +4447,10 @@
       return "<b>".concat(vernacular, "</b> ").concat(formatted);
     }
 
+    function changePhenologyTab() {
+      changePhenology(ds.bsbi_atlas.dataRoot, currentTaxon.identifier);
+    }
+
     function changeEcologyTab() {
       changeEcology(ds.bsbi_atlas.dataRoot, currentTaxon.identifier);
     }
@@ -4277,9 +4465,11 @@
       var trendGb = "".concat(trendRoot, "/Britain/").concat(currentTaxon.identifier.replace(/\./g, "_"), ".csv?prevent-cache=").concat(pcache);
       var trendIr = "".concat(trendRoot, "/Ireland/").concat(currentTaxon.identifier.replace(/\./g, "_"), ".csv?prevent-cache=").concat(pcache);
       var $trends = $('#trend-summaries');
-      $trends.html('');
-      $trends.css('font-weight', 'bold');
-      $('<div>').text('Post-1930 effort-adjusted 10 km trends').appendTo($trends);
+      $trends.html(''); //$trends.css('font-weight', 'bold')
+
+      $trends.css('margin-bottom', '0.5em');
+      var $trendHeader = $('<div>').text('Post-1930 effort-adjusted 10 km trends').appendTo($trends);
+      $trendHeader.css('margin-bottom', '0.2em');
       var $table = $('<table>').appendTo($trends);
       var $trBritain = $('<tr>').appendTo($table);
       var $trIreland = $('<tr>').appendTo($table);
@@ -4326,7 +4516,7 @@
         // Description
 
         if (d[0].atlasSpeciesDescription) {
-          $caption.append('<h4>Description</h4>');
+          //$caption.append('<h4>Description</h4>')
           $p = $('<p>').appendTo($caption);
           $p.append(postProcessCaptionText(d[0].atlasSpeciesDescription));
           $p = $('<p>').appendTo($caption);
@@ -4345,8 +4535,7 @@
             var $li = $('<li>').appendTo($ul);
             var taxon = taxaList.find(function (t) {
               return t['ddbid'] === ddbid;
-            });
-            console.log('taxon', taxon);
+            }); //console.log('taxon', taxon)
 
             if (taxon) {
               //$li.html(getFormattedTaxonName(taxon['vernacular'], taxon['formattedName']))
