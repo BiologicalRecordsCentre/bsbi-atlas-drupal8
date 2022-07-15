@@ -22,8 +22,9 @@ class AtlasTaxonSelector extends BlockBase {
     $species = '<div class="bsbi-atlas-taxon-selector"></div>';
     $mapcontrols = '<div class="bsbi-atlas-map-controls"></div>';
     $trendcontrols = '<div class="bsbi-atlas-trend-controls"></div>';
+    $phenologycontrols = '<div class="bsbi-atlas-phenology-controls"></div>';
     return [
-      '#markup' => $species . $mapcontrols . $trendcontrols,
+      '#markup' => $species . $mapcontrols . $trendcontrols . $phenologycontrols,
     ];
   }
 

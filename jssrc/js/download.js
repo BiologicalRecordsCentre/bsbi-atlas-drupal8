@@ -380,7 +380,7 @@ function altlatChart() {
 
 async function altlatUpdate(taxonId ,taxon) {
   if ($('#download-altlat').is(':checked')) {
-    const altlatRoot = ds.bsbi_atlas.dataRoot + 'bsbi/20220704/altlat/'
+    const altlatRoot = ds.bsbi_atlas.dataRoot + 'bsbi/maps/altlat/'
     const altlatfile = `${altlatRoot}${taxonId.replace(/\./g, "_")}.csv?prevent-cache=${pcache}`
     const altlatdata = await d3.csv(altlatfile)
     await altLat(altlat, altlatdata)

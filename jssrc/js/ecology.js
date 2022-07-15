@@ -280,7 +280,7 @@ export function changeEcology(dataRoot, identifier) {
    
   if (!identifier) return 
 
-  const mapRoot = dataRoot + 'bsbi/20220704/'
+  const mapRoot = dataRoot + 'bsbi/maps/'
 
   // Alt/Lat
   // Using pre-processed altlat data

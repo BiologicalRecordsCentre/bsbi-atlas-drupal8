@@ -1077,7 +1077,7 @@
     }
   }
 
-  var pcache = '20220704-9';
+  var pcache = '20220712-1';
 
   var $$5 = jQuery; // eslint-disable-line no-undef
 
@@ -1310,7 +1310,7 @@
   }
   function changeEcology(dataRoot, identifier) {
     if (!identifier) return;
-    var mapRoot = dataRoot + 'bsbi/20220704/'; // Alt/Lat
+    var mapRoot = dataRoot + 'bsbi/maps/'; // Alt/Lat
     // Using pre-processed altlat data
 
     var altlatdata = "".concat(mapRoot, "altlat/").concat(identifier.replace(/\./g, "_"), ".csv");
@@ -2940,7 +2940,7 @@
     transOptsSel.BI1.bounds.xmin = -230000, //No insets
     transOptsSel.BI2.bounds.xmin = -230000, //CI inset
     // Init
-    bsbiDataAccess.bsbiDataRoot = ds$2.bsbi_atlas.dataRoot + 'bsbi/20220704/';
+    bsbiDataAccess.bsbiDataRoot = ds$2.bsbi_atlas.dataRoot + 'bsbi/maps/';
     bsbiDataAccess.showStatus = false; // Data access 
 
     var mapTypesSel = {
@@ -3859,7 +3859,7 @@
                 break;
               }
 
-              altlatRoot = ds$1.bsbi_atlas.dataRoot + 'bsbi/20220704/altlat/';
+              altlatRoot = ds$1.bsbi_atlas.dataRoot + 'bsbi/maps/altlat/';
               altlatfile = "".concat(altlatRoot).concat(taxonId.replace(/\./g, "_"), ".csv?prevent-cache=").concat(pcache);
               _context6.next = 5;
               return d3.csv(altlatfile);
