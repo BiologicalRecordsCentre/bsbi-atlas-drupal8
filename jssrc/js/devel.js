@@ -253,7 +253,7 @@ export function develMainMapStyles(selector, changeMap) {
   }
 
   function initColours(status, key, reverse) {
-    console.log('init', status, key)
+    
     const colours = colorbrewer[key]
   
     let periods = ['2000_19', '1987_99', '1970_86', '1930_69', 'pre_1930'].reverse()

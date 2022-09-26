@@ -53,7 +53,8 @@
   };
   var dependencies = {
   	d3: "^5.16.0",
-  	lightgallery: "^2.3.0"
+  	lightgallery: "^2.3.0",
+  	"stats-lite": "^2.2.0"
   };
   var pkg = {
   	name: name,
@@ -107,6 +108,21 @@
     };
   }
 
+  function _defineProperty(obj, key, value) {
+    if (key in obj) {
+      Object.defineProperty(obj, key, {
+        value: value,
+        enumerable: true,
+        configurable: true,
+        writable: true
+      });
+    } else {
+      obj[key] = value;
+    }
+
+    return obj;
+  }
+
   function _toConsumableArray(arr) {
     return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread();
   }
@@ -150,7 +166,6 @@
   bsbiDataAccess.resolution = 'hectad';
   bsbiDataAccess.displayedMapType = 'static';
   bsbiDataAccess.taxaHybridList = [];
-  bsbiDataAccess.taxaNoStatusList = [];
   bsbiDataAccess.changeColours = ['#FAD0C8', '#DD5A2F', '#525252'];
   bsbiDataAccess.symboltype = 'circle';
   bsbiDataAccess.periodColours = {};
@@ -741,11 +756,11 @@
           };
         }
       }).then(function (data) {
-        resolve({
-          records: data,
-          precision: 2000,
-          size: 1,
-          legend: {
+        console.log('Tetrad data', data);
+        var legend;
+
+        if (data.length) {
+          legend = {
             lines: [{
               colour: 'black',
               opacity: 1,
@@ -753,10 +768,31 @@
               //shape: bsbiDataAccess.symboltype === 'square' ? 'square' : 'circle', //'circle' dev only
               shape: 'square'
             }]
-          }
+          };
+        } else {
+          legend = {
+            title: 'No data available',
+            lines: []
+          };
+        }
+
+        resolve({
+          records: data,
+          precision: 2000,
+          size: 1,
+          legend: legend
         });
       })["catch"](function (e) {
-        reject(e);
+        //reject(e)
+        resolve({
+          records: [],
+          precision: 2000,
+          size: 1,
+          legend: {
+            title: 'No data available',
+            lines: []
+          }
+        });
       });
     });
   }
@@ -918,12 +954,10 @@
           };
         }
       }).then(function (data) {
-        resolve({
-          records: data,
-          size: 1,
-          precision: 10000,
-          opacity: 1,
-          legend: {
+        var legend;
+
+        if (data.length) {
+          legend = {
             title: legendTitle,
             size: 1,
             precision: 10000,
@@ -941,7 +975,20 @@
               text: 'Loss',
               shape: 'triangle-down'
             }]
-          }
+          };
+        } else {
+          legend = {
+            title: 'No data available',
+            lines: []
+          };
+        }
+
+        resolve({
+          records: data,
+          size: 1,
+          precision: 10000,
+          opacity: 1,
+          legend: legend
         });
       })["catch"](function (e) {
         reject(e);
@@ -967,15 +1014,10 @@
           };
         }
       }).then(function (data) {
-        resolve({
-          records: data,
-          //size: 1,
-          colour: 'black',
-          //shape: bsbiDataAccess.displayedMapType === 'static' ? 'circle' : 'circlerad',
-          shape: 'circle',
-          precision: 10000,
-          opacity: 1,
-          legend: {
+        var legend;
+
+        if (data.length) {
+          legend = {
             title: 'Tetrad frequency',
             size: 1,
             shape: 'circle',
@@ -998,7 +1040,23 @@
               text: '21–25',
               size: Math.sqrt(25) / 5 * legendSizeFact
             }]
-          }
+          };
+        } else {
+          legend = {
+            title: 'No data available',
+            lines: []
+          };
+        }
+
+        resolve({
+          records: data,
+          //size: 1,
+          colour: 'black',
+          //shape: bsbiDataAccess.displayedMapType === 'static' ? 'circle' : 'circlerad',
+          shape: 'circle',
+          precision: 10000,
+          opacity: 1,
+          legend: legend
         });
       })["catch"](function (e) {
         reject(e);
@@ -1006,7 +1064,7 @@
     });
   };
 
-  var $$6 = jQuery; // eslint-disable-line no-undef
+  var $$8 = jQuery; // eslint-disable-line no-undef
 
   function setBaseMetaTags() {
     addMetaTags('title', 'BSBI Online Plant Atlas 2020');
@@ -1023,16 +1081,16 @@
   function addMetaTags(type, value, update) {
     var addHeadTag = function addHeadTag(name, content, update) {
       if (update) {
-        $$6('meta[name="' + name + '"').attr('content', content);
+        $$8('meta[name="' + name + '"').attr('content', content);
       } else {
-        $$6('head').append('<meta name="' + name + '" content="' + content + '" />');
+        $$8('head').append('<meta name="' + name + '" content="' + content + '" />');
       }
     }; // http://div.div1.com.au/div-thoughts/div-commentaries/66-div-commentary-metadata
 
 
     switch (type) {
       case 'title':
-        $$6('head title').html(value);
+        $$8('head title').html(value);
         addHeadTag("citation_title", value, update);
         addHeadTag("dc.title", value, update);
         addHeadTag("dcterms.title", value, update);
@@ -1077,31 +1135,41 @@
     }
   }
 
-  var pcache = '20220712-1';
+  var pcache = '20220922-1';
 
-  var $$5 = jQuery; // eslint-disable-line no-undef
+  var $$7 = jQuery; // eslint-disable-line no-undef
 
   var phen1$1, phen2$1, phen3, altlat$1;
   var apparencyByLatData;
   function createPhenology(sel) {
     //$('<h4>').appendTo($(sel)).text('Phenology')
-    var $phenFlexParent = $$5('<div>').appendTo($$5(sel)); //const $phenSource = $('<div>').appendTo($phenFlexLeft)
+    var $phenFlexParent = $$7('<div>').appendTo($$7(sel)); //const $phenSource = $('<div>').appendTo($phenFlexLeft)
 
-    var $phenSource = $$5('<div>').appendTo($$5(sel));
+    var $phenSource = $$7('<div>').appendTo($$7(sel));
     $phenSource.attr('id', 'bsbi-phenology-source');
     $phenSource.css('font-size', '0.8em'); //$phenSource.css('padding-left', '32px')
     //$phenSource.css('max-width', '400px')
 
     $phenSource.css('margin-bottom', '0.8em');
-    var $p1 = $$5('<p>').appendTo($$5(sel));
+    var $p1 = $$7('<p>').appendTo($$7(sel));
     $p1.text("Explanation of apparency and phenology charts. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque blandit dui vel mauris maximus interdum. Aliquam orci eros, venenatis vel purus nec, venenatis congue leo. Pellentesque rhoncus metus eros, tincidunt congue massa volutpat facilisis. Curabitur pellentesque turpis velit, quis ornare mauris ullamcorper a.");
     $phenFlexParent.attr('class', 'phenRow');
-    var $phenFlexLeft = $$5('<div>').appendTo($phenFlexParent);
+    var $phenFlexLeft = $$7('<div>').appendTo($phenFlexParent);
     $phenFlexLeft.attr('class', 'phenColumn');
-    var $phenFlexRight = $$5('<div>').appendTo($phenFlexParent);
+    var $phenFlexRight = $$7('<div>').appendTo($phenFlexParent);
     $phenFlexRight.attr('class', 'phenColumn');
-    var $apparency = $$5('<div>').appendTo($phenFlexLeft);
+    var $divp1 = $$7('<div>').appendTo($phenFlexLeft);
+    $divp1.css('position', 'relative');
+    var $apparency = $$7('<div>').appendTo($divp1);
     $apparency.attr('id', 'bsbi-apparency-chart').css('max-width', '400px');
+    var $apparencyNoData = $$7('<div>').appendTo($divp1);
+    $apparencyNoData.attr('id', 'bsbi-apparency-chart-no-data');
+    $apparencyNoData.css('display', 'none');
+    $apparencyNoData.css('position', 'absolute');
+    $apparencyNoData.css('top', '50px');
+    $apparencyNoData.css('width', '100%');
+    $apparencyNoData.css('text-align', 'center');
+    $apparencyNoData.text('No data available for chart');
     phen1$1 = brccharts.phen1({
       selector: '#bsbi-apparency-chart',
       data: [],
@@ -1120,9 +1188,11 @@
       showTaxonLabel: false,
       axisLeft: 'off',
       showLegend: false,
-      interactivity: 'none'
+      interactivity: 'none',
+      font: 'Arial',
+      monthFontSize: 11
     });
-    var $phenology = $$5('<div>').appendTo($phenFlexLeft);
+    var $phenology = $$7('<div>').appendTo($phenFlexLeft);
     $phenology.attr('id', 'bsbi-phenology-chart').css('max-width', '400px');
     phen2$1 = brccharts.phen2({
       selector: '#bsbi-phenology-chart',
@@ -1137,10 +1207,22 @@
       perRow: 1,
       expand: true,
       showTaxonLabel: false,
-      interactivity: 'none'
+      interactivity: 'none',
+      font: 'Arial',
+      monthFontSize: 11
     });
-    var $apparencyByLat = $$5('<div>').appendTo($phenFlexRight);
-    $apparencyByLat.attr('id', 'bsbi-apparency-by-lat-chart').css('max-width', '400px'); // $apparencyByLat = $('<div>').appendTo($phenFlexRight)
+    var $divp3 = $$7('<div>').appendTo($phenFlexRight);
+    $divp3.css('position', 'relative');
+    var $apparencyByLat = $$7('<div>').appendTo($divp3);
+    $apparencyByLat.attr('id', 'bsbi-apparency-by-lat-chart').css('max-width', '400px');
+    var $apparencyByLatNoData = $$7('<div>').appendTo($divp3);
+    $apparencyByLatNoData.attr('id', 'bsbi-apparency-by-lat-chart-no-data');
+    $apparencyByLatNoData.css('display', 'none');
+    $apparencyByLatNoData.css('position', 'absolute');
+    $apparencyByLatNoData.css('top', '50px');
+    $apparencyByLatNoData.css('width', '100%');
+    $apparencyByLatNoData.css('text-align', 'center');
+    $apparencyByLatNoData.text('No data available for chart'); // $apparencyByLat = $('<div>').appendTo($phenFlexRight)
     // $apparencyByLat.attr('id', 'bsbi-apparency-by-lat-chart').css('max-width', '400px')
 
     phen3 = brccharts.phen1({
@@ -1164,19 +1246,32 @@
         bottom: 5
       },
       axisLeftLabel: 'Latitudinal band',
-      axisLabelFontSize: 12
+      axisLabelFontSize: 12,
+      font: 'Arial',
+      monthFontSize: 12
     }); //latPhenNormalizeCheckbox($phenFlexRight, phen3) 
     //latPhenDataTypeDropdown($phenFlexRight) 
     // Website style is overriding some charts style, so reset it
 
-    $$5('.brc-chart-phen1').css('overflow', 'visible'); // Chart line width - not currently a chart option
+    $$7('.brc-chart-phen1').css('overflow', 'visible'); // Chart line width - not currently a chart option
 
-    $$5('#bsbi-apparency-by-lat-chart .phen-path').css('stroke-width', 1);
+    $$7('#bsbi-apparency-by-lat-chart .phen-path').css('stroke-width', 1);
   }
   function createEcology(sel) {
     //$('<h4>').appendTo($(sel)).text('Altitude vs Latitude')
-    var $altlat = $$5('<div>').appendTo($$5(sel));
-    var $p2 = $$5('<p>').appendTo($$5(sel));
+    var $altlatp = $$7('<div>').appendTo($$7(sel));
+    $altlatp.css('position', 'relative');
+    var $altlatNoText = $$7('<div>').appendTo($altlatp);
+    $altlatNoText.attr('id', 'bsbi-altlat-chart-no-data');
+    $altlatNoText.css('display', 'none');
+    $altlatNoText.css('position', 'absolute');
+    $altlatNoText.css('top', '50px');
+    $altlatNoText.css('width', '100%');
+    $altlatNoText.css('max-width', '600px');
+    $altlatNoText.css('text-align', 'center');
+    $altlatNoText.text('No data available for chart');
+    var $altlat = $$7('<div>').appendTo($altlatp);
+    var $p2 = $$7('<p>').appendTo($$7(sel));
     $p2.text("Explanation of latitude/altitude chart. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque blandit dui vel mauris maximus interdum. Aliquam orci eros, venenatis vel purus nec, venenatis congue leo. Pellentesque rhoncus metus eros, tincidunt congue massa volutpat facilisis. Curabitur pellentesque turpis velit, quis ornare mauris ullamcorper a."); // Alt vs Lat visualisation
 
     $altlat.attr('id', 'bsbi-altlat-chart');
@@ -1221,7 +1316,7 @@
       perRow: 1,
       expand: true,
       margin: {
-        left: 45,
+        left: 55,
         right: 10,
         top: 20,
         bottom: 35
@@ -1236,7 +1331,7 @@
   }
 
   function createPhenologyControls(selector) {
-    latPhenDataTypeDropdown($$5(selector));
+    latPhenDataTypeDropdown($$7(selector));
   }
 
   function latPhenDataTypeDropdown($parent) {
@@ -1251,9 +1346,9 @@
       val: 'density'
     }]; // Main type selector
 
-    var $div = $$5('<div>').appendTo($parent); //$div.css('margin-left', '35px')
+    var $div = $$7('<div>').appendTo($parent); //$div.css('margin-left', '35px')
 
-    var $sel = $$5('<select>').appendTo($div);
+    var $sel = $$7('<select>').appendTo($div);
     $sel.attr('id', 'atlas-lat-phen-data-type');
     $sel.addClass('selectpicker');
     $sel.attr('data-width', '100%');
@@ -1263,7 +1358,7 @@
       }
     });
     dataTypes.forEach(function (t) {
-      var $opt = t.selected ? $$5('<option>') : $$5('<option>');
+      var $opt = t.selected ? $$7('<option>') : $$7('<option>');
       $opt.attr('value', t.val);
       $opt.html(t.caption).appendTo($sel);
     });
@@ -1281,11 +1376,15 @@
     var fileAll = apparencyRoot + 'all/' + identifier.replace(/\./g, "_") + '.csv';
     d3__namespace.csv(fileAll + '?prevent-cache=').then(function (data) {
       apparency(phen1$1, data);
+      $$7('#bsbi-apparency-chart').css('opacity', 1);
+      $$7('#bsbi-apparency-chart-no-data').hide();
     })["catch"](function () {
       console.warn("Apparency chart failed for ".concat(fileAll, ". Error message:"), e);
       phen1$1.setChartOpts({
         data: []
       });
+      $$7('#bsbi-apparency-chart').css('opacity', 0.5);
+      $$7('#bsbi-apparency-chart-no-data').show();
     }); // Apparency by latitude
 
     var fileLat = apparencyRoot + 'byLat/' + identifier.replace(/\./g, "_") + '.csv';
@@ -1294,6 +1393,8 @@
       // data type dropdown used.
 
       apparencyByLat(phen3, apparencyByLatData);
+      $$7('#bsbi-apparency-by-lat-chart').css('opacity', 1);
+      $$7('#bsbi-apparency-by-lat-chart-no-data').hide();
     })["catch"](function () {
       console.warn("Apparency by latitude chart failed for ".concat(fileLat, ". Error message:"), e);
       phen3.setChartOpts({
@@ -1301,6 +1402,8 @@
         metrics: [],
         spread: false
       });
+      $$7('#bsbi-apparency-by-lat-chart').css('opacity', 0.5);
+      $$7('#bsbi-apparency-by-lat-chart-no-data').show();
     }); // Phenology
 
     var file = "".concat(captionRoot).concat(identifier.replace(/\./g, "_"), ".csv");
@@ -1315,12 +1418,16 @@
 
     var altlatdata = "".concat(mapRoot, "altlat/").concat(identifier.replace(/\./g, "_"), ".csv");
     d3__namespace.csv(altlatdata).then(function (data) {
+      $$7('#bsbi-altlat-chart').css('opacity', 1);
+      $$7('#bsbi-altlat-chart-no-data').hide();
       return altLat(altlat$1, data);
     })["catch"](function (e) {
       console.warn("altlat chart failed for ".concat(altlatdata, ". Error message:"), e);
       altlat$1.setChartOpts({
         data: []
       });
+      $$7('#bsbi-altlat-chart').css('opacity', 0.25);
+      $$7('#bsbi-altlat-chart-no-data').show();
     });
   } // For Oli's stuff October - reformatted 
 
@@ -1352,8 +1459,19 @@
     var flowerStart = m2d[Number(fs) - 1];
     var flowerEnd = m2d[Number(fe)];
     var leafStart = m2d[Number(ls) - 1];
-    var leafEnd = m2d[Number(le)]; //console.log('ls le', ls, le)
+    var leafEnd = m2d[Number(le)];
+
+    if (leafEnd === leafStart) {
+      leafStart = 1;
+      leafEnd = 365;
+    }
+
+    if (flowerEnd === flowerStart) {
+      flowerStart = 1;
+      flowerEnd = 365;
+    } //console.log('ls le', ls, le)
     // Work out area of overlap between flowering and leafing
+
 
     var flowerRange = [];
     var leafRange = [];
@@ -1408,10 +1526,14 @@
     if (textId) {
       var flowerText = tweakRef(data[0].phenFlowerRef);
       var leafText = tweakRef(data[0].phenLeafRef);
-      var source;
+      var source = '';
 
       if (flowerRange.length) {
-        source = "Data for flower phenology from ".concat(flowerText, ".");
+        if (flowerText) {
+          source = "Data for flower phenology from ".concat(flowerText, ".");
+        } else {
+          source = "Data for flower phenology predicted.";
+        }
       }
 
       if (flowerRange.length && leafRange.length) {
@@ -1420,10 +1542,14 @@
       }
 
       if (leafRange.length) {
-        source = "".concat(source, "Data for leafing phenology from ").concat(leafText, ".");
+        if (leafText) {
+          source = "".concat(source, "Data for leafing phenology from ").concat(leafText, ".");
+        } else {
+          source = "".concat(source, "Data for leafing phenology predicted.");
+        }
       }
 
-      $$5("#".concat(textId)).html(source);
+      $$7("#".concat(textId)).html(source);
     } // '#009900' '#ff9900'
 
 
@@ -1474,7 +1600,7 @@
     });
 
     function tweakRef(ref) {
-      var $tmp = $$5('<div>');
+      var $tmp = $$7('<div>');
       $tmp.html(ref); // Replace 'Poland, J. personal observation' with 'John Poland, personal observation'
 
       var $span1 = $tmp.children('span').eq(0);
@@ -1489,7 +1615,7 @@
   }
   function apparencyByLat(chart, data) {
     // Map text to numeric values and add taxon
-    var dataType = $$5('#atlas-lat-phen-data-type').val(); //console.log('dataType', dataType)
+    var dataType = $$7('#atlas-lat-phen-data-type').val(); //console.log('dataType', dataType)
 
     var numeric = data.filter(function (d) {
       return d.type === dataType;
@@ -1595,7 +1721,51 @@
     }
   }
 
-  var $$4 = jQuery; // eslint-disable-line no-undef
+  var isnumber = isNumber;
+  /**
+   * Determine if something is a non-infinite javascript number.
+   * @param  {Number}  n A (potential) number to see if it is a number.
+   * @return {Boolean}   True for non-infinite numbers, false for all else.
+   */
+
+  function isNumber(n) {
+    return !isNaN(parseFloat(n)) && isFinite(n);
+  }
+
+  var percentile_1 = percentile;
+
+  function numbers(vals) {
+    var nums = [];
+    if (vals == null) return nums;
+
+    for (var i = 0; i < vals.length; i++) {
+      if (isnumber(vals[i])) nums.push(+vals[i]);
+    }
+
+    return nums;
+  }
+
+  function nsort(vals) {
+    return vals.sort(function numericSort(a, b) {
+      return a - b;
+    });
+  }
+
+  function percentile(vals, ptile) {
+    vals = numbers(vals);
+    if (vals.length === 0 || ptile == null || ptile < 0) return NaN; // Fudge anything over 100 to 1.0
+
+    if (ptile > 1) ptile = 1;
+    vals = nsort(vals);
+    var i = vals.length * ptile - 0.5;
+    if ((i | 0) === i) return vals[i]; // interpolated percentile -- using Estimation method
+
+    var int_part = i | 0;
+    var fract = i - int_part;
+    return (1 - fract) * vals[int_part] + fract * vals[Math.min(int_part + 1, vals.length - 1)];
+  }
+
+  var $$6 = jQuery; // eslint-disable-line no-undef
 
   var ds$4 = drupalSettings; // eslint-disable-line no-undef
 
@@ -1607,28 +1777,29 @@
   var scaleTypeDensity = getCookie('trend-scale-density') ? getCookie('trend-scale-density') : 'max';
   var currentTaxon$2;
   function createTrends(sel) {
-    $$4('<h4>').appendTo($$4(sel)).text('Effort-adjusted 10 km distribution trends');
-    var $trends1 = $$4('<div>').appendTo($$4(sel));
+    $$6('<h4 id="bsbiTrendsTitle">').appendTo($$6(sel)).text('');
+    $$6('<p id="bsbiTrendsAggNote">').appendTo($$6(sel)).text('');
+    var $trends1 = $$6('<div>').appendTo($$6(sel));
     $trends1.attr('class', 'phenRow');
-    var $trends2 = $$4('<div>').appendTo($$4(sel));
+    var $trends2 = $$6('<div>').appendTo($$6(sel));
     $trends2.attr('class', 'phenRow');
-    var $p1 = $$4('<p>').appendTo($$4(sel));
+    var $p1 = $$6('<p>').appendTo($$6(sel));
     $p1.html("\n  The trends above rely on the frequency scaling using local occupancy (\u201CFrescalo\u201D) approach of Hill (2012). \n  The method was designed to adjust for locally variable recording effort across time periods, \n  and has been used on many distribution datasets (Pescott et al., 2019). Here, we apply \n  Frescalo to vascular plant data gridded at the 10 km scale within the following time \n  periods: 1930\u201369; 1987\u201399; 2000\u201309; 2010\u201319. These are a subset of the \u201Cdate-classes\u201D used \n  by the BSBI to organise their data, and roughly designate multi-year periods within which \n  specific national recording projects occurred (Preston et al., 2002).\n  ");
-    var $p2 = $$4('<p>').appendTo($$4(sel));
+    var $p2 = $$6('<p>').appendTo($$6(sel));
     $p2.html("\n  Outputs from the Frescalo model include per taxon/time period estimates of mean relative occupancy and \n  their standard deviations. Below, we plot these estimates (filled white circles with black lines) \n  in Figures 1 and 2, along with a GAM smoother (Fig. 1) and a Monte Carlo-based 100-member set of \n  linear regressions compatible with these (Fig. 2). The trend magnitude frequency chart in Figure \n  3 is based on discretising the compatible linear trend set displayed in Figure 2, in order to \n  more clearly display the model-based uncertainty associated with the Frescalo outputs. \n  Pescott et al. (2022) describe the rationale for this in more detail. Finally, Figure 4 \u2026 [TO BE COMPLETED].\n  ");
-    var $p3 = $$4('<p>').appendTo($$4(sel));
+    var $p3 = $$6('<p>').appendTo($$6(sel));
     $p3.html("\n  [NEW PARAGRAPH: OTHER TEXT ABOUT DECISIONS WITH REGARDS TO INCLUDING AND EXCLUDING SPECIES IN MODELLING AND/OR DISPLAY]\n  ");
-    $$4('<h4>').appendTo($$4(sel)).text('References');
+    $$6('<h4>').appendTo($$6(sel)).text('References');
     var $ref;
-    $ref = $$4('<p>').appendTo($$4(sel));
+    $ref = $$6('<p>').appendTo($$6(sel));
     $ref.html("\n  Hill, M.O. 2012. Local frequency as a key to interpreting species occurrence data when recording effort is not known. \n  <i>Methods in Ecology and Evolution</i> 3, 195\u2013205.\n  ");
-    $ref = $$4('<p>').appendTo($$4(sel));
+    $ref = $$6('<p>').appendTo($$6(sel));
     $ref.html("\n  Pescott, O.L., Humphrey, T.A., Stroh, P.A., Walker, K.J. 2019. Temporal changes in distributions and the species \n  atlas: How can British and Irish plant data shoulder the inferential burden? <i>British & Irish Botany</i> 1, 250\u2013282. \n  <a href=\"https://doi.org/10.33928/bib.2019.01.250\" target=\"_blank\">https://doi.org/10.33928/bib.2019.01.250</a>\n  ");
-    $ref = $$4('<p>').appendTo($$4(sel));
+    $ref = $$6('<p>').appendTo($$6(sel));
     $ref.html("\n  Pescott, O.L., Stroh, P.A., Humphrey, T.A. and Walker, K.J. 2022. Simple methods for improving the communication \n  of uncertainty in species\u2019 temporal trends. <i>Ecological Indicators</i>, 141, 109117. \n  <a href=\"https://doi.org/10.1016/j.ecolind.2022.109117\" target=\"_blank\">https://doi.org/10.1016/j.ecolind.2022.109117</a>\n  ");
-    $ref = $$4('<p>').appendTo($$4(sel));
+    $ref = $$6('<p>').appendTo($$6(sel));
     $ref.html("\n  Preston, C.D., Pearman, D.A., Dines, T.D. (Eds.) 2002. <i>New Atlas of the British and Irish Flora</i>. Oxford University \n  Press, Oxford, England.\n  ");
-    var $gam = $$4('<div>').appendTo($trends1);
+    var $gam = $$6('<div>').appendTo($trends1);
     $gam.attr('id', 'bsbi-gam-chart').attr('class', 'phenColumn').css('max-width', '400px').css('position', 'relative').text('Figure 1');
     gam = brccharts.trend2({
       selector: '#bsbi-gam-chart',
@@ -1649,7 +1820,7 @@
       axisBottom: 'tick',
       axisRight: 'on',
       axisTop: 'on',
-      axisLeftLabel: 'Relative index',
+      axisLeftLabel: 'Relative frequency',
       axisLabelFontSize: 12,
       style: {
         vStroke: 'blue',
@@ -1663,9 +1834,9 @@
         sdStroke: 'black'
       }
     });
-    $gamNoData = $$4('<div>').appendTo($gam);
+    $gamNoData = $$6('<div>').appendTo($gam);
     $gamNoData.text('No trend available for this combination').css('position', 'absolute').css('margin', '3em').css('top', '0px').css('left', '50px').css('display', 'none');
-    var $linmod = $$4('<div>').appendTo($trends1);
+    var $linmod = $$6('<div>').appendTo($trends1);
     $linmod.attr('id', 'bsbi-linmod-chart').attr('class', 'phenColumn').css('max-width', '400px').css('position', 'relative').text('Figure 2');
     linmod = brccharts.trend3({
       selector: '#bsbi-linmod-chart',
@@ -1686,7 +1857,7 @@
       axisBottom: 'tick',
       axisRight: 'on',
       axisTop: 'on',
-      axisLeftLabel: 'Relative index',
+      axisLeftLabel: 'Relative frequency',
       axisLabelFontSize: 12,
       style: {
         vStroke: 'blue',
@@ -1698,10 +1869,10 @@
         sdStroke: 'black'
       }
     });
-    $linmodNoData = $$4('<div>').appendTo($linmod);
+    $linmodNoData = $$6('<div>').appendTo($linmod);
     $linmodNoData.text('No trend available for this combination').css('position', 'absolute').css('margin', '3em').css('top', '0px').css('left', '50px').css('display', 'none'); // Trend density plot
 
-    var $density = $$4('<div>').appendTo($trends2);
+    var $density = $$6('<div>').appendTo($trends2);
     $density.attr('id', 'bsbi-density-chart').attr('class', 'phenColumn').css('max-width', '400px').css('position', 'relative').text('Figure 3');
     density = brccharts.density({
       selector: '#bsbi-density-chart',
@@ -1733,10 +1904,10 @@
         strokeWidth: 1
       }]
     });
-    $densityNoData = $$4('<div>').appendTo($density);
+    $densityNoData = $$6('<div>').appendTo($density);
     $densityNoData.text('No trend available for this combination').css('position', 'absolute').css('margin', '3em').css('top', '0px').css('left', '50px').css('display', 'none'); // Trend overview
 
-    var $bar = $$4('<div>').appendTo($trends2);
+    var $bar = $$6('<div>').appendTo($trends2);
     $bar.attr('id', 'bsbi-bar-chart').attr('class', 'phenColumn').css('max-width', '400px').css('position', 'relative').text('Figure 4');
     bar = brccharts.bar({
       selector: '#bsbi-bar-chart',
@@ -1764,7 +1935,7 @@
         transform: 'rotate(-55)'
       }
     });
-    $barNoData = $$4('<div>').appendTo($bar);
+    $barNoData = $$6('<div>').appendTo($bar);
     $barNoData.text('No trend available for this combination').css('position', 'absolute').css('margin', '3em').css('top', '0px').css('left', '50px').css('display', 'none');
   }
   function changeTrends(taxon) {
@@ -1772,12 +1943,52 @@
       currentTaxon$2 = taxon;
     }
 
-    if (!currentTaxon$2.identifier) return; //scaleType
+    if (!currentTaxon$2.identifier) return; // Set title to reflect user selection
+
+    var termTypeText = termType === 'short' ? 'Post-1987' : 'Post-1930';
+    var regionTypeText;
+
+    if (regionType === 'Northern') {
+      regionTypeText = 'Northern Ireland';
+    } else if (regionType === 'Republic') {
+      regionTypeText = 'Republic of Ireland';
+    } else {
+      regionTypeText = regionType;
+    }
+
+    $$6('#bsbiTrendsTitle').html("<b>".concat(termTypeText, "</b> effort-adjusted 10 km distribution trends for <b>").concat(regionTypeText, "</b>"));
+
+    if (currentTaxon$2["".concat(termType, "TrendAgg")]) {
+      setTrendsAggHtml(currentTaxon$2, termType, $$6('#bsbiTrendsAggNote'));
+    } else {
+      $$6('#bsbiTrendsAggNote').html('');
+    }
 
     loadData().then(function (d) {
+      // Set flag to exclude if data deficient
+      var dTrendCounts = d[6];
+      var dataDeficient = true;
+
+      if (dTrendCounts.status === 'fulfilled') {
+        //console.log('Trend counts', dTrendCounts.value[0])
+        if (regionType === 'Britain' || regionType === 'England' || regionType === 'Scotland' || regionType === 'Wales') {
+          if (termType === 'long') {
+            dataDeficient = dTrendCounts.value[0].GbLong <= 15;
+          } else {
+            dataDeficient = dTrendCounts.value[0].GbShort <= 15;
+          }
+        } else {
+          if (termType === 'long') {
+            dataDeficient = dTrendCounts.value[0].IrLong <= 6;
+          } else {
+            dataDeficient = dTrendCounts.value[0].IrShort <= 6;
+          }
+        }
+      }
+
       var gamData, linmodData, barData, densityData;
 
-      if (d[0].status === 'fulfilled') {
+      if (d[0].status === 'fulfilled' && !dataDeficient) {
         $gamNoData.hide(); // If termType is short, add extra points to start of array to make 
         // for smooth transitions between long and short term trends
 
@@ -1797,7 +2008,7 @@
         $gamNoData.show();
       }
 
-      if (d[1].status === 'fulfilled') {
+      if (d[1].status === 'fulfilled' && !dataDeficient) {
         linmodData = d[1].value;
         densityData = [linmodData.map(function (d) {
           return {
@@ -1813,19 +2024,19 @@
         $densityNoData.show();
       }
 
-      var meanLinmodData = d[4].status === 'fulfilled' ? d[4].value : [];
+      var meanLinmodData = d[4].status === 'fulfilled' && !dataDeficient ? d[4].value : [];
 
       if (densityData.length) {
         densityData.push(meanLinmodData);
       }
 
-      var linmodCentiles = d[5].status === 'fulfilled' ? d[5].value : [];
-      var means = d[2].status === 'fulfilled' ? d[2].value : []; // Reverse the order of means to make for smooth transitions between
+      var linmodCentiles = d[5].status === 'fulfilled' && !dataDeficient ? d[5].value : [];
+      var means = d[2].status === 'fulfilled' && !dataDeficient ? d[2].value : []; // Reverse the order of means to make for smooth transitions between
       // short and long term trends
 
       means.reverse();
 
-      if (d[3].status === 'fulfilled') {
+      if (d[3].status === 'fulfilled' && !dataDeficient) {
         barData = d[3].value[0];
         $barNoData.hide();
       } else {
@@ -1878,10 +2089,20 @@
       }];
       var limmodCentile = linmodCentiles.find(function (l) {
         return l.region === regionType;
-      }); //console.log('centiles', limmodCentile)
+      });
 
       if (densityData.length) {
-        density.updateChart(densityData, limmodCentile.c5, limmodCentile.c95, xlines, null, scaleTypeDensity === 'max');
+        // In general, density slopes of individual taxon will be within the overall
+        // density slope. But for outliers, we adjust the x axis limits based on
+        // the density slope for the taxon.
+        var dd = densityData[0].map(function (d) {
+          return d.slope;
+        });
+        var dp95 = percentile_1(dd, 0.95);
+        var dp5 = percentile_1(dd, 0.05);
+        var xmax = limmodCentile.c95 > dp95 ? limmodCentile.c95 : dp95;
+        var xmin = limmodCentile.c5 < dp5 ? limmodCentile.c5 : dp5;
+        density.updateChart(densityData, xmin, xmax, xlines, null, scaleTypeDensity === 'max');
       } else {
         density.updateChart([]);
       }
@@ -1889,9 +2110,11 @@
   }
 
   function loadData() {
-    //if (!currentTaxon.identifier) return Promise.all([Promise.reject(), Promise.reject(), Promise.reject()])
+    var tIdentifier = currentTaxon$2["".concat(termType, "TrendAgg")] ? currentTaxon$2["".concat(termType, "TrendAgg")] : currentTaxon$2.identifier;
     var trendsRoot = ds$4.bsbi_atlas.dataRoot + 'bsbi/trends/';
-    var pGam = d3__namespace.csv("".concat(trendsRoot).concat(termType, "/trends-gam/").concat(regionType, "/").concat(currentTaxon$2.identifier.replace(/\./g, "_"), ".csv?").concat(pcache), function (d) {
+    var trendCountRoot = ds$4.bsbi_atlas.dataRoot + 'bsbi/trends/hectad-counts';
+    var pTrendCounts = d3__namespace.csv("".concat(trendCountRoot, "/").concat(tIdentifier.replace(/\./g, "_"), ".csv?prevent-cache=").concat(pcache));
+    var pGam = d3__namespace.csv("".concat(trendsRoot).concat(termType, "/trends-gam/").concat(regionType, "/").concat(tIdentifier.replace(/\./g, "_"), ".csv?").concat(pcache), function (d) {
       return {
         year: Number(d.year),
         value: Number(d.x50),
@@ -1899,20 +2122,20 @@
         lower: Number(d.x5)
       };
     });
-    var pLinmod = d3__namespace.csv("".concat(trendsRoot).concat(termType, "/trends-linmod/").concat(regionType, "/").concat(currentTaxon$2.identifier.replace(/\./g, "_"), ".csv?").concat(pcache), function (d) {
+    var pLinmod = d3__namespace.csv("".concat(trendsRoot).concat(termType, "/trends-linmod/").concat(regionType, "/").concat(tIdentifier.replace(/\./g, "_"), ".csv?").concat(pcache), function (d) {
       return {
         gradient: Number(d.gradient),
         intercept: Number(d.intercept)
       };
     });
-    var pMeans = d3__namespace.csv("".concat(trendsRoot).concat(termType, "/trends-lt-mean-sd/").concat(regionType, "/").concat(currentTaxon$2.identifier.replace(/\./g, "_"), ".csv?").concat(pcache), function (d) {
+    var pMeans = d3__namespace.csv("".concat(trendsRoot).concat(termType, "/trends-lt-mean-sd/").concat(regionType, "/").concat(tIdentifier.replace(/\./g, "_"), ".csv?").concat(pcache), function (d) {
       return {
         year: Number(d.year),
         mean: Number(d.mean),
         sd: Number(d.std)
       };
     });
-    var pSummaries = d3__namespace.csv("".concat(trendsRoot).concat(termType, "/trends-summaries/").concat(regionType, "/").concat(currentTaxon$2.identifier.replace(/\./g, "_"), ".csv?").concat(pcache), function (d) {
+    var pSummaries = d3__namespace.csv("".concat(trendsRoot).concat(termType, "/trends-summaries/").concat(regionType, "/").concat(tIdentifier.replace(/\./g, "_"), ".csv?").concat(pcache), function (d) {
       return [{
         value: Number(d.declineStrong),
         label: 'Strong decline',
@@ -1957,7 +2180,7 @@
         c95: Number(d.c95)
       };
     });
-    return Promise.allSettled([pGam, pLinmod, pMeans, pSummaries, pLinmodMeans, pLinmodCentiles]);
+    return Promise.allSettled([pGam, pLinmod, pMeans, pSummaries, pLinmodMeans, pLinmodCentiles, pTrendCounts]);
   }
 
   function createTrendControls(selector) {
@@ -1966,9 +2189,68 @@
     scalingSelector(trendControlRow(selector));
     scalingSelector2(trendControlRow(selector));
   }
+  function setTrendsAggHtml(currentTaxon, termType, $ctl) {
+    //const captionRoot = ds.bsbi_atlas.dataRoot + 'bsbi/captions/'
+    // const pCaptions = []
+    // currentTaxon.trendAggTaxa.split(',').forEach(ddbid => {
+    //   const captionFile = `${captionRoot}${ddbid.replace(/\./g, "_")}.csv?prevent-cache=${pcache}`
+    //   pCaptions.push(d3.csv(captionFile))
+    // })
+    // Promise.allSettled(pCaptions).then(captions => {
+    //   console.log(captions)
+    //   const aggTaxa = captions.map(c => c.value[0].formattedName).join(', ')
+    //   const html = `(Trend for aggregate taxon <i>${currentTaxon[termType + 'TrendAggName'].replace('agg.', '</i>agg.<i>' )}</i>) ${aggTaxa}`
+    //   $ctl.html(html)
+    // })
+    $ctl.html('');
+    var $span1 = $$6('<span>').appendTo($ctl);
+    $span1.html("(Trend for aggregate taxon ".concat(enrichName(currentTaxon[termType + 'TrendAggName'])));
+    console.log(currentTaxon.trendAggTaxaNames, currentTaxon.trendAggTaxa);
+    var aggTaxa = currentTaxon.trendAggTaxaNames.split(',').map(function (t, i) {
+      return enrichName(t, currentTaxon.trendAggTaxa.split(',')[i]);
+    }).join(', '); // Replace last comma with 'and'
+
+    var lastIndex = aggTaxa.lastIndexOf(', ');
+    aggTaxa = "".concat(aggTaxa.substring(0, lastIndex), " and ").concat(aggTaxa.substring(lastIndex + 1));
+    var $span2 = $$6('<span>').appendTo($ctl);
+    $span2.css('display', 'none');
+    $span2.html(" - comprises ".concat(aggTaxa));
+    var $span3 = $$6('<span>').appendTo($ctl);
+    $span3.css('cursor', 'pointer');
+    $span3.data('data-val', 'hide');
+    $span3.html(' - <b>[show more]</b>)');
+    $span3.on('click', function () {
+      if ($$6(this).data('data-val') === 'hide') {
+        $$6(this).data('data-val', 'show');
+        $$6(this).html(' - <b>[show less]</b>)');
+        $span2.show();
+      } else {
+        $$6(this).data('data-val', 'hide');
+        $$6(this).html(' - <b>[show more]</b>)');
+        $span2.hide();
+      }
+    });
+
+    function enrichName(name, ddbid) {
+      // Remove italics (use reversed italics tab) from some strinbs
+      var ret = "<i>".concat(name, "</i>");
+      var noItalics = ['agg.', 's.s.', 's.l.', 'subsp.', '='];
+      noItalics.forEach(function (ni) {
+        ret = ret.replace(ni, "</i>".concat(ni, "<i>"));
+      }); // Replace x with ×
+
+      ret = ret.replace(/ x /g, ' × ');
+
+      if (ddbid) {
+        ret = "<a href=\"/atlas/".concat(ddbid, "\">").concat(ret, "</a>");
+      }
+
+      return ret;
+    }
+  }
 
   function trendControlRow(selector, classname) {
-    var $div = $$4('<div>').appendTo($$4(selector));
+    var $div = $$6('<div>').appendTo($$6(selector));
     $div.addClass('atlas-trend-control-row');
 
     if (classname) {
@@ -2002,17 +2284,17 @@
       val: 'Republic'
     }]; // Region selector
 
-    var $sel = $$4('<select>').appendTo($parent);
+    var $sel = $$6('<select>').appendTo($parent);
     $sel.addClass('selectpicker');
     $sel.addClass('atlas-trends-regions-control');
     $sel.attr('data-width', '100%');
     $sel.on('changed.bs.select', function () {
-      regionType = $$4(this).val();
+      regionType = $$6(this).val();
       setCookie('trend-region', regionType, 30);
       changeTrends();
     });
     regions.forEach(function (b) {
-      var $opt = b.selected ? $$4('<option>') : $$4('<option>');
+      var $opt = b.selected ? $$6('<option>') : $$6('<option>');
       $opt.attr('value', b.val);
       $opt.html(b.caption).appendTo($sel);
     });
@@ -2031,17 +2313,17 @@
       val: 'short'
     }]; // Term type selector
 
-    var $sel = $$4('<select>').appendTo($parent);
+    var $sel = $$6('<select>').appendTo($parent);
     $sel.addClass('selectpicker');
     $sel.addClass('atlas-trends-term-control');
     $sel.attr('data-width', '100%');
     $sel.on('changed.bs.select', function () {
-      termType = $$4(this).val();
+      termType = $$6(this).val();
       setCookie('trend-term', termType, 30);
       changeTrends();
     });
     terms.forEach(function (b) {
-      var $opt = b.selected ? $$4('<option>') : $$4('<option>');
+      var $opt = b.selected ? $$6('<option>') : $$6('<option>');
       $opt.attr('value', b.val);
       $opt.html(b.caption).appendTo($sel);
     });
@@ -2060,17 +2342,17 @@
       val: 'across'
     }]; // Scale (y axis) selector
 
-    var $sel = $$4('<select>').appendTo($parent);
+    var $sel = $$6('<select>').appendTo($parent);
     $sel.addClass('selectpicker');
     $sel.addClass('atlas-trends-scale-control');
     $sel.attr('data-width', '100%');
     $sel.on('changed.bs.select', function () {
-      scaleType = $$4(this).val();
+      scaleType = $$6(this).val();
       setCookie('trend-scale', scaleType, 30);
       changeTrends();
     });
     scales.forEach(function (b) {
-      var $opt = b.selected ? $$4('<option>') : $$4('<option>');
+      var $opt = b.selected ? $$6('<option>') : $$6('<option>');
       $opt.attr('value', b.val);
       $opt.html(b.caption).appendTo($sel);
     });
@@ -2089,17 +2371,17 @@
       val: 'area'
     }]; // Scale (y axis) selector
 
-    var $sel = $$4('<select>').appendTo($parent);
+    var $sel = $$6('<select>').appendTo($parent);
     $sel.addClass('selectpicker');
     $sel.addClass('atlas-trends-density-scale-control');
     $sel.attr('data-width', '100%');
     $sel.on('changed.bs.select', function () {
-      scaleTypeDensity = $$4(this).val();
+      scaleTypeDensity = $$6(this).val();
       setCookie('trend-scale-density', scaleTypeDensity, 30);
       changeTrends();
     });
     scales.forEach(function (b) {
-      var $opt = b.selected ? $$4('<option>') : $$4('<option>');
+      var $opt = b.selected ? $$6('<option>') : $$6('<option>');
       $opt.attr('value', b.val);
       $opt.html(b.caption).appendTo($sel);
     });
@@ -2109,7 +2391,114 @@
     $sel.selectpicker();
   }
 
-  var $$3 = jQuery; // eslint-disable-line no-undef
+  var $$5 = jQuery; // eslint-disable-line no-undef
+
+  drupalSettings; // eslint-disable-line no-undef
+
+  function createConservation(sel) {
+    console.log('Creating');
+    var $sect = $$5(sel);
+    var $tr;
+    var $table = $$5('<table id="bsbi-conservation-table">').appendTo($sect);
+    $tr = $$5('<tr>').appendTo($table);
+    $$5('<td style="font-weight: bold">').text('Rarity').appendTo($tr);
+    $$5('<td style="font-weight: bold">').text('Categories').appendTo($tr);
+    $$5('<td style="font-weight: bold">').text('Links').appendTo($tr);
+    $tr = $$5('<tr>').appendTo($table);
+    $$5('<td>').html('Rare or scarce Great Britain (revised 2022)<span class="ss">1</span>').appendTo($tr);
+    $$5('<td id="bsbi-conservation-rarity-gb">').appendTo($tr);
+    $$5('<td>').appendTo($tr);
+    $tr = $$5('<tr>').appendTo($table);
+    $$5('<td>').html('Rare or scarce Ireland (revised 2022)<span class="ss">2</span>').appendTo($tr);
+    $$5('<td id="bsbi-conservation-rarity-ir">').appendTo($tr);
+    $$5('<td>').appendTo($tr);
+    $tr = $$5('<tr>').appendTo($table);
+    $$5('<td colspan="3">').appendTo($tr);
+    $tr = $$5('<tr>').appendTo($table);
+    $$5('<td style="font-weight: bold">').html('Threat<span class="ss">3</span>').appendTo($tr);
+    $$5('<td>').appendTo($tr);
+    $$5('<td>').appendTo($tr);
+    $tr = $$5('<tr>').appendTo($table);
+    $$5('<td>').text('Great Britain Red List (revised Feb 2021)').appendTo($tr);
+    $$5('<td id="bsbi-conservation-threat-gb">').appendTo($tr);
+    var $l1 = genLink('https://hub.jncc.gov.uk/assets/cc1e96f8-b105-4dd0-bd87-4a4f60449907');
+    var $l2 = genLink('https://bsbi.org/taxon-lists');
+    $$5('<td>').appendTo($tr).html("".concat($l1[0].outerHTML, " (revised Feb 2021 ").concat($l2[0].outerHTML, ")"));
+    $tr = $$5('<tr>').appendTo($table);
+    $$5('<td>').text('England Red List (2014)').appendTo($tr);
+    $$5('<td id="bsbi-conservation-threat-en">').appendTo($tr);
+    $$5('<td>').appendTo($tr).append(genLink('https://bsbi.org/england'));
+    $tr = $$5('<tr>').appendTo($table);
+    $$5('<td>').text('Wales Red List (2008)').appendTo($tr);
+    $$5('<td id="bsbi-conservation-threat-wa">').appendTo($tr);
+    $$5('<td>').appendTo($tr).append(genLink('https://www.plantlife.org.uk/uk/our-work/publications/vascular-plant-red-data-list-wales'));
+    $tr = $$5('<tr>').appendTo($table);
+    $$5('<td>').text('Ireland Red List (2015)').appendTo($tr);
+    $$5('<td id="bsbi-conservation-threat-ir">').appendTo($tr);
+    $$5('<td>').appendTo($tr).append(genLink('https://www.npws.ie/publications/red-lists'));
+    $tr = $$5('<tr>').appendTo($table);
+    $$5('<td colspan="3">').appendTo($tr);
+    $tr = $$5('<tr>').appendTo($table);
+    $$5('<td style="font-weight: bold">').text('Conservation designation').appendTo($tr);
+    $$5('<td>').appendTo($tr);
+    $$5('<td>').appendTo($tr);
+    $tr = $$5('<tr>').appendTo($table);
+    $$5('<td>').text('Schedule 8 (Great Britain)').appendTo($tr);
+    $$5('<td id="bsbi-conservation-designation-gb-sched8">').appendTo($tr);
+    $$5('<td>').appendTo($tr).append(genLink('https://www.legislation.gov.uk/ukpga/1981/69/schedule/8'));
+    $tr = $$5('<tr>').appendTo($table);
+    $$5('<td>').text('Schedule 8 (Northern Ireland)').appendTo($tr);
+    $$5('<td id="bsbi-conservation-designation-ni-sched8">').appendTo($tr);
+    $$5('<td>').appendTo($tr).append(genLink('https://www.legislation.gov.uk/nisi/1985/171/contents'));
+    $tr = $$5('<tr>').appendTo($table);
+    $$5('<td>').text('Irish Flora (Protection) Order (revised 2022)').appendTo($tr);
+    $$5('<td id="bsbi-conservation-designation-ifpo">').appendTo($tr);
+    $$5('<td>').appendTo($tr).append(genLink('https://cedrec.com/legislation/56058/56059/fulltext'));
+    $tr = $$5('<tr>').appendTo($table);
+    $$5('<td>').text('England NERC list (Section 41)').appendTo($tr);
+    $$5('<td id="bsbi-conservation-designation-en-s41">').appendTo($tr);
+    $$5('<td>').appendTo($tr).append(genLink('http://publications.naturalengland.org.uk/publication/4958719460769792'));
+    $tr = $$5('<tr>').appendTo($table);
+    $$5('<td>').text('Wales NERC list (Section 7)').appendTo($tr);
+    $$5('<td id="bsbi-conservation-designation-wa-s41">').appendTo($tr);
+    $$5('<td>').appendTo($tr).append(genLink('https://www.biodiversitywales.org.uk/Section-7'));
+    var $refs = $$5('<div style="font-size: 0.8em; margin: 0.5em 0 1em 0">').appendTo($sect);
+    $$5('<span style="vertical-align: super">').text('1').appendTo($refs);
+    $$5('<span>').text(' Rare - species recorded in 15 or fewer hectads in GB 2000-2019; scarce - species recorded in 16-100 hectads in GB 2000-2019; not rare or scarce - species recorded in more than 100 hectads in GB 2000-2019.').appendTo($refs);
+    $refs.append($$5('<br/>'));
+    $$5('<span style="vertical-align: super">').text('2').appendTo($refs);
+    $$5('<span>').text(' Rare - species recorded in 10 or fewer hectads in Ireland 2000-2019; scarce - species recorded in 11-25 hectads in Ireland 2000-2019; not rare or scarce - species recorded in more than 25 hectads in Ireland 2000-2019.').appendTo($refs);
+    $refs.append($$5('<br/>'));
+    $$5('<span style="vertical-align: super">').text('3').appendTo($refs);
+    $$5('<span>').text(' EX – extinct; EW – extinct in the wild; RE – regionally extinct; CR – critically endangered; EN – endangered; VU – vulnerable; NT – near threatened; LC – least concern; WL – waiting list; PL – parking list.').appendTo($refs);
+    var $p1 = $$5('<p>').appendTo($sect);
+    $p1.text('Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.');
+
+    function genLink(url) {
+      var $a = $$5('<a>');
+      $a.attr('href', url);
+      $a.attr('target', '_blank');
+      $a.text(url);
+      return $a;
+    }
+  }
+  function changeConservation(taxon) {
+    // 'statusGB','statusIE','statusCI','csRedListEngland','csRedListWales','csRedListIreland','csRedDataList2005','csRedDataList2021', 'csRareScarceIr2020', 'csRareScarceGb2020'
+    console.log('update conservation table ', taxon);
+    $$5('#bsbi-conservation-rarity-gb').text(taxon['csRareScarceGb2020'] ? taxon['csRareScarceGb2020'] : 'not rare or scarce');
+    $$5('#bsbi-conservation-rarity-ir').text(taxon['csRareScarceIr2020'] ? taxon['csRareScarceIr2020'] : 'not rare or scarce');
+    $$5('#bsbi-conservation-threat-gb').text(taxon['csRedDataList2021']);
+    $$5('#bsbi-conservation-threat-en').text(taxon['csRedListEngland']);
+    $$5('#bsbi-conservation-threat-wa').text(taxon['csRedListWales']);
+    $$5('#bsbi-conservation-threat-ir').text(taxon['csRedListIreland']);
+    $$5('#bsbi-conservation-designation-gb-sched8').text('');
+    $$5('#bsbi-conservation-designation-ni-sched8').text('');
+    $$5('#bsbi-conservation-designation-ifpo').text('');
+    $$5('#bsbi-conservation-designation-en-s41').text('');
+    $$5('#bsbi-conservation-designation-wa-s41').text('');
+  }
+
+  var $$4 = jQuery; // eslint-disable-line no-undef
 
   var ds$3 = drupalSettings; // eslint-disable-line no-undef
 
@@ -2169,17 +2558,17 @@
 
           setTimeout(function () {
             inlineGallery.openGallery();
-            $$3('#bsbi-gallery-copyright').show();
+            $$4('#bsbi-gallery-copyright').show();
           }, 200);
         } else {
-          lgContainer.innerHTML = "<i>No images are available for this taxon.</i>";
-          $$3('#bsbi-gallery-copyright').hide();
+          lgContainer.innerHTML = "No images are available for this taxon";
+          $$4('#bsbi-gallery-copyright').hide();
         }
       });
     }
   }
 
-  var $$2 = jQuery; // eslint-disable-line no-undef
+  var $$3 = jQuery; // eslint-disable-line no-undef
 
   var ds$2 = drupalSettings; // eslint-disable-line no-undef
 
@@ -2248,7 +2637,7 @@
   }];
 
   function mapControlRow(selector, classname) {
-    var $div = $$2('<div>').appendTo($$2(selector));
+    var $div = $$3('<div>').appendTo($$3(selector));
     $div.addClass('atlas-map-control-row');
 
     if (classname) {
@@ -2261,48 +2650,48 @@
   function setControlState() {
     // map display
     if (displayedMapType === "static") {
-      $$2('#slippyAtlasMain').hide();
-      $$2('#staticAtlasMain').show();
+      $$3('#slippyAtlasMain').hide();
+      $$3('#staticAtlasMain').show();
     } else {
-      $$2('#staticAtlasMain').hide();
-      $$2('#slippyAtlasMain').show();
+      $$3('#staticAtlasMain').hide();
+      $$3('#slippyAtlasMain').show();
     } // save map image button
 
 
     if (displayedMapType === 'static') {
-      $$2('.atlas-save-map-image').show();
+      $$3('.atlas-save-map-image').show();
     } else {
-      $$2('.atlas-save-map-image').hide();
+      $$3('.atlas-save-map-image').hide();
     } // download map data button
 
 
-    $$2('.atlas-download-map-data').show();
+    $$3('.atlas-download-map-data').show();
 
     if (mapType === 'allclass' && resolution === 'hectad') {
-      $$2('.atlas-download-map-data input, .atlas-download-map-data button').attr('disabled', false);
+      $$3('.atlas-download-map-data input, .atlas-download-map-data button').attr('disabled', false);
     } else {
-      $$2('.atlas-download-map-data input, .atlas-download-map-data button').attr('disabled', true);
+      $$3('.atlas-download-map-data input, .atlas-download-map-data button').attr('disabled', true);
     } // backdrop selector
 
 
     if (displayedMapType === "static") {
-      $$2('.atlas-backdrop-selector').show();
+      $$3('.atlas-backdrop-selector').show();
     } else {
-      $$2('.atlas-backdrop-selector').hide();
+      $$3('.atlas-backdrop-selector').hide();
     } // inset control
 
 
     if (displayedMapType === "static") {
-      $$2('.atlas-inset-control').show();
+      $$3('.atlas-inset-control').show();
     } else {
-      $$2('.atlas-inset-control').hide();
+      $$3('.atlas-inset-control').hide();
     } // grid type control
 
 
     if (displayedMapType === "static") {
-      $$2('.atlas-grid-type-control').show();
+      $$3('.atlas-grid-type-control').show();
     } else {
-      $$2('.atlas-grid-type-control').hide();
+      $$3('.atlas-grid-type-control').hide();
     } // boundary type control
     // if (displayedMapType === "static") {
     //   $('.atlas-boundaries-control').show()
@@ -2313,61 +2702,61 @@
 
 
     if (mapType === 'status') {
-      $$2('.atlas-period-slider-control').show();
+      $$3('.atlas-period-slider-control').show();
     } else {
-      $$2('.atlas-period-slider-control').hide();
+      $$3('.atlas-period-slider-control').hide();
     } // trend slider control
 
 
     if (mapType === 'trends') {
-      $$2('.atlas-trend-slider-control').show();
+      $$3('.atlas-trend-slider-control').show();
     } else {
-      $$2('.atlas-trend-slider-control').hide();
+      $$3('.atlas-trend-slider-control').hide();
     } // show status checkbox
 
 
     if (mapType === 'allclass' || mapType === 'slippy') {
-      $$2('.atlas-status-checkbox-control').show();
+      $$3('.atlas-status-checkbox-control').show();
     } else {
-      $$2('.atlas-status-checkbox-control').hide();
+      $$3('.atlas-status-checkbox-control').hide();
     } // show opacity slider
 
 
     if (displayedMapType === 'slippy') {
-      $$2('.atlas-opacity-slider-control').show();
+      $$3('.atlas-opacity-slider-control').show();
     } else {
-      $$2('.atlas-opacity-slider-control').hide();
+      $$3('.atlas-opacity-slider-control').hide();
     } // status checkbox enabled and checked value
 
 
-    var disableStatus = bsbiDataAccess.taxaNoStatusList.indexOf(currentTaxon$1.identifier) > -1 || currentTaxon$1.isHybrid;
+    var disableStatus = currentTaxon$1.noStatus || currentTaxon$1.isHybrid;
     var isHybrid = currentTaxon$1.hybridMapping;
 
     if (disableStatus || isHybrid) {
       showStatus = false;
       bsbiDataAccess.showStatus = false;
-      $$2('.atlas-status-checkbox-control span').text('No status info for this taxon');
-      $$2('.atlas-status-checkbox-control span').css('color', 'silver');
+      $$3('.atlas-status-checkbox-control span').text('No status info for this taxon');
+      $$3('.atlas-status-checkbox-control span').css('color', 'silver');
     } else {
-      $$2('.atlas-status-checkbox-control span').text('Show status');
-      $$2('.atlas-status-checkbox-control span').css('color', 'black');
+      $$3('.atlas-status-checkbox-control span').text('Show status');
+      $$3('.atlas-status-checkbox-control span').css('color', 'black');
     }
 
     if (disableStatus || isHybrid || displayedMapType === 'slippy' && mapType === 'allclass' && resolution !== 'hectad') {
       // Uncheck and disable status checkbutton if not hectad resolution or no status info
-      $$2('.atlas-status-checkbox').prop('checked', false);
-      $$2('.atlas-status-checkbox').attr('disabled', true);
+      $$3('.atlas-status-checkbox').prop('checked', false);
+      $$3('.atlas-status-checkbox').attr('disabled', true);
     } else {
       // Display and set checked status to current value of showStatus global
-      $$2('.atlas-status-checkbox').attr('disabled', false);
-      $$2('.atlas-status-checkbox').prop('checked', showStatus);
+      $$3('.atlas-status-checkbox').attr('disabled', false);
+      $$3('.atlas-status-checkbox').prop('checked', showStatus);
     } // atlas resolution control visibility
 
 
     if (displayedMapType === "slippy" && mapType === 'allclass') {
-      $$2('.atlas-resolution-control').show();
+      $$3('.atlas-resolution-control').show();
     } else {
-      $$2('.atlas-resolution-control').hide();
+      $$3('.atlas-resolution-control').hide();
     } // atlas resolution control value and global variables
 
 
@@ -2379,7 +2768,7 @@
       // }
       bsbiDataAccess.resolution = resolution; // Ensure right option is selected
 
-      $$2('.bsbi-resolution-' + resolution).prop('checked', true); // Enable/disable tetrad option as appropriate
+      $$3('.bsbi-resolution-' + resolution).prop('checked', true); // Enable/disable tetrad option as appropriate
       // if (currentTaxon.tetrad) {
       //   $('.bsbi-resolution-tetrad').attr('disabled', false)
       // } else {
@@ -2390,7 +2779,7 @@
     } // Enable/disable the hybrid map type option as appropriate
 
 
-    var $hybridopts = $$2('.atlas-map-type-selector option[value="hybrid"]');
+    var $hybridopts = $$3('.atlas-map-type-selector option[value="hybrid"]');
 
     if (isHybrid) {
       $hybridopts.show();
@@ -2399,12 +2788,12 @@
 
       if (mapType === 'hybrid') {
         $hybridopts.prop('selected', false);
-        $$2('.atlas-map-type-selector option[value="allclass"]').prop('selected', true);
+        $$3('.atlas-map-type-selector option[value="allclass"]').prop('selected', true);
         mapType = 'allclass';
       }
     }
 
-    $$2('.atlas-map-type-selector').selectpicker('refresh');
+    $$3('.atlas-map-type-selector').selectpicker('refresh');
   }
 
   function gridStyleSelector($parent) {
@@ -2419,17 +2808,17 @@
       val: 'none'
     }]; // Main type selector
 
-    var $sel = $$2('<select>').appendTo($parent);
+    var $sel = $$3('<select>').appendTo($parent);
     $sel.addClass('selectpicker');
     $sel.addClass('atlas-grid-type-control');
     $sel.attr('data-width', '100%');
     $sel.on('changed.bs.select', function () {
-      gridStyle = $$2(this).val();
+      gridStyle = $$3(this).val();
       setCookie('gridstyle', gridStyle, 30);
       staticMap.setGridLineStyle(gridStyle);
     });
     gridStyles.forEach(function (s) {
-      var $opt = s.selected ? $$2('<option>') : $$2('<option>');
+      var $opt = s.selected ? $$3('<option>') : $$3('<option>');
       $opt.attr('value', s.val);
       $opt.html(s.caption).appendTo($sel);
     });
@@ -2482,12 +2871,12 @@
       val: 'none'
     }]; // Main type selector
 
-    var $sel = $$2('<select>').appendTo($parent);
+    var $sel = $$3('<select>').appendTo($parent);
     $sel.addClass('selectpicker');
     $sel.addClass('atlas-boundaries-control');
     $sel.attr('data-width', '100%');
     $sel.on('changed.bs.select', function () {
-      boundaryType = $$2(this).val();
+      boundaryType = $$3(this).val();
       setCookie('boundaries', boundaryType, 30);
 
       if (boundaryType === 'none') {
@@ -2511,7 +2900,7 @@
       }
     });
     boundaries.forEach(function (b) {
-      var $opt = b.selected ? $$2('<option>') : $$2('<option>');
+      var $opt = b.selected ? $$3('<option>') : $$3('<option>');
       $opt.attr('value', b.val);
       $opt.html(b.caption).appendTo($sel);
     });
@@ -2522,27 +2911,27 @@
   }
 
   function mapInterfaceToggle($parent) {
-    var $container = $$2('<div style="display: flex">').appendTo($parent); // Buttons
+    var $container = $$3('<div style="display: flex">').appendTo($parent); // Buttons
 
-    var $bgrp = $$2('<div class="btn-group" data-toggle="buttons">').appendTo($container);
-    var $staticLabel = $$2('<label class="btn btn-primary active">').appendTo($bgrp);
-    $$2('<input type="radio" name="mapType" value="static" checked>').appendTo($staticLabel);
+    var $bgrp = $$3('<div class="btn-group" data-toggle="buttons">').appendTo($container);
+    var $staticLabel = $$3('<label class="btn btn-primary active">').appendTo($bgrp);
+    $$3('<input type="radio" name="mapType" value="static" checked>').appendTo($staticLabel);
     $staticLabel.append("Overview");
-    var $slippyLabel = $$2('<label class="btn btn-primary">').appendTo($bgrp);
-    $$2('<input type="radio" name="mapType" value="slippy">').appendTo($slippyLabel);
+    var $slippyLabel = $$3('<label class="btn btn-primary">').appendTo($bgrp);
+    $$3('<input type="radio" name="mapType" value="slippy">').appendTo($slippyLabel);
     $slippyLabel.append("Zoomable"); // Busy indicator
 
-    var $loader = $$2('<div id="atlas-loader" style="display: none">').appendTo($container);
-    $$2('<div class="atlas-loader">').appendTo($loader);
-    $$2('input[type=radio][name="mapType"]').change(function () {
-      displayedMapType = $$2(this).val();
+    var $loader = $$3('<div id="atlas-loader" style="display: none">').appendTo($container);
+    $$3('<div class="atlas-loader">').appendTo($loader);
+    $$3('input[type=radio][name="mapType"]').change(function () {
+      displayedMapType = $$3(this).val();
       bsbiDataAccess.displayedMapType = displayedMapType;
 
       if (displayedMapType === "slippy") {
-        // Get current width of static map
-        var $svg = $$2('#staticAtlasMain svg');
-        var w = $svg.width();
-        var h = $svg.height();
+        // Get current width of map div
+        var $div = $$3('#bsbiMapDiv');
+        var w = $div.width();
+        var h = $div.height();
         slippyMap.setSize(w, h);
       }
 
@@ -2557,12 +2946,12 @@
 
   function mapTypeSelector($parent) {
     // Main type selector
-    var $sel = $$2('<select>').appendTo($parent);
+    var $sel = $$3('<select>').appendTo($parent);
     $sel.addClass('selectpicker');
     $sel.addClass('atlas-map-type-selector');
     $sel.attr('data-width', '100%');
     $sel.on('changed.bs.select', function () {
-      mapType = $$2(this).val();
+      mapType = $$3(this).val();
       setControlState();
       changeMap();
     });
@@ -2583,7 +2972,7 @@
       val: 'hybrid'
     }];
     types.forEach(function (t) {
-      var $opt = $$2('<option>');
+      var $opt = $$3('<option>');
       $opt.attr('value', t.val);
       $opt.html(t.caption).appendTo($sel);
     }); // This seems to be necessary if interface regenerated,
@@ -2606,7 +2995,7 @@
       val: 'grey_elevation_300'
     }]; // Main type selector
 
-    var $sel = $$2('<select>').appendTo($parent);
+    var $sel = $$3('<select>').appendTo($parent);
     $sel.addClass('selectpicker'); //$sel.addClass('atlas-backdrop-selector')
 
     $sel.attr('data-width', '100%');
@@ -2618,7 +3007,7 @@
         }
       }); // Display selected backdrop
 
-      backdrop = $$2(this).val();
+      backdrop = $$3(this).val();
       setCookie('backdrop', backdrop, 30);
 
       if (backdrop !== 'none') {
@@ -2626,7 +3015,7 @@
       }
     });
     backdrops.forEach(function (b) {
-      var $opt = $$2('<option>');
+      var $opt = $$3('<option>');
       $opt.attr('value', b.val);
       $opt.html(b.caption).appendTo($sel);
     });
@@ -2644,15 +3033,15 @@
   function mapImageButton($parent, i) {
     var imageType = 'png'; // Overall control container
 
-    var $container = $$2('<div>').appendTo($parent);
+    var $container = $$3('<div>').appendTo($parent);
     $container.addClass('atlas-save-map-image');
     $container.hide();
-    var $svg = $$2('<svg>').appendTo($container);
-    var $t = $$2('<text>').appendTo($svg);
+    var $svg = $$3('<svg>').appendTo($container);
+    var $t = $$3('<text>').appendTo($svg);
     $t.attr('x', '10');
     $t.attr('y', '20');
-    $$2('<br>').appendTo($container);
-    var $button = $$2('<button>').appendTo($container);
+    $$3('<br>').appendTo($container);
+    var $button = $$3('<button>').appendTo($container);
     $button.addClass('btn btn-default');
     $button.text('Download image');
     $button.on('click', function () {
@@ -2668,14 +3057,14 @@
     makeRadio('SVG', 'svg', false);
 
     function makeRadio(label, val, checked) {
-      var $div = $$2('<div>').appendTo($container);
+      var $div = $$3('<div>').appendTo($container);
       $div.css('display', 'inline-block');
       $div.css('margin-left', '0.5em');
       $div.attr('class', 'radio');
-      var $label = $$2('<label>').appendTo($div);
+      var $label = $$3('<label>').appendTo($div);
       $label.css('padding-left', '0');
-      var $radio = $$2('<input>').appendTo($label);
-      var $span = $$2('<span>').appendTo($label);
+      var $radio = $$3('<input>').appendTo($label);
+      var $span = $$3('<span>').appendTo($label);
       $span.text(label);
       $span.css('padding-left', '20px');
       $radio.attr('type', 'radio');
@@ -2686,7 +3075,7 @@
       if (checked) $radio.prop('checked', true);
       $radio.change(function () {
         // Update controls mirrored in other blocks
-        $$2('.img-download-type-' + val).prop("checked", true);
+        $$3('.img-download-type-' + val).prop("checked", true);
         imageType = val;
       });
     }
@@ -2695,10 +3084,10 @@
   function mapDownloadButton($parent, i) {
     var downloadType = 'csv'; // Overall control container
 
-    var $container = $$2('<div>').appendTo($parent);
+    var $container = $$3('<div>').appendTo($parent);
     $container.addClass('atlas-download-map-data');
     $container.hide();
-    var $button = $$2('<button>').appendTo($container);
+    var $button = $$3('<button>').appendTo($container);
     $button.addClass('btn btn-default');
     $button.text('Download data');
     $button.on('click', function () {
@@ -2713,17 +3102,17 @@
       displayedMap.downloadData(downloadType === 'geojson');
     });
     makeRadio('CSV', 'csv', true);
-    makeRadio('GJson', 'geojson', false);
+    makeRadio('GJSON', 'geojson', false);
 
     function makeRadio(label, val, checked) {
-      var $div = $$2('<div>').appendTo($container);
+      var $div = $$3('<div>').appendTo($container);
       $div.css('display', 'inline-block');
       $div.css('margin-left', '0.5em');
       $div.attr('class', 'radio');
-      var $label = $$2('<label>').appendTo($div);
+      var $label = $$3('<label>').appendTo($div);
       $label.css('padding-left', '0');
-      var $radio = $$2('<input>').appendTo($label);
-      var $span = $$2('<span>').appendTo($label);
+      var $radio = $$3('<input>').appendTo($label);
+      var $span = $$3('<span>').appendTo($label);
       $span.text(label);
       $span.css('padding-left', '20px');
       $radio.attr('type', 'radio');
@@ -2734,7 +3123,7 @@
       if (checked) $radio.prop('checked', true);
       $radio.change(function () {
         // Update controls mirrored in other blocks
-        $$2('.download-type-' + val).prop("checked", true);
+        $$3('.download-type-' + val).prop("checked", true);
         downloadType = val;
       });
     }
@@ -2742,37 +3131,37 @@
 
   function opacitySlider($parent) {
     var initOpacity = 70;
-    $$2('#atlas-leaflet-svg').css('opacity', initOpacity / 100); // Overall control container
+    $$3('#atlas-leaflet-svg').css('opacity', initOpacity / 100); // Overall control container
 
-    var $container = $$2('<div>').appendTo($parent);
+    var $container = $$3('<div>').appendTo($parent);
     $container.addClass('atlas-opacity-slider-control');
     $container.hide(); // Label
 
-    var $sliderLabel = $$2('<div>').appendTo($container);
+    var $sliderLabel = $$3('<div>').appendTo($container);
     $sliderLabel.addClass('atlas-opacity-slider-label');
     $sliderLabel.text('Opacity:'); // Slider
 
-    var $sliderContainer = $$2('<div>').appendTo($container);
+    var $sliderContainer = $$3('<div>').appendTo($container);
     $sliderContainer.addClass('slidecontainer');
     $sliderContainer.addClass('atlas-opacity-slider-slider');
-    var $slider = $$2('<input>').appendTo($sliderContainer);
+    var $slider = $$3('<input>').appendTo($sliderContainer);
     $slider.addClass('slider');
     $slider.attr('type', 'range').attr('min', '1').attr('max', '100').attr('value', initOpacity).attr('id', 'atlas-opacity-slider');
     $slider.change(function () {
-      $$2('#atlas-leaflet-svg').css('opacity', $$2(this).val() / 100);
+      $$3('#atlas-leaflet-svg').css('opacity', $$3(this).val() / 100);
     });
   }
 
   function statusCheckbox($parent) {
     // Overall control container
-    var $container = $$2('<div>').appendTo($parent);
+    var $container = $$3('<div>').appendTo($parent);
     $container.addClass('atlas-status-checkbox-control'); // Status on/off toggle
 
-    var $checDiv = $$2('<div class="checkbox">').appendTo($container); //$checDiv.css('margin-top', '4.3em')
+    var $checDiv = $$3('<div class="checkbox">').appendTo($container); //$checDiv.css('margin-top', '4.3em')
 
-    $$2('<label><input type="checkbox" class="atlas-status-checkbox"/><span>Show status</span></label>').appendTo($checDiv);
-    $$2('.atlas-status-checkbox').change(function () {
-      showStatus = $$2(this).is(':checked');
+    $$3('<label><input type="checkbox" class="atlas-status-checkbox"/><span>Show status</span></label>').appendTo($checDiv);
+    $$3('.atlas-status-checkbox').change(function () {
+      showStatus = $$3(this).is(':checked');
       bsbiDataAccess.showStatus = showStatus;
       changeMap();
     });
@@ -2780,7 +3169,7 @@
 
   function statusControl($parent) {
     // Overall control container
-    var $container = $$2('<div>').appendTo($parent);
+    var $container = $$3('<div>').appendTo($parent);
     $container.addClass('atlas-period-slider-control');
     $container.hide(); // Period display
     // const $indicator = $('<div>').appendTo($container)
@@ -2789,26 +3178,26 @@
     // $indicator.text(periods[periods.length - 1].caption)
     // Slider
 
-    var $sliderContainer = $$2('<div>').appendTo($container);
+    var $sliderContainer = $$3('<div>').appendTo($container);
     $sliderContainer.addClass('slidecontainer');
-    var $slider = $$2('<input>').appendTo($sliderContainer);
+    var $slider = $$3('<input>').appendTo($sliderContainer);
     $slider.addClass('slider');
     $slider.attr('type', 'range').attr('min', '1').attr('max', periods.length).attr('id', 'atlas-range-select');
     $slider.change(function () {
-      atlasRangeIndex = $$2(this).val();
+      atlasRangeIndex = $$3(this).val();
       changeMap();
     });
-    var $scaleContainer = $$2('<div>').appendTo($sliderContainer);
+    var $scaleContainer = $$3('<div>').appendTo($sliderContainer);
     $scaleContainer.addClass('atlas-range-tick-container');
     $scaleContainer.css('margin-bottom', '4.3em');
     periods.forEach(function (p, i) {
-      var $tick = $$2('<span>').appendTo($scaleContainer);
+      var $tick = $$3('<span>').appendTo($scaleContainer);
       $tick.addClass('atlas-range-tick');
       var percent = i / (periods.length - 1) * 100;
       $tick.css('left', percent.toString() + '%');
       $tick.text('|');
       $tick.append('<br>');
-      var $tickText = $$2('<span>').appendTo($tick);
+      var $tickText = $$3('<span>').appendTo($tick);
       $tickText.addClass('atlas-range-tick-text');
       $tickText.html((p.min ? p.min : 'pre') + '<br>' + (p.max === 1929 ? 1930 : p.max)); //$tickText.html(p.min + '<br>' + p.max)
     }); // // Status on/off toggle
@@ -2824,17 +3213,25 @@
 
   function resolutionControl($parent, i) {
     // Overall control container
-    var $container = $$2('<div>').appendTo($parent);
+    var $container = $$3('<div>').appendTo($parent);
 
-    function makeRadio(label, val, checked) {
-      var $div = $$2('<div>').appendTo($container);
+    function makeRadio(label, val, checked, infoId) {
+      var $div = $$3('<div>').appendTo($container);
       $div.attr('class', 'radio');
-      var $label = $$2('<label>').appendTo($div);
+      var $label = $$3('<label>').appendTo($div);
       $label.css('padding-left', '0');
-      var $radio = $$2('<input>').appendTo($label);
-      var $span = $$2('<span>').appendTo($label);
+      var $radio = $$3('<input>').appendTo($label);
+      var $span = $$3('<span>').appendTo($label);
       $span.text(label);
       $span.css('padding-left', '20px');
+
+      if (infoId) {
+        var $spanInfo = $$3('<span>').appendTo($label);
+        $spanInfo.attr('id', infoId);
+        $spanInfo.css('padding-left', '10px');
+        $spanInfo.css('font-weight', 'bold');
+      }
+
       $radio.attr('type', 'radio');
       $radio.attr('name', 'bsbi-resolution-' + i);
       $radio.attr('class', 'bsbi-resolution-' + val);
@@ -2842,21 +3239,22 @@
       $radio.css('margin-left', 0);
       if (checked) $radio.prop('checked', true);
       $radio.change(function () {
-        resolution = $$2(this).val(); // Update controls mirrored in other blocks
+        resolution = $$3(this).val(); // Update controls mirrored in other blocks
 
-        $$2('.bsbi-resolution-' + resolution).prop("checked", true);
+        $$3('.bsbi-resolution-' + resolution).prop("checked", true);
         setControlState();
         changeMap();
       });
     }
 
-    makeRadio('Hectads', 'hectad', true);
-    makeRadio('Tetrads', 'tetrad', false); //makeRadio('Monads', 'monad', false)
+    makeRadio('Hectads', 'hectad', true); //makeRadio('Tetrads', 'tetrad', false, 'tetrad-info')
+
+    makeRadio('Tetrads', 'tetrad', false);
   }
 
   function trendControl($parent) {
     // Overall control container
-    var $container = $$2('<div>').appendTo($parent);
+    var $container = $$3('<div>').appendTo($parent);
     $container.addClass('atlas-trend-slider-control');
     $container.hide(); // Trend display
     // const $indicator = $('<div>').appendTo($container)
@@ -2865,26 +3263,26 @@
     // $indicator.text(trends[trends.length - 1].caption)
     // Slider
 
-    var $sliderContainer = $$2('<div>').appendTo($container);
+    var $sliderContainer = $$3('<div>').appendTo($container);
     $sliderContainer.addClass('slidecontainer');
     $sliderContainer.addClass('atlas-trend-select-container');
-    var $slider = $$2('<input>').appendTo($sliderContainer);
+    var $slider = $$3('<input>').appendTo($sliderContainer);
     $slider.addClass('slider');
     $slider.attr('type', 'range').attr('min', '1').attr('max', trends.length).addClass('atlas-trend-select');
     $slider.change(function () {
-      atlasTrendIndex = $$2(this).val();
+      atlasTrendIndex = $$3(this).val();
       changeMap();
     });
-    var $scaleContainer = $$2('<div>').appendTo($sliderContainer);
+    var $scaleContainer = $$3('<div>').appendTo($sliderContainer);
     $scaleContainer.addClass('atlas-trend-tick-container');
     trends.forEach(function (p, i) {
-      var $tick = $$2('<span>').appendTo($scaleContainer);
+      var $tick = $$3('<span>').appendTo($scaleContainer);
       $tick.addClass('atlas-trend-tick');
       var percent = i / (trends.length - 1) * 100;
       $tick.css('left', percent.toString() + '%');
       $tick.text('|');
       $tick.append('<br>');
-      var $tickText = $$2('<span>').appendTo($tick);
+      var $tickText = $$3('<span>').appendTo($tick);
       $tickText.addClass('atlas-trend-tick-text');
       $tickText.addClass('atlas-trend-tick-text-' + i);
       $tickText.html(p.lower + '<br>v.<br>' + p.upper);
@@ -2904,19 +3302,19 @@
       val: 'BI4'
     }]; // Main type selector
 
-    var $sel = $$2('<select>').appendTo($parent);
+    var $sel = $$3('<select>').appendTo($parent);
     $sel.addClass('selectpicker');
     $sel.addClass('atlas-inset-control'); //$sel.addClass('atlas-backdrop-selector')
 
     $sel.attr('data-width', '100%');
     $sel.on('changed.bs.select', function () {
-      insetType = $$2(this).val();
+      insetType = $$3(this).val();
       staticMap.setTransform(insetType);
       setCookie('inset', insetType, 30);
       changeMap();
     });
     inserts.forEach(function (i) {
-      var $opt = i.selected ? $$2('<option>') : $$2('<option>');
+      var $opt = i.selected ? $$3('<option>') : $$3('<option>');
       $opt.attr('value', i.val);
       $opt.html(i.caption).appendTo($sel);
     });
@@ -2930,13 +3328,25 @@
     currentTaxon$1 = taxon;
   }
   function createMaps(selector) {
-    // Modify standard UK opts to remove any without CI
+    // Download flag
+    var download = selector === '#bsbiMapDownloadDiv'; // Modify standard UK opts to remove any without CI
+
     var transOptsSel = JSON.parse(JSON.stringify(brcatlas.namedTransOpts));
     delete transOptsSel.BI3; // Remove the options without CI
     // Modify insets to go further west in order
     // to give more room for legends.
 
-    transOptsSel.BI4.bounds.xmin = -240000, //Northern Isles
+    transOptsSel.BI4.bounds.xmin = download ? -265000 : -240000; //Northern Isles
+
+    if (download) {
+      transOptsSel.BI4.insets[0].imageX = 20;
+      transOptsSel.BI4.insets[0].imageY = 19;
+      transOptsSel.BI4.insets[1].imageX = -39;
+      transOptsSel.BI4.insets[1].imageY = -30;
+    } //console.log('bounds', transOptsSel.BI4)
+    //{xmin: 337373, ymin: -92599, xmax: 427671, ymax: -6678}
+
+
     transOptsSel.BI1.bounds.xmin = -230000, //No insets
     transOptsSel.BI2.bounds.xmin = -230000, //CI inset
     // Init
@@ -3017,6 +3427,8 @@
       height: height,
       expand: true,
       legendOpts: svgLegendOpts,
+      legendFontSize: download ? '13pt' : '14px',
+      legendFont: download ? 'Minion Pro' : 'sans-serif',
       transOptsKey: getCookie('inset') ? getCookie('inset') : insetType,
       transOptsSel: transOptsSel,
       mapTypesKey: 'status_10_19',
@@ -3026,31 +3438,19 @@
       seaFill: 'white',
       gridLineColour: '#7C7CD3',
       gridLineStyle: gridStyle,
+      gridLineWidth: download ? '1.09pt' : 1,
       boundaryColour: '#7C7CD3',
+      boundaryLineWidth: download ? '1.09pt' : 1,
       vcColour: '#7C7CD3',
       vcLineStyle: boundaryType === 'vc' ? '' : 'none',
+      vcLineWidth: download ? '1.09pt' : 1,
       countryColour: '#7C7CD3',
-      countryLineStyle: boundaryType === 'country' ? '' : 'none'
+      countryLineStyle: boundaryType === 'country' ? '' : 'none',
+      countryLineWidth: download ? '1.09pt' : 1,
+      insetLineWidth: download ? '1.09pt' : 1
     });
     ds$2.bsbi_atlas.dataRoot + 'rasters/'; //staticMap.basemapImage('colour_elevation', true, rasterRoot + 'colour_elevation.png', rasterRoot + 'colour_elevation.pgw')
-    // Callbacks for slippy maps
-
-    function startLoad() {
-      document.getElementById('atlas-loader').style.display = 'inline-block'; //develStartMapTiming("download")
-    }
-
-    function endLoad() {
-      document.getElementById('atlas-loader').style.display = 'none'; //develStopMapTiming("download")
-    }
-
-    function startDraw() {
-      document.getElementById('atlas-loader').style.display = 'inline-block'; //develStartMapTiming("display")
-    }
-
-    function endDraw() {
-      document.getElementById('atlas-loader').style.display = 'none'; //develStopMapTiming("display")
-    } // Create the slippy map
-
+    // Create the slippy map
 
     slippyMap = brcatlas.leafletMap({
       selector: selector,
@@ -3066,8 +3466,33 @@
       showVcs: boundaryType === 'vc',
       showCountries: boundaryType === 'country'
     });
-    $$2('#slippyAtlasMain').hide();
+    $$3('#slippyAtlasMain').hide();
+    $$3(window).resize(function () {
+      // Get current width of map div
+      var $div = $$3('#bsbiMapDiv');
+      var w = $div.width();
+      var h = $div.height();
+      console.log('size', w, h);
+      slippyMap.setSize(w, h);
+    });
+  } // Callbacks for slippy maps
+
+  function startLoad() {
+    document.getElementById('atlas-loader').style.display = 'inline-block'; //develStartMapTiming("download")
   }
+
+  function endLoad() {
+    document.getElementById('atlas-loader').style.display = 'none'; //develStopMapTiming("download")
+  }
+
+  function startDraw() {
+    document.getElementById('atlas-loader').style.display = 'inline-block'; //develStartMapTiming("display")
+  }
+
+  function endDraw() {
+    document.getElementById('atlas-loader').style.display = 'none'; //develStopMapTiming("display")
+  }
+
   function changeMap(retPromise) {
     var displayedMap;
 
@@ -3113,15 +3538,17 @@
       if (retPromise) {
         return displayedMap.redrawMap();
       } else {
-        displayedMap.redrawMap()["catch"](function (e) {
+        displayedMap.redrawMap().then(function () {//$('#tetrad-info').text('')
+        })["catch"](function (e) {
           console.warn("Unable to generate map for ".concat(currentTaxon$1.shortName, " (").concat(currentTaxon$1.identifier, "). Error message:"), e);
           displayedMap.clearMap();
+          endLoad(); //$('#tetrad-info').text('no data available')
         });
       }
     } // Initialise dot caption
 
 
-    $$2('#dotCaption').html(bsbiDataAccess.dotCaption);
+    $$3('#dotCaption').html(bsbiDataAccess.dotCaption);
   }
   function createMapControls(selector) {
     mapInterfaceToggle(mapControlRow(selector));
@@ -3134,14 +3561,14 @@
     gridStyleSelector(mapControlRow(selector));
     boundarySelector(mapControlRow(selector));
     opacitySlider(mapControlRow(selector));
-    $$2(selector).each(function (i) {
+    $$3(selector).each(function (i) {
       // We loop through the selection so that we can use the
       // index value to differentiate the equivalent controls
       // from different blocks. This is vital for radio controls
       // otherwise value can only be selected in one block and
       // therefore initialisation may be wrong.
       var sel = 'bsbi-atlas-map-controls-' + i;
-      var $div = $$2('<div>').appendTo($$2(this));
+      var $div = $$3('<div>').appendTo($$3(this));
       $div.addClass(sel);
       sel = '.' + sel; // Potentially we can also use this to ensure that selection
       // in one block is mirrored in the other. This is only important
@@ -3165,17 +3592,25 @@
   //   mapType = type
   // }
 
-  jQuery; // eslint-disable-line no-undef
+  var $$2 = jQuery; // eslint-disable-line no-undef
   function updateTrendSummary2(id, d) {
-    setColour("".concat(id, "_decline_strong"), d.declineStrong);
-    setColour("".concat(id, "_decline_mod"), d.declineMod);
-    setColour("".concat(id, "_stable"), d.stable);
-    setColour("".concat(id, "_increase_mod"), d.increaseMod);
-    setColour("".concat(id, "_increase_strong"), d.increaseStrong);
+    if (d) {
+      $$2("#".concat(id, "-swatches")).css('display', ''); //.show()
+
+      $$2("#".concat(id, "-no-trend")).css('display', 'none'); //.hide()
+
+      setColour("".concat(id, "_decline_strong"), d.declineStrong);
+      setColour("".concat(id, "_decline_mod"), d.declineMod);
+      setColour("".concat(id, "_stable"), d.stable);
+      setColour("".concat(id, "_increase_mod"), d.increaseMod);
+      setColour("".concat(id, "_increase_strong"), d.increaseStrong);
+    } else {
+      $$2("#".concat(id, "-swatches")).css('display', 'none'); //.hide()
+
+      $$2("#".concat(id, "-no-trend")).css('display', ''); //.show()
+    }
 
     function setColour(id, val) {
-      //const baseColour = rgbColourString.substring(0,rgbColourString.length-1).replace('rgb', 'rgba')
-      //d3.select(`#${id}`).attr('fill', `${baseColour},${Number(val)/100})`)
       d3.select("#".concat(id)).attr('fill', "rgb(".concat(255 - 255 * Number(val) / 100, ",255,255)"));
       var grey = 220 - Math.floor(val / 100 * 220);
       d3.select("#".concat(id, "-path")).attr('fill', "rgb(".concat(grey, ",").concat(grey, ",").concat(grey, ")"));
@@ -3184,11 +3619,10 @@
       d3.select("#".concat(id, "-path")).select('title').text("".concat(title, ": ").concat(val, "%"));
     }
   }
-  function trendSummary2(id, asCircle) {
+  function trendSummary2(id, font, fontSize) {
     var svgArrow = "M 2250 7256 l 0 -2813 l -61 -7 c -34 -3 -526 -6 -1093 -6 l -1031 -1 l 66 -62 c 36 -34 756 -714 1600 -1512 c 844 -797 1820 -1719 2169 -2049 c 349 -329 667 -630 705 -668 l 70 -68 l 230 217 c 1454 1373 3719 3512 4012 3790 l 373 353 l -1090 0 l -1090 0 l 0 2820 l 0 2820 l -2430 0 l -2430 0 l 0 -2814 z";
     var svgSquare = "M 5 3968 c -3 -7 -4 -897 -3 -1978 l 3 -1965 l 2080 0 l 2080 0 l 0 1975 l 0 1975 l -2078 3 c -1657 2 -2079 0 -2082 -10 z";
     var ss = 25;
-    var sr = 22;
     var swatches = [{
       svg: svgArrow,
       scale: 0.6,
@@ -3227,28 +3661,27 @@
     }]; // Graphic
 
     var divParent = d3.select("#".concat(id));
-    var svg = divParent.append('svg').attr('width', ss * 5).attr('height', ss) //.attr('stroke', asCircle ? 'none' : 'grey')
-    .style('overflow', 'visible').style('vertical-align', 'bottom');
+    var svg = divParent.append('svg').attr('width', ss * 5 + 2).attr('height', ss + 2).style('overflow', 'visible').style('vertical-align', 'bottom');
+    var gMain = svg.append('g');
+    gMain.attr('transform', 'translate(1 1)'); // Don't set display of gSwatches to 'none' here otherwise Firefox doesn't calculate bbox
 
-    if (!asCircle) {
-      svg.append('rect').attr('width', ss * 5).attr('height', ss).attr('stroke', 'grey').attr('fill', 'none').style('vertical-align', 'bottom');
-    } // Swatches
+    var gSwatches = gMain.append('g').attr('id', "".concat(id, "-swatches")); //.style('display', 'none')
 
+    var tNoTrend = gMain.append('text').attr('id', "".concat(id, "-no-trend")).text('No trend').style('display', 'none').style('display', 'none').attr('text-anchor', 'middle').attr('x', ss * 5 / 2).attr('y', ss / 2).attr('dominant-baseline', 'mathematical');
+
+    if (font) {
+      tNoTrend.style('font-family', font);
+      tNoTrend.style('font-size', fontSize);
+    }
+
+    gMain.append('rect').attr('width', ss * 5).attr('height', ss).attr('stroke', 'grey').attr('fill', 'none').style('vertical-align', 'bottom'); // Swatches
 
     swatches.forEach(function (s, i) {
-      var indicator;
-
-      if (asCircle) {
-        indicator = svg.append('circle').attr('id', s.id).attr('r', sr / 2).attr('cx', i * ss + ss / 2).attr('cy', ss / 2).attr('stroke', 'grey').attr('fill', 'white').attr('clip-path', 'circle()');
-      } else {
-        indicator = svg.append('rect').attr('id', s.id).attr('width', ss).attr('height', ss).attr('x', i * ss).attr('fill', 'white'); //.attr('stroke', 'grey')
-        //.style('stroke-dasharray', s.da.toString())
-      }
-
+      var indicator = gSwatches.append('rect').attr('id', s.id).attr('width', ss).attr('height', ss).attr('x', i * ss).attr('fill', 'white');
       indicator.append('title').attr('data-title', s.text).text(s.text);
 
       if (s.svg) {
-        var path = svg.append('path').attr('d', s.svg).style('visibility', 'hidden');
+        var path = gSwatches.append('path').attr('d', s.svg).style('visibility', 'hidden');
         var svgbbox = path.node().getBBox();
         path.remove(); // Note the order of the transformations is right to left
         // in the translate clause
@@ -3258,10 +3691,11 @@
         var yAdj = (ss - svgbbox.height * iScale) / 2;
         var xRot = ss / 2 + i * ss;
         var yRot = ss / 2;
-        var symbol = svg.append('path').attr('id', "".concat(s.id, "-path")).attr('d', s.svg).attr('transform', "\n          rotate(".concat(s.rot, ", ").concat(xRot, ", ").concat(yRot, ")\n          translate(").concat(xAdj, " ").concat(yAdj, ") \n          scale(").concat(iScale, ")\n        "));
+        var symbol = gSwatches.append('path').attr('id', "".concat(s.id, "-path")).attr('d', s.svg).attr('transform', "\n          rotate(".concat(s.rot, ", ").concat(xRot, ", ").concat(yRot, ")\n          translate(").concat(xAdj, " ").concat(yAdj, ") \n          scale(").concat(iScale, ")\n        "));
         symbol.append('title').text(s.text);
       }
     });
+    gSwatches.style('display', 'none');
   }
   function trendSave(_x, _x2) {
     return _trendSave.apply(this, arguments);
@@ -3301,7 +3735,7 @@
                 var cloneSvg = domSvg.cloneNode(true);
                 var d3Clone = d3.select(cloneSvg); // Explicitly change text in clone to required font
 
-                d3Clone.selectAll('text').style('font-family', 'Arial, Helvetica, sans-serif');
+                d3Clone.selectAll('text').style('Minion Pro');
                 cloneSvg.setAttributeNS(xmlns, "xmlns", svgns);
                 cloneSvg.setAttributeNS(xmlns, "xmlns:xlink", xlinkns);
                 var serializer = new window.XMLSerializer();
@@ -3345,12 +3779,13 @@
   var currentTaxon = {
     identifier: '',
     name: null,
-    shortName: null,
-    tetrad: null
+    shortName: null
   };
+  var trendAggs;
   var phen1, phen2, altlat;
   var browsedFileData;
   var bCancelled = false;
+  var logText = '';
   var aNoStatus, aIsHybrid;
   function downloadPage() {
     $$1('#bsbi-atlas-download').css('display', 'flex');
@@ -3360,10 +3795,12 @@
     downloadButton();
     $$1('<hr/>').appendTo($$1('#bsbi-atlas-download-left'));
     var $instructions = $$1('<p>').appendTo($$1('#bsbi-atlas-download-left'));
-    $instructions.html("\n    For batch downloads, first select a CSV file from your computer\n    that has two columns: <i>taxonId</i> which has the ddbid for each \n    taxon and <i>taxon</i> which specifies a taxon name. \n    The taxon name is only used to name the file and\n    doesn't have to be exactly the same as \n    the name used elsewhere on the site. The ddbid will also be used \n    in the filename in case of any ambiguity.\n  ");
+    $instructions.html("\n    For batch downloads, first select a CSV file from your computer\n    that has two (or three) columns: <i>taxonId</i> which has the ddbid for each \n    taxon and <i>taxon</i> which specifies a taxon name. \n    The taxon name is only used to name the file and\n    doesn't have to be exactly the same as \n    the name used elsewhere on the site. The ddbid will also be used \n    in the filename in case of any ambiguity. \n    If a third column - <i>staceOrder</i> - is specified, it is used at the\n    start of the filename.\n  ");
     fileUploadButton();
     downloadBatchButton();
     cancelDownloadBatchButton();
+    downloadLogButton();
+    downloadLimits();
     $$1('<hr/>').appendTo($$1('#bsbi-atlas-download-left'));
     makeCheckbox('map', 'Map');
     makeCheckbox('apparency', 'Apparency');
@@ -3377,12 +3814,16 @@
     trendIndicators();
   }
 
-  function taxonToFile(taxon, id) {
-    var filename = "".concat(taxon, "_").concat(id, "_");
-    filename = filename.replace(/ /g, '_');
-    filename = filename.replace(/\s+/g, '');
-    filename = filename.replace(/\./g, '_');
-    filename = filename.replace(/_+/g, '_');
+  function taxonToFile(taxon, id, staceOrder) {
+    var ordering;
+
+    if (staceOrder) {
+      ordering = "".concat(staceOrder, "_");
+    } else {
+      ordering = '';
+    }
+
+    var filename = "".concat(ordering).concat(taxon.replace(/[^a-z0-9]/gi, '_').toLowerCase(), "_").concat(id.replace(/[^a-z0-9]/gi, '_'), "_");
     return filename;
   }
 
@@ -3392,7 +3833,7 @@
 
   function _downloadTaxa() {
     _downloadTaxa = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee() {
-      var data, _loop, i, _ret;
+      var data, iMin, iMax, _loop, i, _ret;
 
       return regeneratorRuntime.wrap(function _callee$(_context2) {
         while (1) {
@@ -3404,8 +3845,17 @@
             case 2:
               data = _context2.sent;
               bCancelled = false;
+              logText = '';
+              iMin = $$1('#taxon-index-min').val();
+              iMax = $$1('#taxon-index-max').val();
+
+              if (iMax > data.length) {
+                iMax = data.length;
+                $$1('#taxon-index-max').val(iMax);
+              }
+
               _loop = /*#__PURE__*/regeneratorRuntime.mark(function _loop(i) {
-                var t, filename, eMapping, eApparency, ePhenology, eAltlat, isHybrid, noStatus, p1, p2, p3, p4, p5;
+                var t, filename, eMapping, eApparency, ePhenology, eAltlat, eTrends, isHybrid, noStatus, p1, p2, p3, p4, p5;
                 return regeneratorRuntime.wrap(function _loop$(_context) {
                   while (1) {
                     switch (_context.prev = _context.next) {
@@ -3418,11 +3868,12 @@
                         return _context.abrupt("return", "break");
 
                       case 2:
-                        // Taxon
-                        t = data[i];
-                        filename = taxonToFile(t.taxon, t.taxonId); // For reporting errors
+                        $$1('#bsbi-atlas-download-counter').text(i + 1); // Taxon
 
-                        eMapping = void 0, eApparency = void 0, ePhenology = void 0, eAltlat = void 0; // Ensure that status is set correctly for mapping
+                        t = data[i];
+                        filename = taxonToFile(t.taxon, t.taxonId, t.staceOrder); // For reporting errors
+
+                        eMapping = void 0, eApparency = void 0, ePhenology = void 0, eAltlat = void 0, eTrends = void 0; // Ensure that status is set correctly for mapping
 
                         isHybrid = aIsHybrid.indexOf(t.taxonId) > -1;
                         noStatus = aNoStatus.indexOf(t.taxonId) > -1;
@@ -3440,71 +3891,78 @@
                         p4 = altlatUpdate(t.taxonId, filename)["catch"](function (e) {
                           return eAltlat = e;
                         });
-                        p5 = trendsUpdate(t.taxonId, filename)["catch"](function (e) {
-                          return e;
+                        p5 = trendsUpdate(t.taxonId, t.taxon, t.staceOrder)["catch"](function (e) {
+                          return eTrends = e;
                         });
-                        _context.next = 15;
+                        _context.next = 16;
                         return Promise.all([p1, p2, p3, p4, p5]).then(function () {
-                          if (eMapping || eApparency || ePhenology || eAltlat) {
-                            var html = "<b>Problems for ".concat(t.taxon, " (").concat(t.taxonId, ")</b>");
+                          if (eMapping || eApparency || ePhenology || eAltlat || eTrends) {
+                            var html = "<b>".concat(i + 1, " ").concat(t.taxon, " (").concat(t.taxonId, ")</b>");
+                            logText += "\r\n\r\n".concat(i + 1, " ").concat(t.taxon, " (").concat(t.taxonId, ")");
                             html += '<ul>';
 
                             if (eMapping) {
                               html += '<li>Map failed</li>';
+                              logText += '\r\nMap failed';
                             }
 
                             if (eApparency) {
                               html += '<li>Apparency chart failed</li>';
+                              logText += '\r\nApparency chart failed';
                             }
 
                             if (ePhenology) {
-                              //console.log(ePhenology)
                               html += '<li>Phenology chart failed</li>';
+                              logText += '\r\nPhenology chart failed';
                             }
 
                             if (eAltlat) {
                               html += '<li>Altlat chart failed</li>';
-                            } // Doesn't report missing trends since there are lots of these
+                              logText += '\r\nPhenology chart failed';
+                            }
 
+                            if (eTrends) {
+                              html += '<li>Trends charts failed</li>';
+                              logText += '\r\nPhenology chart failed';
+                            }
 
-                            // Doesn't report missing trends since there are lots of these
                             $$1('<div>').appendTo($$1('#bsbi-atlas-download-right')).html(html);
                           }
                         });
 
-                      case 15:
+                      case 16:
                       case "end":
                         return _context.stop();
                     }
                   }
                 }, _loop);
               });
-              i = 0;
+              i = iMin - 1;
 
-            case 6:
-              if (!(i < data.length)) {
-                _context2.next = 14;
+            case 10:
+              if (!(i < iMax)) {
+                _context2.next = 18;
                 break;
               }
 
-              return _context2.delegateYield(_loop(i), "t0", 8);
+              return _context2.delegateYield(_loop(i), "t0", 12);
 
-            case 8:
+            case 12:
               _ret = _context2.t0;
 
               if (!(_ret === "break")) {
-                _context2.next = 11;
+                _context2.next = 15;
                 break;
               }
 
-              return _context2.abrupt("break", 14);
+              return _context2.abrupt("break", 18);
 
-            case 11:
+            case 15:
               i++;
-              _context2.next = 6;
+              _context2.next = 10;
               break;
 
-            case 14:
+            case 18:
             case "end":
               return _context2.stop();
           }
@@ -3543,6 +4001,23 @@
     });
   }
 
+  function downloadLogButton() {
+    var $button = $$1('<button>').appendTo($$1('#bsbi-atlas-download-left'));
+    $button.addClass('btn btn-default');
+    $button.css('margin-left', '1em');
+    $button.text('Download problems');
+    $button.on('click', function () {
+      var a = document.createElement('a');
+      var file = new Blob([logText], {
+        type: 'text/plain'
+      });
+      a.href = URL.createObjectURL(file);
+      a.download = 'bulk-svg-error-log.txt';
+      a.click();
+      URL.revokeObjectURL(a.href);
+    });
+  }
+
   function cancelDownloadBatchButton() {
     var $button = $$1('<button>').appendTo($$1('#bsbi-atlas-download-left'));
     $button.addClass('btn btn-default');
@@ -3551,6 +4026,35 @@
     $button.on('click', function () {
       bCancelled = true;
     });
+  }
+
+  function downloadLimits() {
+    var $div = $$1('<div>').appendTo($$1('#bsbi-atlas-download-left'));
+    $div.css('margin-top', '0.5em');
+    var $minLabel = $$1('<label>').appendTo($div);
+    $minLabel.attr('for', 'taxon-index-min');
+    $minLabel.text('Start index');
+    $minLabel.css('margin-right', '0.5em');
+    var $min = $$1('<input>').appendTo($div);
+    $min.attr('type', 'number');
+    $min.attr('id', 'taxon-index-min');
+    $min.attr('min', '1');
+    $min.attr('value', 1);
+    $min.css('width', 60);
+    var $maxLabel = $$1('<label>').appendTo($div);
+    $maxLabel.attr('for', 'taxon-index-max');
+    $maxLabel.text('End index');
+    $maxLabel.css('margin', '0 0.5em');
+    var $max = $$1('<input>').appendTo($div);
+    $max.attr('type', 'number');
+    $max.attr('id', 'taxon-index-max');
+    $max.attr('min', '1');
+    $max.attr('value', 100);
+    $max.css('width', 60);
+    var $divCount = $$1('<div>').appendTo($div);
+    $divCount.css('display', 'inline-block');
+    $divCount.css('margin-left', '1em');
+    $divCount.attr('id', 'bsbi-atlas-download-counter');
   }
 
   function downloadButton() {
@@ -3567,11 +4071,10 @@
       if ($$1('#download-altlat').is(':checked')) altlat.saveImage(true, "".concat(filename, "altlat"));
 
       if ($$1('#download-trend').is(':checked')) {
-        console.log('checked');
-        trendSave('bsbi-trend-summary-gb', "".concat(filename, "altlat-gb"));
-        trendSave('bsbi-trend-summary-ir', "".concat(filename, "altlat-ir"));
-      } else {
-        console.log('not checked');
+        trendSave('bsbi-long-trend-summary-gb', "".concat(filename, "trend-long-gb"));
+        trendSave('bsbi-long-trend-summary-ir', "".concat(filename, "trend-long-ir"));
+        trendSave('bsbi-short-trend-summary-gb', "".concat(filename, "trend-short-gb"));
+        trendSave('bsbi-short-trend-summary-ir', "".concat(filename, "trend-short-ir"));
       }
     });
   }
@@ -3605,7 +4108,7 @@
   }
 
   function _mappingUpdate() {
-    _mappingUpdate = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee2(taxonId, taxon) {
+    _mappingUpdate = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee2(taxonId, filename) {
       var staticMap;
       return regeneratorRuntime.wrap(function _callee2$(_context3) {
         while (1) {
@@ -3624,13 +4127,13 @@
               return changeMap(true);
 
             case 6:
-              if (!taxon) {
+              if (!filename) {
                 _context3.next = 9;
                 break;
               }
 
               _context3.next = 9;
-              return staticMap.saveMap(true, null, "".concat(taxonToFile(taxon, taxonId), "map"));
+              return staticMap.saveMap(true, null, "".concat(filename, "map"));
 
             case 9:
               return _context3.abrupt("return", Promise.resolve());
@@ -3656,7 +4159,8 @@
         prop: 'n',
         label: 'Apparency',
         colour: 'green',
-        fill: '#ddffdd'
+        fill: '#ddffdd',
+        strokeWidth: '1.47pt'
       }],
       width: 400,
       height: 250,
@@ -3665,6 +4169,7 @@
       expand: true,
       showTaxonLabel: false,
       axisLeft: 'off',
+      axisBottom: 'off',
       showLegend: false,
       interactivity: 'none'
     });
@@ -3675,7 +4180,7 @@
   }
 
   function _apparencyUpdate() {
-    _apparencyUpdate = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee3(taxonId, taxon) {
+    _apparencyUpdate = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee3(taxonId, filename) {
       var apparencyRoot, file, data;
       return regeneratorRuntime.wrap(function _callee3$(_context4) {
         while (1) {
@@ -3697,13 +4202,13 @@
               return apparency(phen1, data);
 
             case 8:
-              if (!taxon) {
+              if (!filename) {
                 _context4.next = 11;
                 break;
               }
 
               _context4.next = 11;
-              return phen1.saveImage(true, "".concat(taxonToFile(taxon, taxonId), "apparency"));
+              return phen1.saveImage(true, "".concat(filename, "apparency"));
 
             case 11:
               return _context4.abrupt("return", Promise.resolve());
@@ -3734,7 +4239,11 @@
       perRow: 1,
       expand: true,
       showTaxonLabel: false,
-      interactivity: 'none'
+      interactivity: 'none',
+      monthFontSize: '17.6pt',
+      font: 'Minion Pro',
+      lineWidth: '0.735pt',
+      displayLegend: false
     });
   }
 
@@ -3743,14 +4252,14 @@
   }
 
   function _phenologyUpdate() {
-    _phenologyUpdate = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee4(taxonId, taxon) {
+    _phenologyUpdate = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee4(taxonId, filename) {
       var captionRoot, file, data;
       return regeneratorRuntime.wrap(function _callee4$(_context5) {
         while (1) {
           switch (_context5.prev = _context5.next) {
             case 0:
               if (!$$1('#download-phenology').is(':checked')) {
-                _context5.next = 11;
+                _context5.next = 13;
                 break;
               }
 
@@ -3765,18 +4274,22 @@
               return phenology(phen2, data, null);
 
             case 8:
-              if (!taxon) {
-                _context5.next = 11;
+              if (!filename) {
+                _context5.next = 13;
                 break;
               }
 
-              _context5.next = 11;
-              return phen2.saveImage(true, "".concat(taxonToFile(taxon, taxonId), "phenology"));
+              // Tweak the phenology bars and the ticks for book
+              //d3.selectAll('#phen2-chart g.axis g.tick line').style('stroke', 'red')
+              d3.selectAll('#phen2-chart g.axis g.tick line').style('transform', 'translate(0, 0.1pt)');
+              d3.selectAll('#phen2-chart .phen-rect').style('transform', 'translate(0, 0.1pt)');
+              _context5.next = 13;
+              return phen2.saveImage(true, "".concat(filename, "phenology"));
 
-            case 11:
+            case 13:
               return _context5.abrupt("return", Promise.resolve());
 
-            case 12:
+            case 14:
             case "end":
               return _context5.stop();
           }
@@ -3787,9 +4300,11 @@
   }
 
   function altlatChart() {
+    var _opts;
+
     var $altlat = $$1('<div>').appendTo($$1('#bsbi-atlas-download-left'));
     $altlat.attr('id', 'bsbi-altlat-chart').css('max-width', '600px');
-    var opts = {
+    var opts = (_opts = {
       selector: '#bsbi-altlat-chart',
       data: [],
       ranges: [{
@@ -3801,45 +4316,47 @@
         min: 1,
         max: 10,
         radius: 11,
-        legend: '1-10%'
+        legend: '1–10%'
       }, {
         min: 10.00001,
         max: 30,
         radius: 14,
-        legend: '11-30%'
+        legend: '11–30%'
       }, {
         min: 30.00001,
         max: 40,
         radius: 16,
-        legend: '31-40%'
+        legend: '31–40%'
       }, {
         min: 40.00001,
         max: 50,
         radius: 18,
-        legend: '41-50%'
+        legend: '41–50%'
       }, {
         min: 50.00001,
         max: 100,
         radius: 20,
-        legend: '51-100%'
+        legend: '51–100%'
       }],
       taxa: ['dummy'],
       width: 600,
       height: 300,
       perRow: 1,
       expand: true,
+      //margin: {left: 45, right: 10, top: 20, bottom: 35},
       margin: {
-        left: 45,
-        right: 10,
-        top: 20,
-        bottom: 35
+        left: 65,
+        right: 20,
+        top: 45,
+        bottom: 57
       },
       showTaxonLabel: false,
       showLegend: true,
+      interactivity: 'none',
       axisLabelFontSize: 12,
-      legendFontSize: 10,
-      interactivity: 'toggle'
-    };
+      legendFontSize: '22pt',
+      legendSpacing: 25
+    }, _defineProperty(_opts, "axisLabelFontSize", '22pt'), _defineProperty(_opts, "axisTickFontSize", '22pt'), _defineProperty(_opts, "font", 'Minion Pro'), _defineProperty(_opts, "lineWidth", '0.972pt'), _defineProperty(_opts, "yAxisLabelToTop", true), _defineProperty(_opts, "legendBaseline", 'mathematical'), _defineProperty(_opts, "legendXoffset", 1050), _defineProperty(_opts, "legendYoffset", 1180), _opts);
     altlat = brccharts.altlat(opts);
   }
 
@@ -3848,7 +4365,7 @@
   }
 
   function _altlatUpdate() {
-    _altlatUpdate = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee5(taxonId, taxon) {
+    _altlatUpdate = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee5(taxonId, filename) {
       var altlatRoot, altlatfile, altlatdata;
       return regeneratorRuntime.wrap(function _callee5$(_context6) {
         while (1) {
@@ -3870,13 +4387,13 @@
               return altLat(altlat, altlatdata);
 
             case 8:
-              if (!taxon) {
+              if (!filename) {
                 _context6.next = 11;
                 break;
               }
 
               _context6.next = 11;
-              return altlat.saveImage(true, "".concat(taxonToFile(taxon, taxonId), "altlat"));
+              return altlat.saveImage(true, "".concat(filename, "altlat"));
 
             case 11:
               return _context6.abrupt("return", Promise.resolve());
@@ -3892,72 +4409,177 @@
   }
 
   function trendIndicators() {
-    var $trendGb = $$1('<div>').appendTo($$1('#bsbi-atlas-download-left'));
-    $trendGb.attr('id', 'bsbi-trend-summary-gb').css('max-width', '600px');
-    var $trendIr = $$1('<div>').appendTo($$1('#bsbi-atlas-download-left'));
-    $trendIr.attr('id', 'bsbi-trend-summary-ir').css('max-width', '600px');
+    trendIndicator('GB', 'long');
+    trendIndicator('IR', 'long');
+    trendIndicator('GB', 'short');
+    trendIndicator('IR', 'short');
+
+    function trendIndicator(country, term) {
+      var $msg = $$1('<div>').appendTo($$1('#bsbi-atlas-download-left'));
+      $msg.attr('id', "bsbi-".concat(term, "-msg-").concat(country.toLowerCase())).css('max-width', '600px');
+      $msg.text("".concat(country, " ").concat(term));
+      var $indicator = $$1('<div>').appendTo($$1('#bsbi-atlas-download-left'));
+      $indicator.attr('id', "bsbi-".concat(term, "-trend-summary-").concat(country.toLowerCase())).css('max-width', '600px');
+    }
   }
 
-  function trendsUpdate(_x9, _x10) {
+  function trendsUpdate(_x9, _x10, _x11) {
     return _trendsUpdate.apply(this, arguments);
   }
 
   function _trendsUpdate() {
-    _trendsUpdate = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee6(taxonId, taxon) {
-      var trendRoot, trendGb, trendIr, pGb, pIr;
-      return regeneratorRuntime.wrap(function _callee6$(_context7) {
+    _trendsUpdate = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee7(taxonId, taxon, staceOrder) {
+      var updateTrend, delay, agg, ltIdentifier, stIdentifier, staceOrderWithAggLong, staceOrderWithAggShort, trendRootLong, trendRootShort, trendCountRoot, longTrendGb, longTrendIr, shortTrendGb, shortTrendIr, trendCountsLong, trendCountsShort, trendCountsOriginal, pTrendCountsLong, pTrendCountsShort, pTrendCountsOriginal, pGBlong, pIRlong, pGBshort, pIRshort, pSave1, pSave2, pSave3, pSave4;
+      return regeneratorRuntime.wrap(function _callee7$(_context8) {
         while (1) {
-          switch (_context7.prev = _context7.next) {
+          switch (_context8.prev = _context8.next) {
             case 0:
-              $$1('#bsbi-trend-summary-gb').html('');
-              $$1('#bsbi-trend-summary-ir').html('');
-              trendRoot = ds$1.bsbi_atlas.dataRoot + 'bsbi/trends/long/trends-summaries';
-              trendGb = "".concat(trendRoot, "/Britain/").concat(taxonId.replace(/\./g, "_"), ".csv?prevent-cache=").concat(pcache);
-              trendIr = "".concat(trendRoot, "/Ireland/").concat(taxonId.replace(/\./g, "_"), ".csv?prevent-cache=").concat(pcache);
-              pGb = new Promise(function (resolve) {
-                d3.csv(trendGb).then(function (d) {
-                  trendSummary2('bsbi-trend-summary-gb');
-                  updateTrendSummary2('bsbi-trend-summary-gb', d[0]);
-                })["catch"](function () {//console.log('Error reading trend summary file', trendGb)
-                })["finally"](function () {
-                  resolve('');
-                });
-              });
-              pIr = new Promise(function (resolve) {
-                d3.csv(trendIr).then(function (d) {
-                  trendSummary2('bsbi-trend-summary-ir');
-                  updateTrendSummary2('bsbi-trend-summary-ir', d[0]);
-                })["catch"](function () {//console.log('Error reading trend summary file', trendIr)
-                })["finally"](function () {
-                  resolve('');
-                });
-              });
-
-              if (!taxon) {
-                _context7.next = 14;
+              if (!$$1('#download-trend').is(':checked')) {
+                _context8.next = 52;
                 break;
               }
 
-              _context7.next = 10;
-              return Promise.all([pGb, pIr]);
+              updateTrend = /*#__PURE__*/function () {
+                var _ref = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee6(pTrendCountsOriginal, pTrendCount, pData, country, term) {
+                  var threshold, column, d;
+                  return regeneratorRuntime.wrap(function _callee6$(_context7) {
+                    while (1) {
+                      switch (_context7.prev = _context7.next) {
+                        case 0:
+                          threshold = country == 'GB' ? 16 : 7;
+                          column = "".concat(country[0]).concat(country[1].toLowerCase()).concat(term[0].toUpperCase()).concat(term.substr(1));
+                          _context7.next = 4;
+                          return Promise.allSettled([pTrendCount, pData, pTrendCountsOriginal]);
 
-            case 10:
-              _context7.next = 12;
-              return trendSave('bsbi-trend-summary-gb', "".concat(taxonToFile(taxon, taxonId), "altlat-gb"));
+                        case 4:
+                          d = _context7.sent;
 
-            case 12:
-              _context7.next = 14;
-              return trendSave('bsbi-trend-summary-ir', "".concat(taxonToFile(taxon, taxonId), "altlat-gb"));
+                          if (d[0].status === 'fulfilled' && d[2].status === 'fulfilled') {
+                            if (d[1].status === 'fulfilled') {
+                              //if (Number(d[0].value[0][column]) >= threshold && Number(d[2].value[0][column]) > 0) {
+                              if (Number(d[0].value[0][column]) >= threshold) {
+                                updateTrendSummary2("bsbi-".concat(term, "-trend-summary-").concat(country.toLowerCase()), d[1].value[0]);
+                                $$1("#bsbi-".concat(term, "-msg-").concat(country.toLowerCase())).text("".concat(country, " ").concat(term)); // } else if (Number(d[0].value[0][column]) > 0 && Number(d[2].value[0][column]) === 0) {
+                                //   updateTrendSummary2(`bsbi-${term}-trend-summary-${country.toLowerCase()}`, null)
+                                //   $(`#bsbi-${term}-msg-${country.toLowerCase()}`).text(`${country} ${term} - agg taxa not present in country in this time period`)
+                              } else {
+                                updateTrendSummary2("bsbi-".concat(term, "-trend-summary-").concat(country.toLowerCase()), null);
+                                $$1("#bsbi-".concat(term, "-msg-").concat(country.toLowerCase())).text("".concat(country, " ").concat(term, " - hectad threshold not met (").concat(d[0].value[0][column], ")"));
+                              }
+                            } else {
+                              updateTrendSummary2("bsbi-".concat(term, "-trend-summary-").concat(country.toLowerCase()), null);
+                              $$1("#bsbi-".concat(term, "-msg-").concat(country.toLowerCase())).text("".concat(country, " ").concat(term, " - no trend file"));
+                            }
+                          } else {
+                            updateTrendSummary2("bsbi-".concat(term, "-trend-summary-").concat(country.toLowerCase()), null);
+                            $$1("#bsbi-".concat(term, "-msg-").concat(country.toLowerCase())).text("".concat(country, " ").concat(term, " - trend count file absent"));
+                          }
 
-            case 14:
-              return _context7.abrupt("return", Promise.all([pGb, pIr]));
+                        case 6:
+                        case "end":
+                          return _context7.stop();
+                      }
+                    }
+                  }, _callee6);
+                }));
 
-            case 15:
+                return function updateTrend(_x12, _x13, _x14, _x15, _x16) {
+                  return _ref.apply(this, arguments);
+                };
+              }();
+
+              // I can't figure out why, but if I don't put a delay in here, then batch generation of only
+              // trend charts from same batch file produced variable number of download files.
+              delay = function delay(milliseconds) {
+                return new Promise(function (resolve) {
+                  setTimeout(resolve, milliseconds);
+                });
+              };
+
+              $$1('#bsbi-long-trend-summary-gb').html('');
+              $$1('#bsbi-long-trend-summary-ir').html('');
+              $$1('#bsbi-short-trend-summary-gb').html('');
+              $$1('#bsbi-short-trend-summary-ir').html('');
+              trendSummary2('bsbi-long-trend-summary-gb', 'Minion Pro', '14pt');
+              trendSummary2('bsbi-long-trend-summary-ir', 'Minion Pro', '14pt');
+              trendSummary2('bsbi-short-trend-summary-gb', 'Minion Pro', '14pt');
+              trendSummary2('bsbi-short-trend-summary-ir', 'Minion Pro', '14pt');
+              agg = trendAggs.find(function (a) {
+                return a['mapped.ddb.id'] === taxonId;
+              });
+              ltIdentifier = taxonId;
+              stIdentifier = taxonId;
+              staceOrderWithAggLong = staceOrder;
+              staceOrderWithAggShort = staceOrder;
+
+              if (agg && agg['analysisType'] === 'long') {
+                ltIdentifier = agg['agg.ddb.id'];
+                staceOrderWithAggLong += '_trendagg';
+              }
+
+              if (agg && agg['analysisType'] === 'short') {
+                stIdentifier = agg['agg.ddb.id'];
+                staceOrderWithAggShort += '_trendagg';
+              }
+
+              trendRootLong = ds$1.bsbi_atlas.dataRoot + 'bsbi/trends/long/trends-summaries';
+              trendRootShort = ds$1.bsbi_atlas.dataRoot + 'bsbi/trends/short/trends-summaries';
+              trendCountRoot = ds$1.bsbi_atlas.dataRoot + 'bsbi/trends/hectad-counts';
+              longTrendGb = "".concat(trendRootLong, "/Britain/").concat(ltIdentifier.replace(/\./g, "_"), ".csv?prevent-cache=").concat(pcache);
+              longTrendIr = "".concat(trendRootLong, "/Ireland/").concat(ltIdentifier.replace(/\./g, "_"), ".csv?prevent-cache=").concat(pcache);
+              shortTrendGb = "".concat(trendRootShort, "/Britain/").concat(stIdentifier.replace(/\./g, "_"), ".csv?prevent-cache=").concat(pcache);
+              shortTrendIr = "".concat(trendRootShort, "/Ireland/").concat(stIdentifier.replace(/\./g, "_"), ".csv?prevent-cache=").concat(pcache);
+              trendCountsLong = "".concat(trendCountRoot, "/").concat(ltIdentifier.replace(/\./g, "_"), ".csv?prevent-cache=").concat(pcache);
+              trendCountsShort = "".concat(trendCountRoot, "/").concat(stIdentifier.replace(/\./g, "_"), ".csv?prevent-cache=").concat(pcache);
+              trendCountsOriginal = "".concat(trendCountRoot, "/").concat(taxonId.replace(/\./g, "_"), ".csv?prevent-cache=").concat(pcache);
+              pTrendCountsLong = d3.csv(trendCountsLong);
+              pTrendCountsShort = d3.csv(trendCountsShort);
+              pTrendCountsOriginal = d3.csv(trendCountsOriginal);
+              pGBlong = d3.csv(longTrendGb);
+              pIRlong = d3.csv(longTrendIr);
+              pGBshort = d3.csv(shortTrendGb);
+              pIRshort = d3.csv(shortTrendIr);
+              pSave1 = updateTrend(pTrendCountsOriginal, pTrendCountsLong, pGBlong, 'GB', 'long');
+              pSave2 = updateTrend(pTrendCountsOriginal, pTrendCountsLong, pIRlong, 'IR', 'long');
+              pSave3 = updateTrend(pTrendCountsOriginal, pTrendCountsShort, pGBshort, 'GB', 'short');
+              pSave4 = updateTrend(pTrendCountsOriginal, pTrendCountsShort, pIRshort, 'IR', 'short');
+              _context8.next = 41;
+              return Promise.all([pSave1, pSave2, pSave3, pSave4]);
+
+            case 41:
+              _context8.next = 43;
+              return delay(1000);
+
+            case 43:
+              if (!taxon) {
+                _context8.next = 52;
+                break;
+              }
+
+              _context8.next = 46;
+              return trendSave('bsbi-long-trend-summary-gb', "".concat(taxonToFile(taxon, taxonId, staceOrderWithAggLong), "trend-long-gb"));
+
+            case 46:
+              _context8.next = 48;
+              return trendSave('bsbi-long-trend-summary-ir', "".concat(taxonToFile(taxon, taxonId, staceOrderWithAggLong), "trend-long-ir"));
+
+            case 48:
+              _context8.next = 50;
+              return trendSave('bsbi-short-trend-summary-gb', "".concat(taxonToFile(taxon, taxonId, staceOrderWithAggShort), "trend-short-gb"));
+
+            case 50:
+              _context8.next = 52;
+              return trendSave('bsbi-short-trend-summary-ir', "".concat(taxonToFile(taxon, taxonId, staceOrderWithAggShort), "trend-short-ir"));
+
+            case 52:
+              return _context8.abrupt("return", Promise.resolve());
+
+            case 53:
             case "end":
-              return _context7.stop();
+              return _context8.stop();
           }
         }
-      }, _callee6);
+      }, _callee7);
     }));
     return _trendsUpdate.apply(this, arguments);
   }
@@ -3980,8 +4602,10 @@
     });
 
     if (!$$1('#download-trend').is(':checked')) {
-      $$1('#bsbi-trend-summary-gb').html('');
-      $$1('#bsbi-trend-summary-ir').html('');
+      $$1('#bsbi-long-trend-summary-gb').html('');
+      $$1('#bsbi-long-trend-summary-ir').html('');
+      $$1('#bsbi-short-trend-summary-gb').html('');
+      $$1('#bsbi-short-trend-summary-ir').html('');
     }
   }
 
@@ -3992,8 +4616,11 @@
 
     var $sel = $$1('<select>').appendTo($container);
     $sel.addClass('atlas-taxon-selector-sel');
-    d3.csv(ds$1.bsbi_atlas.dataRoot + "bsbi/taxon_list.csv?prevent-cache=".concat(pcache)).then(function (data) {
-      var taxaList = data;
+    var pTaxonList = d3.csv("".concat(ds$1.bsbi_atlas.dataRoot, "bsbi/taxon_list.csv?prevent-cache=").concat(pcache));
+    var pTrendAggs = d3.csv("".concat(ds$1.bsbi_atlas.dataRoot, "bsbi/trends/aggregateMappings.csv?prevent-cache=").concat(pcache));
+    Promise.all([pTaxonList, pTrendAggs]).then(function (data) {
+      trendAggs = data[1];
+      var taxaList = data[0];
       taxaList.forEach(function (d) {
         var name = '';
 
@@ -4008,6 +4635,7 @@
         $opt.attr('data-taxon-name', d['taxonName']); //$opt.attr('data-vernacular', d['vernacular'])
 
         $opt.attr('data-is-hybrid', d['hybrid']);
+        $opt.attr('data-no-status', d['atlasNoStatus']);
         $opt.html(name).appendTo($sel);
       });
       $sel.attr('data-size', '10');
@@ -4016,12 +4644,13 @@
       $sel.attr('title', 'Select a taxon');
       $sel.selectpicker();
       $sel.on('changed.bs.select', function () {
-        console.log('Identifier:', $$1(this).val());
+        //console.log('Identifier:', $(this).val())
         clearCharts();
         currentTaxon.identifier = $$1(this).val();
         currentTaxon.name = $$1(this).find(":selected").attr("data-content");
         currentTaxon.shortName = $$1(this).find(":selected").attr("data-taxon-name");
-        currentTaxon.isHybrid = $$1(this).find(":selected").attr("data-is-hybrid") === 't'; // Ensure that status is set correctly for mapping
+        currentTaxon.isHybrid = $$1(this).find(":selected").attr("data-is-hybrid") === 't';
+        currentTaxon.noStatus = $$1(this).find(":selected").attr("data-no-status") !== ''; // Ensure that status is set correctly for mapping
 
         var isHybrid = $$1(this).find(":selected").attr("data-is-hybrid") === 't';
         var noStatus = aNoStatus.indexOf($$1(this).val()) > -1;
@@ -4033,16 +4662,15 @@
         trendsUpdate(currentTaxon.identifier);
       }); // For batch mapping
 
-      aIsHybrid = data.map(function (t) {
+      aIsHybrid = taxaList.filter(function (t) {
         return t.hybrid === 't';
+      }).map(function (t) {
+        return t.ddbid;
       });
-    })["catch"](function () {
-      console.log('Error reading taxon CSV');
-    }); // No status list for batch mapping
-
-    d3.csv("".concat(ds$1.bsbi_atlas.dataRoot, "bsbi/no_status.csv?prevent-cache=").concat(pcache)).then(function (data) {
-      aNoStatus = data.map(function (d) {
-        return d['ddb id'];
+      aNoStatus = taxaList.filter(function (t) {
+        return t.atlasNoStatus !== '';
+      }).map(function (t) {
+        return t.ddbid;
       });
     });
   }
@@ -4059,9 +4687,20 @@
       name: null,
       shortName: null,
       tetrad: null,
+      noStatus: null,
       isHybrid: false,
-      hybridMapping: false
+      hybridMapping: false,
+      longTrendAgg: null,
+      shortTrendAgg: null,
+      longTrendAggName: null,
+      shortTrendAggName: null,
+      trendAggTaxa: null,
+      trendAggTaxaNames: null
     };
+    var consKeys = ['statusGB', 'statusIE', 'statusCI', 'csRedListEngland', 'csRedListWales', 'csRedListIreland', 'csRedDataList2005', 'csRedDataList2021', 'csRareScarceIr2020', 'csRareScarceGb2020'];
+    consKeys.forEach(function (k) {
+      currentTaxon[k] = null;
+    });
     mapSetCurrentTaxon(currentTaxon);
     $(document).ready(function () {
       addEventListener('popstate', function (event) {
@@ -4101,7 +4740,7 @@
         group: null,
         id: 'conservation',
         title: 'Conservation',
-        fn: sectionEmpty
+        fn: sectionConservation
       }, {
         group: null,
         id: 'gallery',
@@ -4200,6 +4839,11 @@
           changeEcologyTab();
         }
 
+        if (target === '#bsbi-atlas-section-conservation') {
+          // Regenerate graphics
+          changeConservationTab();
+        }
+
         if (target === '#bsbi-atlas-section-trends') {
           $('.bsbi-atlas-trend-controls').show(); // Regenerate graphics
 
@@ -4233,8 +4877,11 @@
           copyToClipboard(location.origin + '/atlas/' + currentTaxon.identifier);
         }
       });
-      d3__namespace.csv("".concat(ds.bsbi_atlas.dataRoot, "bsbi/taxon_list.csv?prevent-cache=").concat(pcache)).then(function (data) {
-        taxaList = data;
+      var pTaxonList = d3__namespace.csv("".concat(ds.bsbi_atlas.dataRoot, "bsbi/taxon_list.csv?prevent-cache=").concat(pcache));
+      var pTrendAggs = d3__namespace.csv("".concat(ds.bsbi_atlas.dataRoot, "bsbi/trends/aggregateMappings.csv?prevent-cache=").concat(pcache));
+      Promise.all([pTaxonList, pTrendAggs]).then(function (data) {
+        var trendAggs = data[1];
+        taxaList = data[0];
         taxaList.forEach(function (d) {
           var name = '';
 
@@ -4242,14 +4889,7 @@
             name = '<b>' + d['vernacular'] + '</b> ';
           }
 
-          name = name + d['formattedName']; // name = name + '<i>' + d['taxonName'] + '</i>'
-          // if (d['qualifier']) {
-          //   name = name + ' <b><i>' + d['qualifier'] + '</i></b>'
-          // }
-          // if (d['authority']) {
-          //   name = name + ' <span style="color: grey">' + d['authority'] + '</span>'
-          // }
-
+          name = name + d['formattedName'];
           var $opt = $('<option>');
           $opt.attr('data-content', name);
           $opt.attr('value', d['ddbid']); //$opt.attr('data-canonical', d['canonical'])
@@ -4258,11 +4898,46 @@
 
           $opt.attr('data-vernacular', d['vernacular']);
           $opt.attr('data-is-hybrid', d['hybrid']);
+          $opt.attr('data-no-status', d['atlasNoStatus']);
           var aParentids = d['hybridParentIds'].split(';');
           var aParents = d['hybridParents'].split(';');
           var hybridMapping = aParents.length === 2 && aParentids.length === 2;
-          $opt.attr('data-hybrid-mapping', hybridMapping); //$opt.attr('data-tetrad', d['tetrad'])
-          //$opt.attr('data-monad', d['monad'])
+          $opt.attr('data-hybrid-mapping', hybridMapping);
+          var agg = trendAggs.find(function (a) {
+            return a['mapped.ddb.id'] === d['ddbid'];
+          }); // if (agg && agg['analysisType'] === 'long') {
+          //   $opt.attr('data-long-trend-agg', agg['agg.ddb.id'])
+          //   $opt.attr('data-long-trend-agg-name', agg['agg.fullName'])
+          // }
+          // if (agg && agg['analysisType'] === 'short') {
+          //   $opt.attr('data-short-trend-agg', agg['agg.ddb.id'])
+          //   $opt.attr('data-short-trend-agg-name', agg['agg.fullName'])
+          // }
+
+          if (agg) {
+            if (agg['analysisType'] === 'long') {
+              $opt.attr('data-long-trend-agg', agg['agg.ddb.id']);
+              $opt.attr('data-long-trend-agg-name', agg['agg.fullName']);
+            }
+
+            if (agg['analysisType'] === 'short') {
+              $opt.attr('data-short-trend-agg', agg['agg.ddb.id']);
+              $opt.attr('data-short-trend-agg-name', agg['agg.fullName']);
+            }
+
+            var aggTaxa = trendAggs.filter(function (a) {
+              return a['agg.ddb.id'] === agg['agg.ddb.id'];
+            }).map(function (a) {
+              return a['mapped.ddb.id'];
+            });
+            var aggTaxaNames = trendAggs.filter(function (a) {
+              return a['agg.ddb.id'] === agg['agg.ddb.id'];
+            }).map(function (a) {
+              return a['mapped.fullName'];
+            });
+            $opt.attr('data-trend-agg-taxa', aggTaxa.join(','));
+            $opt.attr('data-trend-agg-taxa-names', aggTaxaNames.join(','));
+          }
 
           $opt.html(name).appendTo($sel);
         });
@@ -4284,7 +4959,15 @@
             currentTaxon.name = $(this).find(":selected").attr("data-content");
             currentTaxon.shortName = $(this).find(":selected").attr("data-taxon-name");
             currentTaxon.isHybrid = $(this).find(":selected").attr("data-is-hybrid") === 't';
-            currentTaxon.hybridMapping = $(this).find(":selected").attr("data-hybrid-mapping") === 'true'; // If selection was made programatically (browser back or forward
+            currentTaxon.noStatus = $(this).find(":selected").attr("data-no-status") !== '';
+            currentTaxon.hybridMapping = $(this).find(":selected").attr("data-hybrid-mapping") === 'true';
+            currentTaxon.longTrendAgg = $(this).find(":selected").attr("data-long-trend-agg");
+            currentTaxon.shortTrendAgg = $(this).find(":selected").attr("data-short-trend-agg");
+            currentTaxon.longTrendAggName = $(this).find(":selected").attr("data-long-trend-agg-name");
+            currentTaxon.shortTrendAggName = $(this).find(":selected").attr("data-short-trend-agg-name");
+            currentTaxon.trendAggTaxa = $(this).find(":selected").attr("data-trend-agg-taxa");
+            currentTaxon.trendAggTaxaNames = $(this).find(":selected").attr("data-trend-agg-taxa-names"); //console.log(currentTaxon)
+            // If selection was made programatically (browser back or forward
             // button), don't add to history.
 
             if (clickedIndex) {
@@ -4300,7 +4983,11 @@
 
             changePhenologyTab();
             changeEcologyTab();
-            changeTrendsTab();
+            changeTrendsTab(); // Don't call changeConservationTab from here because it needs
+            // to be done once caption file is read. Do from changeCaption 
+            // instead
+            //changeConservationTab()
+
             createGallery('bsbi-gallery', currentTaxon.identifier);
           }
         }); // If identifier passed in URL, set the value and add to history
@@ -4328,16 +5015,7 @@
             parent2Name: parentNames[1]
           };
         });
-        updateBsbiDataAccess('taxaHybridList', hybridTaxa); // Get list of taxa for which no status exists
-        // (for use elsewhere - might as well be done here)
-
-        d3__namespace.csv("".concat(ds.bsbi_atlas.dataRoot, "bsbi/no_status.csv?prevent-cache=").concat(pcache)).then(function (data) {
-          updateBsbiDataAccess('taxaNoStatusList', data.map(function (d) {
-            return d['ddb id'];
-          }));
-        });
-      })["catch"](function () {
-        console.log('Error reading taxon CSV');
+        updateBsbiDataAccess('taxaHybridList', hybridTaxa);
       });
     }
 
@@ -4373,14 +5051,6 @@
       return $div;
     }
 
-    function sectionEmpty(id) {
-      var $sect = $('#bsbi-atlas-section-' + id);
-      var $p1 = $('<p>').appendTo($sect);
-      $p1.text('Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.');
-      var $p2 = $('<p>').appendTo($sect);
-      $p2.text('Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.');
-    }
-
     function sectionSummary(id) {
       var $sect = $('#bsbi-atlas-section-' + id);
       var $d = $('<div class=".container-fluid">').appendTo($sect);
@@ -4389,9 +5059,9 @@
       var $right = $('<div class="col-sm-4">').appendTo($r);
       $left.append('<div id="bsbiMapDiv" width="100%"></div>'); //$left.append('<h4>Atlas map point</h4>')
 
-      $left.append('<div id="dotCaption" width="100%" style="margin-top:1em"></div>');
-      $left.append('<h4>Status etc for devel</h4>');
-      $left.append('<div id="statusDevel" width="100%"></div>');
+      $left.append('<div id="dotCaption" width="100%" style="margin-top:1em"></div>'); // $left.append('<h4>Status etc for devel</h4>')
+      // $left.append('<div id="statusDevel" width="100%"></div>')
+
       var $taxon = $('<div class="bsbi-selected-taxon-name bsbi-section-summary"></div>').appendTo($right);
       $taxon.css('font-size', '1.3em');
       $right.append('<hr/>');
@@ -4399,6 +5069,12 @@
       createMaps("#bsbiMapDiv");
       createMapControls('.bsbi-atlas-map-controls');
       setControlState();
+    }
+
+    function sectionConservation(id) {
+      var $sect = $('#bsbi-atlas-section-' + id);
+      $sect.append('<div id="bsbi-conservation"></div>');
+      createConservation("#bsbi-conservation");
     }
 
     function sectionTrends(id) {
@@ -4455,49 +5131,103 @@
       changeEcology(ds.bsbi_atlas.dataRoot, currentTaxon.identifier);
     }
 
+    function changeConservationTab() {
+      changeConservation(currentTaxon);
+    }
+
     function changeTrendsTab() {
       changeTrends(currentTaxon);
     }
 
     function updateSummaryTrends() {
       if (!currentTaxon.identifier) return;
-      var trendRoot = ds.bsbi_atlas.dataRoot + 'bsbi/trends/long/trends-summaries';
-      var trendGb = "".concat(trendRoot, "/Britain/").concat(currentTaxon.identifier.replace(/\./g, "_"), ".csv?prevent-cache=").concat(pcache);
-      var trendIr = "".concat(trendRoot, "/Ireland/").concat(currentTaxon.identifier.replace(/\./g, "_"), ".csv?prevent-cache=").concat(pcache);
+      var trendRootLong = ds.bsbi_atlas.dataRoot + 'bsbi/trends/long/trends-summaries';
+      var trendRootShort = ds.bsbi_atlas.dataRoot + 'bsbi/trends/short/trends-summaries';
+      var trendCountRoot = ds.bsbi_atlas.dataRoot + 'bsbi/trends/hectad-counts';
+      var ltIdentifier = currentTaxon.longTrendAgg ? currentTaxon.longTrendAgg : currentTaxon.identifier;
+      var stIdentifier = currentTaxon.shortTrendAgg ? currentTaxon.shortTrendAgg : currentTaxon.identifier;
+      var trendGbLong = "".concat(trendRootLong, "/Britain/").concat(ltIdentifier.replace(/\./g, "_"), ".csv?prevent-cache=").concat(pcache);
+      var trendIrLong = "".concat(trendRootLong, "/Ireland/").concat(ltIdentifier.replace(/\./g, "_"), ".csv?prevent-cache=").concat(pcache);
+      var trendGbShort = "".concat(trendRootShort, "/Britain/").concat(stIdentifier.replace(/\./g, "_"), ".csv?prevent-cache=").concat(pcache);
+      var trendIrShort = "".concat(trendRootShort, "/Ireland/").concat(stIdentifier.replace(/\./g, "_"), ".csv?prevent-cache=").concat(pcache);
+      var trendCountsLong = "".concat(trendCountRoot, "/").concat(ltIdentifier.replace(/\./g, "_"), ".csv?prevent-cache=").concat(pcache);
+      var trendCountsShort = "".concat(trendCountRoot, "/").concat(stIdentifier.replace(/\./g, "_"), ".csv?prevent-cache=").concat(pcache);
       var $trends = $('#trend-summaries');
       $trends.html(''); //$trends.css('font-weight', 'bold')
 
       $trends.css('margin-bottom', '0.5em');
-      var $trendHeader = $('<div>').text('Post-1930 effort-adjusted 10 km trends').appendTo($trends);
-      $trendHeader.css('margin-bottom', '0.2em');
-      var $table = $('<table>').appendTo($trends);
-      var $trBritain = $('<tr>').appendTo($table);
-      var $trIreland = $('<tr>').appendTo($table);
-      var pTrendGb = d3__namespace.csv(trendGb).then(function (d) {
-        $('<td>').appendTo($trBritain).text('Britain:');
-        $('<td>').attr('id', 'trend-sum-gb2').css('padding', '0.3em 0 0.3em 0.3em').appendTo($trBritain);
-        trendSummary2('trend-sum-gb2'); //updateTrendSummary2('trend-sum-gb2', d[0], develSummaryTrendColour)
+      var $trendHeaderLong = $('<div>').text('Post-1930 effort-adjusted 10 km trends').appendTo($trends);
+      $trendHeaderLong.css('margin-bottom', '0.2em');
+      var $tableLong = $('<table>').appendTo($trends);
+      var $trBritainLong = $('<tr>').appendTo($tableLong);
+      $('<td>').appendTo($trBritainLong).text('Britain:');
+      $('<td>').attr('id', 'trend-sum-gb-long').css('padding', '0.1em 0 0.1em 0.1em').appendTo($trBritainLong);
+      trendSummary2('trend-sum-gb-long');
+      var $trIrelandLong = $('<tr>').appendTo($tableLong);
+      $('<td>').appendTo($trIrelandLong).text('Ireland:');
+      $('<td>').attr('id', 'trend-sum-ir-long').css('padding', '0.1em 0 0.1em 0.1em').appendTo($trIrelandLong);
+      trendSummary2('trend-sum-ir-long');
 
-        updateTrendSummary2('trend-sum-gb2', d[0]);
-        $('#trend-sum-gb2').show();
-      });
-      var pTrendIr = d3__namespace.csv(trendIr).then(function (d) {
-        $('<td>').appendTo($trIreland).text('Ireland:');
-        $('<td>').attr('id', 'trend-sum-ir2').css('padding', '0.3em 0 0.3em 0.3em').appendTo($trIreland);
-        trendSummary2('trend-sum-ir2'); //updateTrendSummary2('trend-sum-ir2', d[0], develSummaryTrendColour)
+      if (currentTaxon.longTrendAgg) {
+        var $trLongNote = $('<div style="font-size: 0.8em">').appendTo($trends); //$trLongNote.html(`(Trend for aggregate taxon <i>${currentTaxon.longTrendAggName.replace('agg.', '</i>agg.<i>' )}</i>)`)
 
-        updateTrendSummary2('trend-sum-ir2', d[0]);
-        $('#trend-sum-ir2').show();
-      });
-      Promise.allSettled([pTrendGb, pTrendIr]).then(function (p) {
-        if (p[0].status === 'rejected') ;
+        setTrendsAggHtml(currentTaxon, 'long', $trLongNote);
+      }
 
-        if (p[1].status === 'rejected') ;
+      var $trendHeaderShort = $('<div>').text('Post-1987 effort-adjusted 10 km trends').appendTo($trends);
+      $trendHeaderShort.css('margin', '0.4em 0 0.2em 0');
+      var $tableShort = $('<table>').appendTo($trends);
+      var $trBritainShort = $('<tr>').appendTo($tableShort);
+      $('<td>').appendTo($trBritainShort).text('Britain:');
+      $('<td>').attr('id', 'trend-sum-gb-short').css('padding', '0.1em 0 0.1em 0.1em').appendTo($trBritainShort);
+      trendSummary2('trend-sum-gb-short');
+      var $trIrelandShort = $('<tr>').appendTo($tableShort);
+      $('<td>').appendTo($trIrelandShort).text('Ireland:');
+      $('<td>').attr('id', 'trend-sum-ir-short').css('padding', '0.1em 0 0.1em 0.1em').appendTo($trIrelandShort);
+      trendSummary2('trend-sum-ir-short');
 
-        if (p[0].status === 'rejected' && p[1].status === 'rejected') {
-          $trends.hide();
+      if (currentTaxon.shortTrendAgg) {
+        var $trShortNote = $('<div style="font-size: 0.8em">').appendTo($trends); //$trShortNote.html(`(Trend for aggregate taxon <i>${currentTaxon.shortTrendAggName.replace('agg.', '</i>agg.<i>' )}</i>)`)
+
+        setTrendsAggHtml(currentTaxon, 'short', $trShortNote);
+      }
+
+      var pTrendGbLong = d3__namespace.csv(trendGbLong);
+      var pTrendIrLong = d3__namespace.csv(trendIrLong);
+      var pTrendGbShort = d3__namespace.csv(trendGbShort);
+      var pTrendIrShort = d3__namespace.csv(trendIrShort);
+      var pTrendCountsLong = d3__namespace.csv(trendCountsLong);
+      var pTrendCountsShort = d3__namespace.csv(trendCountsShort);
+      Promise.allSettled([pTrendGbLong, pTrendIrLong, pTrendGbShort, pTrendIrShort, pTrendCountsLong, pTrendCountsShort]).then(function (d) {
+        var dTrendGbLong = d[0];
+        var dTrendIrLong = d[1];
+        var dTrendGbShort = d[2];
+        var dTrendIrShort = d[3];
+        var dTrendCountsLong = d[4];
+        var dTrendCountsShort = d[5]; //console.log('dTrendCountsShort.value[0]', dTrendCountsShort.value[0])
+
+        if (dTrendCountsLong.status === 'fulfilled' && Number(dTrendCountsLong.value[0].GbLong) >= 16 && dTrendGbLong.status === 'fulfilled') {
+          updateTrendSummary2('trend-sum-gb-long', dTrendGbLong.value[0]);
         } else {
-          $trends.show();
+          updateTrendSummary2('trend-sum-gb-long', null);
+        }
+
+        if (dTrendCountsLong.status === 'fulfilled' && Number(dTrendCountsLong.value[0].IrLong) >= 7 && dTrendIrLong.status === 'fulfilled') {
+          updateTrendSummary2('trend-sum-ir-long', dTrendIrLong.value[0]);
+        } else {
+          updateTrendSummary2('trend-sum-ir-long', null);
+        }
+
+        if (dTrendCountsShort.status === 'fulfilled' && Number(dTrendCountsShort.value[0].GbShort) >= 16 && dTrendGbShort.status === 'fulfilled') {
+          updateTrendSummary2('trend-sum-gb-short', dTrendGbShort.value[0]);
+        } else {
+          updateTrendSummary2('trend-sum-gb-short', null);
+        }
+
+        if (dTrendCountsShort.status === 'fulfilled' && Number(dTrendCountsShort.value[0].IrShort) >= 7 && dTrendIrShort.status === 'fulfilled') {
+          updateTrendSummary2('trend-sum-ir-short', dTrendIrShort.value[0]);
+        } else {
+          updateTrendSummary2('trend-sum-ir-short', null);
         }
       });
     }
@@ -4519,9 +5249,8 @@
           //$caption.append('<h4>Description</h4>')
           $p = $('<p>').appendTo($caption);
           $p.append(postProcessCaptionText(d[0].atlasSpeciesDescription));
-          $p = $('<p>').appendTo($caption);
-          var status = d[0].overallStatus;
-          $p.append("".concat(status.charAt(0).toUpperCase()).concat(status.slice(1), "."));
+          $p = $('<p>').appendTo($caption); //let status = d[0].overallStatus
+          //$p.append(`${status.charAt(0).toUpperCase()}${status.slice(1)}.`)
         } // Taxa covered
 
 
@@ -4577,16 +5306,19 @@
           $caption.append('<h4>Biogeography</h4>');
           $p = $('<p>').appendTo($caption);
           $p.append(postProcessCaptionText(d[0].atlasSpeciesBiogeography));
-        } // Status etc
+        } // Conservation status etc
 
 
-        $('#statusDevel').html('');
-        var $ulStatus = $('<ul>').appendTo($('#statusDevel'));
-        var vals = ['statusGB', 'statusIE', 'statusCI', 'csRedListEngland', 'csRedListWales', 'csNationalStatus', 'csRedListIreland', 'csRedDataList2005', 'csRedDataList2021'];
-        vals.forEach(function (v) {
-          var $li = $('<li>').appendTo($ulStatus);
-          $li.html("".concat(v, ": ").concat(d[0][v]));
-        }); // Parent taxa (for hybrids)
+        consKeys.forEach(function (k) {
+          currentTaxon[k] = d[0][k];
+        });
+        changeConservationTab(); // $('#statusDevel').html('')
+        // const $ulStatus = $('<ul>').appendTo($('#statusDevel'))
+        // consKeys.forEach(k => {
+        //   const $li=$('<li>').appendTo($ulStatus)
+        //   $li.html(`${k}: ${d[0][k]}`)
+        // })
+        // Parent taxa (for hybrids)
 
         if (d[0].hybridParents) {
           var captionExists = /*#__PURE__*/function () {
@@ -4691,8 +5423,7 @@
 
         $caption.append('<h4>References <span id="bsbi-reference-toggle">[show]</span></h4>');
         var $divref = $('<div id="bsbi-reference-div">').appendTo($caption);
-        $p = $('<p id="bsbi-reference-text">').appendTo($divref);
-        $p.text('TODO - references');
+        $divref.html(d[0].captionRefs);
         var taxaReferenceShown = false;
         $('#bsbi-reference-toggle').click(function () {
           taxaReferenceShown = !taxaReferenceShown;

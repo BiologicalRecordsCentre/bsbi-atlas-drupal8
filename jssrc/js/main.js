@@ -1,13 +1,12 @@
 import * as d3 from 'd3'
-// import lightGallery from 'lightGallery'
 import { bsbiDataAccess } from './dataAccessAtlas'
 import { setBaseMetaTags, addMetaTags } from './metaTags'
 import { createEcology, changeEcology, createPhenology, changePhenology, createPhenologyControls } from './ecology'
-import { createTrends, changeTrends, createTrendControls } from './trends'
+import { createTrends, changeTrends, createTrendControls, setTrendsAggHtml } from './trends'
+import { createConservation, changeConservation } from './conservation'
 import { createGallery } from './gallery'
 import { copyToClipboard,  getCitation } from './utils'
 import { mapSetCurrentTaxon, createMaps, changeMap, createMapControls, setControlState, updateBsbiDataAccess} from './mapping'
-//import { develTrendSummary } from './devel'
 import { downloadPage } from './download'
 import { updateTrendSummary2, trendSummary2 } from './trendSummary'
 import { pcache } from './gen'
@@ -25,9 +24,21 @@ export function main() {
     name: null,
     shortName: null,
     tetrad: null,
+    noStatus: null,
     isHybrid: false,
-    hybridMapping: false
+    hybridMapping: false,
+    longTrendAgg: null,
+    shortTrendAgg: null,
+    longTrendAggName: null,
+    shortTrendAggName: null,
+    trendAggTaxa: null,
+    trendAggTaxaNames: null
   }
+  const consKeys = ['statusGB','statusIE','statusCI','csRedListEngland','csRedListWales','csRedListIreland','csRedDataList2005','csRedDataList2021', 'csRareScarceIr2020', 'csRareScarceGb2020']
+  consKeys.forEach(k => {
+    currentTaxon[k] = null
+  })
+  
   mapSetCurrentTaxon(currentTaxon)
 
   $(document).ready(function () {
@@ -79,7 +90,7 @@ export function main() {
         group: null,
         id: 'conservation',
         title: 'Conservation',
-        fn: sectionEmpty,
+        fn: sectionConservation,
       },
       {
         group: null,
@@ -194,6 +205,11 @@ export function main() {
         changeEcologyTab()
       }
 
+      if (target === '#bsbi-atlas-section-conservation') {
+        // Regenerate graphics
+        changeConservationTab()
+      }
+
       if (target === '#bsbi-atlas-section-trends') {
         $('.bsbi-atlas-trend-controls').show()
         // Regenerate graphics
@@ -231,23 +247,19 @@ export function main() {
       }
     })
 
-    d3.csv(`${ds.bsbi_atlas.dataRoot}bsbi/taxon_list.csv?prevent-cache=${pcache}`).then(function(data) {
+    const pTaxonList = d3.csv(`${ds.bsbi_atlas.dataRoot}bsbi/taxon_list.csv?prevent-cache=${pcache}`)
+    const pTrendAggs = d3.csv(`${ds.bsbi_atlas.dataRoot}bsbi/trends/aggregateMappings.csv?prevent-cache=${pcache}`)
 
-      taxaList = data
+    Promise.all([pTaxonList, pTrendAggs]).then(function(data) {
+
+      const trendAggs = data[1]
+      taxaList = data[0]
       taxaList.forEach(function(d) {
         let name = ''
         if (d['vernacular']) {
           name = '<b>' + d['vernacular'] + '</b> '
         }
         name = name + d['formattedName']
-
-        // name = name + '<i>' + d['taxonName'] + '</i>'
-        // if (d['qualifier']) {
-        //   name = name + ' <b><i>' + d['qualifier'] + '</i></b>'
-        // }
-        // if (d['authority']) {
-        //   name = name + ' <span style="color: grey">' + d['authority'] + '</span>'
-        // }
 
         const $opt = $('<option>')
         $opt.attr('data-content', name)
@@ -257,15 +269,37 @@ export function main() {
         //$opt.attr('data-qualifier', d['qualifier'])
         $opt.attr('data-vernacular', d['vernacular'])
         $opt.attr('data-is-hybrid', d['hybrid'])
+        $opt.attr('data-no-status', d['atlasNoStatus'])
 
         const aParentids = d['hybridParentIds'].split(';')
         const aParents = d['hybridParents'].split(';')
         const hybridMapping = (aParents.length === 2 && aParentids.length === 2)
         $opt.attr('data-hybrid-mapping', hybridMapping)
 
-        //$opt.attr('data-tetrad', d['tetrad'])
-        //$opt.attr('data-monad', d['monad'])
+        const agg = trendAggs.find(a => a['mapped.ddb.id']===d['ddbid'])
+        // if (agg && agg['analysisType'] === 'long') {
+        //   $opt.attr('data-long-trend-agg', agg['agg.ddb.id'])
+        //   $opt.attr('data-long-trend-agg-name', agg['agg.fullName'])
+        // }
+        // if (agg && agg['analysisType'] === 'short') {
+        //   $opt.attr('data-short-trend-agg', agg['agg.ddb.id'])
+        //   $opt.attr('data-short-trend-agg-name', agg['agg.fullName'])
+        // }
 
+        if (agg) {
+          if (agg['analysisType'] === 'long') {
+            $opt.attr('data-long-trend-agg', agg['agg.ddb.id'])
+            $opt.attr('data-long-trend-agg-name', agg['agg.fullName'])
+          }
+          if (agg['analysisType'] === 'short') {
+            $opt.attr('data-short-trend-agg', agg['agg.ddb.id'])
+            $opt.attr('data-short-trend-agg-name', agg['agg.fullName'])
+          }
+          const aggTaxa = trendAggs.filter(a => a['agg.ddb.id']===agg['agg.ddb.id']).map(a => a['mapped.ddb.id'])
+          const aggTaxaNames = trendAggs.filter(a => a['agg.ddb.id']===agg['agg.ddb.id']).map(a => a['mapped.fullName'])
+          $opt.attr('data-trend-agg-taxa', aggTaxa.join(','))
+          $opt.attr('data-trend-agg-taxa-names', aggTaxaNames.join(','))
+        }
         $opt.html(name).appendTo($sel)
       })
 
@@ -291,7 +325,16 @@ export function main() {
           currentTaxon.name =  $(this).find(":selected").attr("data-content")
           currentTaxon.shortName = $(this).find(":selected").attr("data-taxon-name")
           currentTaxon.isHybrid = $(this).find(":selected").attr("data-is-hybrid") === 't'
+          currentTaxon.noStatus = $(this).find(":selected").attr("data-no-status") !== ''
           currentTaxon.hybridMapping = $(this).find(":selected").attr("data-hybrid-mapping") === 'true'
+          currentTaxon.longTrendAgg = $(this).find(":selected").attr("data-long-trend-agg")
+          currentTaxon.shortTrendAgg = $(this).find(":selected").attr("data-short-trend-agg")
+          currentTaxon.longTrendAggName = $(this).find(":selected").attr("data-long-trend-agg-name")
+          currentTaxon.shortTrendAggName = $(this).find(":selected").attr("data-short-trend-agg-name")
+          currentTaxon.trendAggTaxa = $(this).find(":selected").attr("data-trend-agg-taxa")
+          currentTaxon.trendAggTaxaNames = $(this).find(":selected").attr("data-trend-agg-taxa-names")
+
+          //console.log(currentTaxon)
 
           // If selection was made programatically (browser back or forward
           // button), don't add to history.
@@ -306,6 +349,10 @@ export function main() {
           changePhenologyTab()
           changeEcologyTab()
           changeTrendsTab()
+          // Don't call changeConservationTab from here because it needs
+          // to be done once caption file is read. Do from changeCaption 
+          // instead
+          //changeConservationTab()
           createGallery('bsbi-gallery', currentTaxon.identifier)
         }
       })
@@ -333,14 +380,6 @@ export function main() {
         }
       })
       updateBsbiDataAccess('taxaHybridList', hybridTaxa)
-
-      // Get list of taxa for which no status exists
-      // (for use elsewhere - might as well be done here)
-      d3.csv(`${ds.bsbi_atlas.dataRoot}bsbi/no_status.csv?prevent-cache=${pcache}`).then(function(data) {
-        updateBsbiDataAccess('taxaNoStatusList',  data.map(function(d) {return d['ddb id']}))
-      })
-    }).catch(function(){
-      console.log('Error reading taxon CSV')
     })
   }
 
@@ -394,8 +433,8 @@ export function main() {
     //$left.append('<h4>Atlas map point</h4>')
     $left.append('<div id="dotCaption" width="100%" style="margin-top:1em"></div>')
 
-    $left.append('<h4>Status etc for devel</h4>')
-    $left.append('<div id="statusDevel" width="100%"></div>')
+    // $left.append('<h4>Status etc for devel</h4>')
+    // $left.append('<div id="statusDevel" width="100%"></div>')
 
     const $taxon = $('<div class="bsbi-selected-taxon-name bsbi-section-summary"></div>').appendTo($right)
     $taxon.css('font-size', '1.3em')
@@ -405,6 +444,13 @@ export function main() {
     createMaps("#bsbiMapDiv")
     createMapControls('.bsbi-atlas-map-controls')
     setControlState()
+  }
+
+  function sectionConservation(id) {
+    const $sect = $('#bsbi-atlas-section-' + id)
+    $sect.append('<div id="bsbi-conservation"></div>')
+
+    createConservation("#bsbi-conservation")
   }
 
   function sectionTrends(id) {
@@ -461,13 +507,15 @@ export function main() {
   }
 
   function changePhenologyTab() {
-   
     changePhenology(ds.bsbi_atlas.dataRoot, currentTaxon.identifier)
   }
 
   function changeEcologyTab() {
-   
     changeEcology(ds.bsbi_atlas.dataRoot, currentTaxon.identifier)
+  }
+
+  function changeConservationTab() {
+    changeConservation(currentTaxon)
   }
 
   function changeTrendsTab() {
@@ -478,52 +526,97 @@ export function main() {
 
     if (!currentTaxon.identifier) return
 
-    const trendRoot = ds.bsbi_atlas.dataRoot + 'bsbi/trends/long/trends-summaries'
-    const trendGb = `${trendRoot}/Britain/${currentTaxon.identifier.replace(/\./g, "_")}.csv?prevent-cache=${pcache}`
-    const trendIr = `${trendRoot}/Ireland/${currentTaxon.identifier.replace(/\./g, "_")}.csv?prevent-cache=${pcache}`
+    const trendRootLong = ds.bsbi_atlas.dataRoot + 'bsbi/trends/long/trends-summaries'
+    const trendRootShort = ds.bsbi_atlas.dataRoot + 'bsbi/trends/short/trends-summaries'
+    const trendCountRoot = ds.bsbi_atlas.dataRoot + 'bsbi/trends/hectad-counts'
 
+    const ltIdentifier = currentTaxon.longTrendAgg ? currentTaxon.longTrendAgg : currentTaxon.identifier
+    const stIdentifier = currentTaxon.shortTrendAgg ? currentTaxon.shortTrendAgg : currentTaxon.identifier
+
+    const trendGbLong = `${trendRootLong}/Britain/${ltIdentifier.replace(/\./g, "_")}.csv?prevent-cache=${pcache}`
+    const trendIrLong = `${trendRootLong}/Ireland/${ltIdentifier.replace(/\./g, "_")}.csv?prevent-cache=${pcache}`
+    const trendGbShort = `${trendRootShort}/Britain/${stIdentifier.replace(/\./g, "_")}.csv?prevent-cache=${pcache}`
+    const trendIrShort = `${trendRootShort}/Ireland/${stIdentifier.replace(/\./g, "_")}.csv?prevent-cache=${pcache}`
+    const trendCountsLong = `${trendCountRoot}/${ltIdentifier.replace(/\./g, "_")}.csv?prevent-cache=${pcache}`
+    const trendCountsShort = `${trendCountRoot}/${stIdentifier.replace(/\./g, "_")}.csv?prevent-cache=${pcache}`
+    
     const $trends = $('#trend-summaries')
     $trends.html('')
     //$trends.css('font-weight', 'bold')
     $trends.css('margin-bottom', '0.5em')
-    const $trendHeader = $('<div>').text('Post-1930 effort-adjusted 10 km trends').appendTo($trends)
-    $trendHeader.css('margin-bottom', '0.2em')
-    const $table = $('<table>').appendTo($trends)
-    const $trBritain = $('<tr>').appendTo($table)
-    const $trIreland = $('<tr>').appendTo($table)
-    
-    const pTrendGb = d3.csv(trendGb)
-      .then(function(d) {
-        $('<td>').appendTo($trBritain).text('Britain:')
-        $('<td>').attr('id', 'trend-sum-gb2').css('padding', '0.3em 0 0.3em 0.3em').appendTo($trBritain)
-        trendSummary2('trend-sum-gb2')
-        //updateTrendSummary2('trend-sum-gb2', d[0], develSummaryTrendColour)
-        updateTrendSummary2('trend-sum-gb2', d[0])
-        $('#trend-sum-gb2').show()
-    })
 
-    const pTrendIr = d3.csv(trendIr)
-      .then(function(d) {
-        $('<td>').appendTo($trIreland).text('Ireland:')
-        $('<td>').attr('id', 'trend-sum-ir2').css('padding', '0.3em 0 0.3em 0.3em').appendTo($trIreland)
-        trendSummary2('trend-sum-ir2')
-        //updateTrendSummary2('trend-sum-ir2', d[0], develSummaryTrendColour)
-        updateTrendSummary2('trend-sum-ir2', d[0])
-        $('#trend-sum-ir2').show()
-    })
+    const $trendHeaderLong = $('<div>').text('Post-1930 effort-adjusted 10 km trends').appendTo($trends)
+    $trendHeaderLong.css('margin-bottom', '0.2em')
+    const $tableLong = $('<table>').appendTo($trends)
+    const $trBritainLong = $('<tr>').appendTo($tableLong)
+    $('<td>').appendTo($trBritainLong).text('Britain:')
+    $('<td>').attr('id', 'trend-sum-gb-long').css('padding', '0.1em 0 0.1em 0.1em').appendTo($trBritainLong)
+    trendSummary2('trend-sum-gb-long')
+    const $trIrelandLong = $('<tr>').appendTo($tableLong)
+    $('<td>').appendTo($trIrelandLong).text('Ireland:')
+    $('<td>').attr('id', 'trend-sum-ir-long').css('padding', '0.1em 0 0.1em 0.1em').appendTo($trIrelandLong)
+    trendSummary2('trend-sum-ir-long')
 
-    Promise.allSettled([pTrendGb, pTrendIr]).then(p => {
+    if (currentTaxon.longTrendAgg) {
+      const $trLongNote = $('<div style="font-size: 0.8em">').appendTo($trends)
+      //$trLongNote.html(`(Trend for aggregate taxon <i>${currentTaxon.longTrendAggName.replace('agg.', '</i>agg.<i>' )}</i>)`)
+      setTrendsAggHtml(currentTaxon, 'long', $trLongNote)
+    }
 
-      if (p[0].status === 'rejected') {
-        //console.log('Error reading trend summary file', trendGb)
-      }
-      if (p[1].status === 'rejected') {
-        //console.log('Error reading trend summary file', trendIr)
-      }
-      if (p[0].status === 'rejected' && p[1].status === 'rejected') {
-        $trends.hide()
+    const $trendHeaderShort = $('<div>').text('Post-1987 effort-adjusted 10 km trends').appendTo($trends)
+    $trendHeaderShort.css('margin', '0.4em 0 0.2em 0')
+    const $tableShort = $('<table>').appendTo($trends)
+    const $trBritainShort = $('<tr>').appendTo($tableShort)
+    $('<td>').appendTo($trBritainShort).text('Britain:')
+    $('<td>').attr('id', 'trend-sum-gb-short').css('padding', '0.1em 0 0.1em 0.1em').appendTo($trBritainShort)
+    trendSummary2('trend-sum-gb-short')
+    const $trIrelandShort = $('<tr>').appendTo($tableShort)
+    $('<td>').appendTo($trIrelandShort).text('Ireland:')
+    $('<td>').attr('id', 'trend-sum-ir-short').css('padding', '0.1em 0 0.1em 0.1em').appendTo($trIrelandShort)
+    trendSummary2('trend-sum-ir-short')
+
+    if (currentTaxon.shortTrendAgg) {
+      const $trShortNote = $('<div style="font-size: 0.8em">').appendTo($trends)
+      //$trShortNote.html(`(Trend for aggregate taxon <i>${currentTaxon.shortTrendAggName.replace('agg.', '</i>agg.<i>' )}</i>)`)
+      setTrendsAggHtml(currentTaxon, 'short', $trShortNote)
+    }
+
+    const pTrendGbLong = d3.csv(trendGbLong)
+    const pTrendIrLong = d3.csv(trendIrLong)
+    const pTrendGbShort = d3.csv(trendGbShort)
+    const pTrendIrShort = d3.csv(trendIrShort)
+    const pTrendCountsLong = d3.csv(trendCountsLong)
+    const pTrendCountsShort = d3.csv(trendCountsShort)
+
+    Promise.allSettled([pTrendGbLong, pTrendIrLong, pTrendGbShort, pTrendIrShort, pTrendCountsLong, pTrendCountsShort]).then(d => {
+      const dTrendGbLong=d[0]
+      const dTrendIrLong=d[1]
+      const dTrendGbShort=d[2]
+      const dTrendIrShort=d[3]
+      const dTrendCountsLong=d[4]
+      const dTrendCountsShort=d[5]
+
+      //console.log('dTrendCountsShort.value[0]', dTrendCountsShort.value[0])
+
+      if (dTrendCountsLong.status === 'fulfilled' && Number(dTrendCountsLong.value[0].GbLong) >= 16 && dTrendGbLong.status === 'fulfilled') {
+        updateTrendSummary2('trend-sum-gb-long', dTrendGbLong.value[0])
       } else {
-        $trends.show()
+        updateTrendSummary2('trend-sum-gb-long', null)
+      }
+      if (dTrendCountsLong.status === 'fulfilled' && Number(dTrendCountsLong.value[0].IrLong) >= 7 && dTrendIrLong.status === 'fulfilled') {
+        updateTrendSummary2('trend-sum-ir-long', dTrendIrLong.value[0])
+      } else {
+        updateTrendSummary2('trend-sum-ir-long', null)
+      }
+      if (dTrendCountsShort.status === 'fulfilled' && Number(dTrendCountsShort.value[0].GbShort) >= 16 && dTrendGbShort.status === 'fulfilled') {
+        updateTrendSummary2('trend-sum-gb-short', dTrendGbShort.value[0])
+      } else {
+        updateTrendSummary2('trend-sum-gb-short', null)
+      }
+      if (dTrendCountsShort.status === 'fulfilled' && Number(dTrendCountsShort.value[0].IrShort) >= 7 && dTrendIrShort.status === 'fulfilled') {
+        updateTrendSummary2('trend-sum-ir-short', dTrendIrShort.value[0])
+      } else {
+        updateTrendSummary2('trend-sum-ir-short', null)
       }
     })
   }
@@ -551,8 +644,8 @@ export function main() {
           $p.append(postProcessCaptionText(d[0].atlasSpeciesDescription))
           $p = $('<p>').appendTo($caption)
 
-          let status = d[0].overallStatus
-          $p.append(`${status.charAt(0).toUpperCase()}${status.slice(1)}.`)
+          //let status = d[0].overallStatus
+          //$p.append(`${status.charAt(0).toUpperCase()}${status.slice(1)}.`)
         }
 
         // Taxa covered
@@ -609,14 +702,18 @@ export function main() {
           $p.append(postProcessCaptionText(d[0].atlasSpeciesBiogeography))
         }
 
-        // Status etc
-        $('#statusDevel').html('')
-        const $ulStatus = $('<ul>').appendTo($('#statusDevel'))
-        const vals = ['statusGB','statusIE','statusCI','csRedListEngland','csRedListWales','csNationalStatus','csRedListIreland','csRedDataList2005','csRedDataList2021']
-        vals.forEach(v => {
-          const $li=$('<li>').appendTo($ulStatus)
-          $li.html(`${v}: ${d[0][v]}`)
+        // Conservation status etc
+        consKeys.forEach(k => {
+          currentTaxon[k] = d[0][k]
         })
+        changeConservationTab()
+
+        // $('#statusDevel').html('')
+        // const $ulStatus = $('<ul>').appendTo($('#statusDevel'))
+        // consKeys.forEach(k => {
+        //   const $li=$('<li>').appendTo($ulStatus)
+        //   $li.html(`${k}: ${d[0][k]}`)
+        // })
         
         // Parent taxa (for hybrids)
         if (d[0].hybridParents) {
@@ -676,8 +773,7 @@ export function main() {
         // References
         $caption.append('<h4>References <span id="bsbi-reference-toggle">[show]</span></h4>')
         const $divref = $('<div id="bsbi-reference-div">').appendTo($caption)
-        $p = $('<p id="bsbi-reference-text">').appendTo($divref)
-        $p.text('TODO - references')
+        $divref.html(d[0].captionRefs)
 
         let taxaReferenceShown = false
         $('#bsbi-reference-toggle').click(function() {

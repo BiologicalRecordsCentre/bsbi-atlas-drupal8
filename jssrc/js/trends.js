@@ -1,5 +1,6 @@
 import * as d3 from 'd3'
 import { setCookie, getCookie } from './utils'
+import * as stats from 'stats-lite'
 
 const $ = jQuery // eslint-disable-line no-undef
 const ds = drupalSettings // eslint-disable-line no-undef
@@ -16,7 +17,8 @@ let currentTaxon
 
 export function createTrends(sel) {
 
-  $('<h4>').appendTo($(sel)).text('Effort-adjusted 10 km distribution trends')
+  $('<h4 id="bsbiTrendsTitle">').appendTo($(sel)).text('')
+  $('<p id="bsbiTrendsAggNote">').appendTo($(sel)).text('')
 
   const $trends1 = $('<div>').appendTo($(sel))
   $trends1.attr('class', 'phenRow')
@@ -95,7 +97,7 @@ export function createTrends(sel) {
     axisBottom: 'tick',
     axisRight: 'on',
     axisTop: 'on',
-    axisLeftLabel: 'Relative index',
+    axisLeftLabel: 'Relative frequency',
     axisLabelFontSize: 12,
     style: {
       vStroke: 'blue',
@@ -139,7 +141,7 @@ export function createTrends(sel) {
     axisBottom: 'tick',
     axisRight: 'on',
     axisTop: 'on',
-    axisLeftLabel: 'Relative index',
+    axisLeftLabel: 'Relative frequency',
     axisLabelFontSize: 12,
     style: {
       vStroke: 'blue',
@@ -237,11 +239,52 @@ export function changeTrends(taxon) {
   }
   if (!currentTaxon.identifier) return
 
-  //scaleType
+  // Set title to reflect user selection
+  const termTypeText = termType === 'short' ? 'Post-1987' : 'Post-1930'
+  let regionTypeText
+  if (regionType === 'Northern') {
+    regionTypeText = 'Northern Ireland'
+  } else if (regionType === 'Republic') {
+    regionTypeText = 'Republic of Ireland'
+  } else {
+    regionTypeText = regionType
+  }
+  $('#bsbiTrendsTitle').html(`<b>${termTypeText}</b> effort-adjusted 10 km distribution trends for <b>${regionTypeText}</b>`)
+
+  if (currentTaxon[`${termType}TrendAgg`]) {
+    setTrendsAggHtml(currentTaxon, termType, $('#bsbiTrendsAggNote'))
+  } else {
+    $('#bsbiTrendsAggNote').html('')
+  }
 
   loadData().then(d => {
+    
+    // Set flag to exclude if data deficient
+    const dTrendCounts = d[6]
+    let dataDeficient = true
+    if (dTrendCounts.status === 'fulfilled') {
+      //console.log('Trend counts', dTrendCounts.value[0])
+      if (regionType === 'Britain' ||
+          regionType === 'England' ||
+          regionType === 'Scotland' ||
+          regionType === 'Wales') {
+        if (termType === 'long') {
+          dataDeficient = dTrendCounts.value[0].GbLong <= 15
+        } else {
+          dataDeficient = dTrendCounts.value[0].GbShort <= 15
+        }
+      } else {
+        if (termType === 'long') {
+          dataDeficient = dTrendCounts.value[0].IrLong <= 6
+        } else {
+          dataDeficient = dTrendCounts.value[0].IrShort <= 6
+        }
+      }
+    }
+
     let gamData, linmodData, barData, densityData
-    if (d[0].status === 'fulfilled') {
+
+    if (d[0].status === 'fulfilled' && !dataDeficient) {
       
       $gamNoData.hide()
       // If termType is short, add extra points to start of array to make 
@@ -259,7 +302,7 @@ export function changeTrends(taxon) {
       gamData = []
       $gamNoData.show()
     }
-    if (d[1].status === 'fulfilled') {
+    if (d[1].status === 'fulfilled' && !dataDeficient) {
       linmodData = d[1].value
       densityData = [linmodData.map(d => {return {slope: Number(d.gradient)}})]
       $linmodNoData.hide()
@@ -270,16 +313,16 @@ export function changeTrends(taxon) {
       $linmodNoData.show()
       $densityNoData.show()
     }
-    const meanLinmodData = d[4].status === 'fulfilled' ? d[4].value : []
+    const meanLinmodData = d[4].status === 'fulfilled' && !dataDeficient ? d[4].value : []
     if (densityData.length) {
       densityData.push(meanLinmodData)
     }
-    const linmodCentiles = d[5].status === 'fulfilled' ? d[5].value : []
-    const means = d[2].status === 'fulfilled' ? d[2].value : []
+    const linmodCentiles = d[5].status === 'fulfilled' && !dataDeficient ? d[5].value : []
+    const means = d[2].status === 'fulfilled' && !dataDeficient ? d[2].value : []
     // Reverse the order of means to make for smooth transitions between
     // short and long term trends
     means.reverse()
-    if (d[3].status === 'fulfilled') {
+    if (d[3].status === 'fulfilled' && !dataDeficient) {
       barData = d[3].value[0]
       $barNoData.hide()
     } else {
@@ -303,9 +346,16 @@ export function changeTrends(taxon) {
       {x: 0.004, stroke: 'silver', strokeWidth: 1, strokeDasharray: '3 3'}
     ]
     const limmodCentile = linmodCentiles.find(l => l.region === regionType)
-    //console.log('centiles', limmodCentile)
     if (densityData.length) {
-      density.updateChart(densityData, limmodCentile.c5, limmodCentile.c95, xlines, null, scaleTypeDensity==='max')
+      // In general, density slopes of individual taxon will be within the overall
+      // density slope. But for outliers, we adjust the x axis limits based on
+      // the density slope for the taxon.
+      const dd = densityData[0].map(d => d.slope)
+      const dp95 = stats.percentile(dd, 0.95)
+      const dp5 = stats.percentile(dd, 0.05)
+      const xmax = limmodCentile.c95 > dp95 ? limmodCentile.c95 : dp95
+      const xmin = limmodCentile.c5 < dp5 ? limmodCentile.c5 : dp5
+      density.updateChart(densityData, xmin, xmax, xlines, null, scaleTypeDensity==='max')
     } else {
       density.updateChart([])
     }
@@ -314,10 +364,12 @@ export function changeTrends(taxon) {
 
 function loadData() {
 
-  //if (!currentTaxon.identifier) return Promise.all([Promise.reject(), Promise.reject(), Promise.reject()])
+  const tIdentifier = currentTaxon[`${termType}TrendAgg`] ? currentTaxon[`${termType}TrendAgg`] : currentTaxon.identifier
 
   const trendsRoot = ds.bsbi_atlas.dataRoot + 'bsbi/trends/'
-  const pGam = d3.csv(`${trendsRoot}${termType}/trends-gam/${regionType}/${currentTaxon.identifier.replace(/\./g, "_")}.csv?${pcache}`, function(d){
+  const trendCountRoot = ds.bsbi_atlas.dataRoot + 'bsbi/trends/hectad-counts'
+  const pTrendCounts = d3.csv(`${trendCountRoot}/${tIdentifier.replace(/\./g, "_")}.csv?prevent-cache=${pcache}`)
+  const pGam = d3.csv(`${trendsRoot}${termType}/trends-gam/${regionType}/${tIdentifier.replace(/\./g, "_")}.csv?${pcache}`, function(d){
     return {
       year: Number(d.year),
       value: Number(d.x50),
@@ -325,20 +377,20 @@ function loadData() {
       lower: Number(d.x5)
     }
   })
-  const pLinmod = d3.csv(`${trendsRoot}${termType}/trends-linmod/${regionType}/${currentTaxon.identifier.replace(/\./g, "_")}.csv?${pcache}`, function(d){
+  const pLinmod = d3.csv(`${trendsRoot}${termType}/trends-linmod/${regionType}/${tIdentifier.replace(/\./g, "_")}.csv?${pcache}`, function(d){
     return {
       gradient: Number(d.gradient),
       intercept: Number(d.intercept)
     }
   })
-  const pMeans = d3.csv(`${trendsRoot}${termType}/trends-lt-mean-sd/${regionType}/${currentTaxon.identifier.replace(/\./g, "_")}.csv?${pcache}`, function(d){
+  const pMeans = d3.csv(`${trendsRoot}${termType}/trends-lt-mean-sd/${regionType}/${tIdentifier.replace(/\./g, "_")}.csv?${pcache}`, function(d){
     return {
       year: Number(d.year),
       mean: Number(d.mean),
       sd: Number(d.std),
     }
   })
-  const pSummaries = d3.csv(`${trendsRoot}${termType}/trends-summaries/${regionType}/${currentTaxon.identifier.replace(/\./g, "_")}.csv?${pcache}`, function(d){
+  const pSummaries = d3.csv(`${trendsRoot}${termType}/trends-summaries/${regionType}/${tIdentifier.replace(/\./g, "_")}.csv?${pcache}`, function(d){
     return [
       {value: Number(d.declineStrong), label: 'Strong decline', stroke: 'grey', strokeWidth: 1, fill: 'rgb(230,230,230)'},
       {value: Number(d.declineMod), label: 'Moderate decline', stroke: 'grey', strokeWidth: 1, fill: 'rgb(230,230,230)'},
@@ -359,7 +411,7 @@ function loadData() {
       c95: Number(d.c95)
     }
   })
-  return Promise.allSettled([pGam, pLinmod, pMeans, pSummaries, pLinmodMeans, pLinmodCentiles])
+  return Promise.allSettled([pGam, pLinmod, pMeans, pSummaries, pLinmodMeans, pLinmodCentiles, pTrendCounts])
 }
 
 export function createTrendControls(selector) {
@@ -368,6 +420,70 @@ export function createTrendControls(selector) {
   termSelector(trendControlRow(selector))
   scalingSelector((trendControlRow(selector)))
   scalingSelector2((trendControlRow(selector)))
+}
+
+export function setTrendsAggHtml(currentTaxon, termType, $ctl) {
+
+  //const captionRoot = ds.bsbi_atlas.dataRoot + 'bsbi/captions/'
+  // const pCaptions = []
+  // currentTaxon.trendAggTaxa.split(',').forEach(ddbid => {
+  //   const captionFile = `${captionRoot}${ddbid.replace(/\./g, "_")}.csv?prevent-cache=${pcache}`
+  //   pCaptions.push(d3.csv(captionFile))
+  // })
+  // Promise.allSettled(pCaptions).then(captions => {
+  //   console.log(captions)
+  //   const aggTaxa = captions.map(c => c.value[0].formattedName).join(', ')
+  //   const html = `(Trend for aggregate taxon <i>${currentTaxon[termType + 'TrendAggName'].replace('agg.', '</i>agg.<i>' )}</i>) ${aggTaxa}`
+  //   $ctl.html(html)
+  // })
+
+  $ctl.html('')
+  const $span1 = $('<span>').appendTo($ctl)
+  $span1.html(`(Trend for aggregate taxon ${enrichName(currentTaxon[termType + 'TrendAggName'])}`)
+
+  console.log(currentTaxon.trendAggTaxaNames, currentTaxon.trendAggTaxa)
+  let aggTaxa = currentTaxon.trendAggTaxaNames.split(',').map((t,i) => {
+    return enrichName(t, currentTaxon.trendAggTaxa.split(',')[i])
+  }).join(', ')
+  // Replace last comma with 'and'
+  const lastIndex = aggTaxa.lastIndexOf(', ')
+  aggTaxa = `${aggTaxa.substring(0, lastIndex)} and ${aggTaxa.substring(lastIndex + 1)}`
+
+  const $span2 = $('<span>').appendTo($ctl)
+  $span2.css('display', 'none')
+  $span2.html(` - comprises ${aggTaxa}`)
+
+  const $span3 = $('<span>').appendTo($ctl)
+  $span3.css('cursor', 'pointer')
+  $span3.data('data-val', 'hide')
+  $span3.html(' - <b>[show more]</b>)')
+  $span3.on('click', function() {
+    if ($(this).data('data-val') === 'hide') {
+      $(this).data('data-val', 'show') 
+      $(this).html(' - <b>[show less]</b>)') 
+      $span2.show()
+    } else {
+      $(this).data('data-val', 'hide')
+      $(this).html(' - <b>[show more]</b>)') 
+      $span2.hide()
+    }
+  })
+  
+  function enrichName(name, ddbid) {
+
+    // Remove italics (use reversed italics tab) from some strinbs
+    let ret = `<i>${name}</i>`
+    const noItalics = ['agg.', 's.s.', 's.l.', 'subsp.', '=']
+    noItalics.forEach(ni => {
+      ret = ret.replace(ni, `</i>${ni}<i>`)
+    })
+    // Replace x with ×
+    ret = ret.replace(/ x /g, ' × ')
+    if (ddbid) {
+      ret = `<a href="/atlas/${ddbid}">${ret}</a>`
+    }
+    return ret
+  }
 }
 
 function trendControlRow(selector, classname) {

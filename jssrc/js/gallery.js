@@ -70,7 +70,7 @@ export function createGallery(id, ddbid) {
             $('#bsbi-gallery-copyright').show()
           }, 200)
         } else {
-          lgContainer.innerHTML = `<i>No images are available for this taxon.</i>`
+          lgContainer.innerHTML = `No images are available for this taxon`
           $('#bsbi-gallery-copyright').hide()
         }
       })

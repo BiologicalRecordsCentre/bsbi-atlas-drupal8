@@ -12,11 +12,12 @@ const currentTaxon = {
   identifier: '',
   name: null,
   shortName: null,
-  tetrad: null,
 }
+let trendAggs
 let phen1, phen2, altlat
 let browsedFileData
 let bCancelled = false
+let logText = ''
 let aNoStatus, aIsHybrid
 
 export function downloadPage() {
@@ -39,16 +40,20 @@ export function downloadPage() {
   const $instructions = $('<p>').appendTo($('#bsbi-atlas-download-left'))
   $instructions.html(`
     For batch downloads, first select a CSV file from your computer
-    that has two columns: <i>taxonId</i> which has the ddbid for each 
+    that has two (or three) columns: <i>taxonId</i> which has the ddbid for each 
     taxon and <i>taxon</i> which specifies a taxon name. 
     The taxon name is only used to name the file and
     doesn't have to be exactly the same as 
     the name used elsewhere on the site. The ddbid will also be used 
-    in the filename in case of any ambiguity.
+    in the filename in case of any ambiguity. 
+    If a third column - <i>staceOrder</i> - is specified, it is used at the
+    start of the filename.
   `)
   fileUploadButton()
   downloadBatchButton()
   cancelDownloadBatchButton()
+  downloadLogButton()
+  downloadLimits()
 
   $('<hr/>').appendTo($('#bsbi-atlas-download-left'))
 
@@ -65,13 +70,15 @@ export function downloadPage() {
   trendIndicators()
 }
 
-function taxonToFile(taxon, id) {
-  let filename = `${taxon}_${id}_`
-  filename = filename.replace(/ /g, '_')
-  filename = filename.replace(/\s+/g, '')
-  filename = filename.replace(/\./g, '_')
-  filename = filename.replace(/_+/g, '_')
+function taxonToFile(taxon, id, staceOrder) {
 
+  let ordering
+  if (staceOrder) {
+    ordering = `${staceOrder}_`
+  } else {
+    ordering = ''
+  }
+  let filename = `${ordering}${taxon.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_${id.replace(/[^a-z0-9]/gi, '_')}_`
   return filename
 }
 
@@ -79,15 +86,26 @@ async function downloadTaxa() {
 
   const data = await d3.csv(browsedFileData)
   bCancelled = false
+  logText = ''
 
-  for (let i=0; i<data.length; i++) {
+  const iMin = $('#taxon-index-min').val()
+  let iMax = $('#taxon-index-max').val()
+  if (iMax > data.length) {
+    iMax = data.length
+    $('#taxon-index-max').val(iMax)
+  }
+
+  for (let i=iMin-1; i<iMax; i++) {
 
     if (bCancelled) {
       break
     }
+
+    $('#bsbi-atlas-download-counter').text(i+1)
+
     // Taxon
     const t = data[i]
-    const filename = taxonToFile(t.taxon, t.taxonId)
+    const filename = taxonToFile(t.taxon, t.taxonId, t.staceOrder)
 
     // For reporting errors
     let eMapping, eApparency, ePhenology, eAltlat, eTrends
@@ -102,28 +120,36 @@ async function downloadTaxa() {
     const p2 = apparencyUpdate(t.taxonId, filename).catch(e => eApparency = e)
     const p3 = phenologyUpdate(t.taxonId, filename).catch(e => ePhenology = e)
     const p4 = altlatUpdate(t.taxonId, filename).catch(e => eAltlat = e)
-    const p5 = trendsUpdate(t.taxonId, filename).catch(e => eTrends = e)
+    const p5 = trendsUpdate(t.taxonId, t.taxon, t.staceOrder).catch(e => eTrends = e)
 
     await Promise.all([p1, p2, p3, p4, p5]).then(() => {
 
-      if (eMapping || eApparency  || ePhenology || eAltlat) {
-        let html=(`<b>Problems for ${t.taxon} (${t.taxonId})</b>`)
+      if (eMapping || eApparency  || ePhenology || eAltlat || eTrends) {
+        let html=(`<b>${i+1} ${t.taxon} (${t.taxonId})</b>`)
+        logText += `\r\n\r\n${i+1} ${t.taxon} (${t.taxonId})`
+
         html += '<ul>'
         if (eMapping) {
           html += '<li>Map failed</li>'
+          logText += '\r\nMap failed'
         }
         if (eApparency) {
           html += '<li>Apparency chart failed</li>'
+          logText += '\r\nApparency chart failed'
         }
         if (ePhenology) {
-          //console.log(ePhenology)
           html += '<li>Phenology chart failed</li>'
+          logText += '\r\nPhenology chart failed'
         }
         if (eAltlat) {
           html += '<li>Altlat chart failed</li>'
+          logText += '\r\nPhenology chart failed'
         }
-        // Doesn't report missing trends since there are lots of these
-
+        if (eTrends) {
+          html += '<li>Trends charts failed</li>'
+          logText += '\r\nPhenology chart failed'
+        }
+       
         $('<div>').appendTo($('#bsbi-atlas-download-right')).html(html)
       }
     })
@@ -161,6 +187,21 @@ function downloadBatchButton() {
   })
 }
 
+function downloadLogButton() {
+  const $button = $('<button>').appendTo($('#bsbi-atlas-download-left'))
+  $button.addClass('btn btn-default')
+  $button.css('margin-left', '1em')
+  $button.text('Download problems')
+  $button.on('click', function(){
+    const a = document.createElement('a')
+    const file = new Blob([logText], {type: 'text/plain'})
+    a.href= URL.createObjectURL(file)
+    a.download = 'bulk-svg-error-log.txt'
+    a.click()
+    URL.revokeObjectURL(a.href)
+  })
+}
+
 function cancelDownloadBatchButton() {
   const $button = $('<button>').appendTo($('#bsbi-atlas-download-left'))
   $button.addClass('btn btn-default')
@@ -169,6 +210,38 @@ function cancelDownloadBatchButton() {
   $button.on('click', function(){
     bCancelled = true
   })
+}
+
+function downloadLimits() {
+  const $div = $('<div>').appendTo($('#bsbi-atlas-download-left'))
+  $div.css('margin-top', '0.5em')
+
+  const $minLabel = $('<label>').appendTo($div)
+  $minLabel.attr('for', 'taxon-index-min')
+  $minLabel.text('Start index')
+  $minLabel.css('margin-right', '0.5em')
+  const $min = $('<input>').appendTo($div)
+  $min.attr('type', 'number')
+  $min.attr('id', 'taxon-index-min')
+  $min.attr('min', '1')
+  $min.attr('value', 1)
+  $min.css('width', 60)
+
+  const $maxLabel = $('<label>').appendTo($div)
+  $maxLabel.attr('for', 'taxon-index-max')
+  $maxLabel.text('End index')
+  $maxLabel.css('margin', '0 0.5em')
+  const $max = $('<input>').appendTo($div)
+  $max.attr('type', 'number')
+  $max.attr('id', 'taxon-index-max')
+  $max.attr('min', '1')
+  $max.attr('value', 100)
+  $max.css('width', 60)
+
+  const $divCount = $('<div>').appendTo($div)
+  $divCount.css('display', 'inline-block')
+  $divCount.css('margin-left', '1em')
+  $divCount.attr('id', 'bsbi-atlas-download-counter')
 }
 
 function downloadButton() {
@@ -190,11 +263,10 @@ function downloadButton() {
     if ($('#download-altlat').is(':checked')) 
       altlat.saveImage(true, `${filename}altlat`)
     if ($('#download-trend').is(':checked')) {
-      console.log('checked')
-      trendSave('bsbi-trend-summary-gb', `${filename}altlat-gb`)
-      trendSave('bsbi-trend-summary-ir', `${filename}altlat-ir`)
-    } else {
-      console.log('not checked')
+      trendSave('bsbi-long-trend-summary-gb', `${filename}trend-long-gb`)
+      trendSave('bsbi-long-trend-summary-ir', `${filename}trend-long-ir`)
+      trendSave('bsbi-short-trend-summary-gb', `${filename}trend-short-gb`)
+      trendSave('bsbi-short-trend-summary-ir', `${filename}trend-short-ir`)
     }
   })
 }
@@ -224,15 +296,15 @@ function mapping() {
   bsbiDataAccess.periodClasses = 'print'
 }
 
-async function mappingUpdate(taxonId ,taxon) {
+async function mappingUpdate(taxonId, filename) {
 
   const staticMap = getStaticMap()
   if ($('#download-map').is(':checked')) {
     currentTaxon.identifier = taxonId
     mapSetCurrentTaxon(currentTaxon)
     await changeMap(true)
-    if (taxon) {
-      await staticMap.saveMap(true, null, `${taxonToFile(taxon, taxonId)}map`)
+    if (filename) {
+      await staticMap.saveMap(true, null, `${filename}map`)
     }
   }
   return Promise.resolve()
@@ -246,7 +318,7 @@ function apparencyChart() {
     selector: '#bsbi-apparency-chart',
     data: [],
     taxa: ['taxon'],
-    metrics: [{ prop: 'n', label: 'Apparency', colour: 'green', fill: '#ddffdd' }],
+    metrics: [{ prop: 'n', label: 'Apparency', colour: 'green', fill: '#ddffdd', strokeWidth: '1.47pt' }],
     width: 400,
     height: 250,
     headPad: 35,
@@ -254,24 +326,20 @@ function apparencyChart() {
     expand: true,
     showTaxonLabel: false,
     axisLeft: 'off',
+    axisBottom: 'off',
     showLegend: false,
     interactivity: 'none'
   })
 }
 
-async function apparencyUpdate(taxonId ,taxon) {
+async function apparencyUpdate(taxonId, filename) {
   if ($('#download-apparency').is(':checked')) {
     const apparencyRoot = `${ds.bsbi_atlas.dataRoot}bsbi/apparency/`
     const file = apparencyRoot + 'all/' + taxonId.replace(/\./g, "_") + '.csv'
     let data = await d3.csv(file + `?prevent-cache=${pcache}`) //.catch(() => null)
-    // if (!data) {
-    //   // TEMPORARY CODE FOR TESTING so that a file always returned 
-    //   const fileDefault = apparencyRoot + 'all/dummy.csv'
-    //   data = await d3.csv(fileDefault + '?prevent-cache=')
-    // }
     await apparency(phen1, data)
-    if (taxon) {
-      await phen1.saveImage(true, `${taxonToFile(taxon, taxonId)}apparency`)
+    if (filename) {
+      await phen1.saveImage(true, `${filename}apparency`)
     } 
   }
   return Promise.resolve()
@@ -294,23 +362,26 @@ function phenologyChart() {
     perRow: 1,
     expand: true,
     showTaxonLabel: false,
-    interactivity: 'none'
+    interactivity: 'none',
+    monthFontSize: '17.6pt',
+    font: 'Minion Pro',
+    lineWidth: '0.735pt',
+    displayLegend: false
   })
 }
 
-async function phenologyUpdate(taxonId ,taxon) {
+async function phenologyUpdate(taxonId, filename) {
   if ($('#download-phenology').is(':checked')) {
     const captionRoot = ds.bsbi_atlas.dataRoot + 'bsbi/captions/'
     const file = `${captionRoot}${taxonId.replace(/\./g, "_")}.csv`
     let data = await d3.csv(file + `?prevent-cache=${pcache}`) //.catch(() => null)
-    // if (!data) {
-    //   // TEMPORARY CODE FOR TESTING so that a file always returned 
-    //   const fileDefault = phenologyRoot + 'dummy-phenology.csv'
-    //   data = await d3.csv(fileDefault + `?prevent-cache=${pcache}`)
-    // }
     await phenology(phen2, data, null)
-    if (taxon) {
-      await phen2.saveImage(true, `${taxonToFile(taxon, taxonId)}phenology`)
+    if (filename) {
+      // Tweak the phenology bars and the ticks for book
+      //d3.selectAll('#phen2-chart g.axis g.tick line').style('stroke', 'red')
+      d3.selectAll('#phen2-chart g.axis g.tick line').style('transform', 'translate(0, 0.1pt)')
+      d3.selectAll('#phen2-chart .phen-rect').style('transform', 'translate(0, 0.1pt)')
+      await phen2.saveImage(true, `${filename}phenology`)
     }
   }
   return Promise.resolve()
@@ -335,31 +406,31 @@ function altlatChart() {
         min: 1,
         max: 10,
         radius: 11,
-        legend: '1-10%'
+        legend: '1–10%'
       },
       {
         min: 10.00001,
         max: 30,
         radius: 14,
-        legend: '11-30%'
+        legend: '11–30%'
       },
       {
         min: 30.00001,
         max: 40,
         radius: 16,
-        legend: '31-40%'
+        legend: '31–40%'
       },
       {
         min: 40.00001,
         max: 50,
         radius: 18,
-        legend: '41-50%'
+        legend: '41–50%'
       },
       {
         min: 50.00001,
         max: 100,
         radius: 20,
-        legend: '51-100%'
+        legend: '51–100%'
       }
     ],
     taxa: ['dummy'],
@@ -367,25 +438,34 @@ function altlatChart() {
     height: 300,
     perRow: 1,
     expand: true,
-    margin: {left: 45, right: 10, top: 20, bottom: 35},
+    //margin: {left: 45, right: 10, top: 20, bottom: 35},
+    margin: {left: 65, right: 20, top: 45, bottom: 57},
     showTaxonLabel: false,
     showLegend: true,
+    interactivity: 'none',
     axisLabelFontSize: 12,
-    legendFontSize: 10,
-    interactivity: 'toggle'
+    legendFontSize: '22pt',
+    legendSpacing: 25,
+    axisLabelFontSize: '22pt',
+    axisTickFontSize: '22pt',
+    font: 'Minion Pro',
+    lineWidth: '0.972pt',
+    yAxisLabelToTop: true,
+    legendBaseline: 'mathematical',
+    legendXoffset: 1050,
+    legendYoffset: 1180
   }
-
   altlat = brccharts.altlat(opts)
 }
 
-async function altlatUpdate(taxonId ,taxon) {
+async function altlatUpdate(taxonId, filename) {
   if ($('#download-altlat').is(':checked')) {
     const altlatRoot = ds.bsbi_atlas.dataRoot + 'bsbi/maps/altlat/'
     const altlatfile = `${altlatRoot}${taxonId.replace(/\./g, "_")}.csv?prevent-cache=${pcache}`
     const altlatdata = await d3.csv(altlatfile)
     await altLat(altlat, altlatdata)
-    if (taxon) {
-      await altlat.saveImage(true, `${taxonToFile(taxon, taxonId)}altlat`)
+    if (filename) {
+      await altlat.saveImage(true, `${filename}altlat`)
     }
   }
   return Promise.resolve()
@@ -393,53 +473,120 @@ async function altlatUpdate(taxonId ,taxon) {
 
 function trendIndicators() {
 
-  const $trendGb = $('<div>').appendTo($('#bsbi-atlas-download-left'))
-  $trendGb.attr('id', 'bsbi-trend-summary-gb').css('max-width', '600px')
+  trendIndicator('GB', 'long')
+  trendIndicator('IR', 'long')
+  trendIndicator('GB', 'short')
+  trendIndicator('IR', 'short')
 
-  const $trendIr = $('<div>').appendTo($('#bsbi-atlas-download-left'))
-  $trendIr.attr('id', 'bsbi-trend-summary-ir').css('max-width', '600px')
+  function trendIndicator(country, term) {
+    const $msg = $('<div>').appendTo($('#bsbi-atlas-download-left'))
+    $msg.attr('id', `bsbi-${term}-msg-${country.toLowerCase()}`).css('max-width', '600px')
+    $msg.text(`${country} ${term}`)
+    const $indicator = $('<div>').appendTo($('#bsbi-atlas-download-left'))
+    $indicator.attr('id', `bsbi-${term}-trend-summary-${country.toLowerCase()}`).css('max-width', '600px')
+  }
 }
 
-async function trendsUpdate(taxonId, taxon) {
+async function trendsUpdate(taxonId, taxon, staceOrder) {
 
-  $('#bsbi-trend-summary-gb').html('')
-  $('#bsbi-trend-summary-ir').html('')
+  if ($('#download-trend').is(':checked')) {
 
-  const trendRoot = ds.bsbi_atlas.dataRoot + 'bsbi/trends/long/trends-summaries'
-  const trendGb = `${trendRoot}/Britain/${taxonId.replace(/\./g, "_")}.csv?prevent-cache=${pcache}`
-  const trendIr = `${trendRoot}/Ireland/${taxonId.replace(/\./g, "_")}.csv?prevent-cache=${pcache}`
+    $('#bsbi-long-trend-summary-gb').html('')
+    $('#bsbi-long-trend-summary-ir').html('')
+    $('#bsbi-short-trend-summary-gb').html('')
+    $('#bsbi-short-trend-summary-ir').html('')
+
+    trendSummary2('bsbi-long-trend-summary-gb', 'Minion Pro', '14pt')
+    trendSummary2('bsbi-long-trend-summary-ir', 'Minion Pro', '14pt')
+    trendSummary2('bsbi-short-trend-summary-gb', 'Minion Pro', '14pt')
+    trendSummary2('bsbi-short-trend-summary-ir', 'Minion Pro', '14pt')
+
+    const agg = trendAggs.find(a => a['mapped.ddb.id']===taxonId)
+    let ltIdentifier = taxonId
+    let stIdentifier = taxonId
+    let staceOrderWithAggLong = staceOrder
+    let staceOrderWithAggShort = staceOrder
+    if (agg && agg['analysisType'] === 'long') {
+      ltIdentifier = agg['agg.ddb.id']
+      staceOrderWithAggLong += '_trendagg'
+    }
+    if (agg && agg['analysisType'] === 'short') {
+      stIdentifier = agg['agg.ddb.id']
+      staceOrderWithAggShort += '_trendagg'
+    }
+
+    const trendRootLong = ds.bsbi_atlas.dataRoot + 'bsbi/trends/long/trends-summaries'
+    const trendRootShort = ds.bsbi_atlas.dataRoot + 'bsbi/trends/short/trends-summaries'
+    const trendCountRoot = ds.bsbi_atlas.dataRoot + 'bsbi/trends/hectad-counts'
+    const longTrendGb = `${trendRootLong}/Britain/${ltIdentifier.replace(/\./g, "_")}.csv?prevent-cache=${pcache}`
+    const longTrendIr = `${trendRootLong}/Ireland/${ltIdentifier.replace(/\./g, "_")}.csv?prevent-cache=${pcache}`
+    const shortTrendGb = `${trendRootShort}/Britain/${stIdentifier.replace(/\./g, "_")}.csv?prevent-cache=${pcache}`
+    const shortTrendIr = `${trendRootShort}/Ireland/${stIdentifier.replace(/\./g, "_")}.csv?prevent-cache=${pcache}`
+    
+    const trendCountsLong = `${trendCountRoot}/${ltIdentifier.replace(/\./g, "_")}.csv?prevent-cache=${pcache}`
+    const trendCountsShort = `${trendCountRoot}/${stIdentifier.replace(/\./g, "_")}.csv?prevent-cache=${pcache}`
+    const trendCountsOriginal = `${trendCountRoot}/${taxonId.replace(/\./g, "_")}.csv?prevent-cache=${pcache}`
+
+    const pTrendCountsLong = d3.csv(trendCountsLong)
+    const pTrendCountsShort = d3.csv(trendCountsShort)
+    const pTrendCountsOriginal = d3.csv(trendCountsOriginal)
+
+    const pGBlong = d3.csv(longTrendGb)
+    const pIRlong = d3.csv(longTrendIr)
+    const pGBshort = d3.csv(shortTrendGb)
+    const pIRshort = d3.csv(shortTrendIr)
+
+    const pSave1 = updateTrend(pTrendCountsOriginal, pTrendCountsLong, pGBlong, 'GB', 'long')
+    const pSave2 = updateTrend(pTrendCountsOriginal, pTrendCountsLong, pIRlong, 'IR', 'long')
+    const pSave3 = updateTrend(pTrendCountsOriginal, pTrendCountsShort, pGBshort, 'GB', 'short')
+    const pSave4 = updateTrend(pTrendCountsOriginal, pTrendCountsShort, pIRshort, 'IR', 'short')
   
-  const pGb = new Promise((resolve) => {
-    d3.csv(trendGb)
-      .then(function(d) {
-          trendSummary2('bsbi-trend-summary-gb')
-          updateTrendSummary2('bsbi-trend-summary-gb', d[0], 'rgb(0,255,255)')
-      }).catch(function(){
-        //console.log('Error reading trend summary file', trendGb)
-      }).finally(() => {
-        resolve('')
-      })
-  })
+    async function updateTrend(pTrendCountsOriginal, pTrendCount, pData, country, term) {
+      const threshold = country == 'GB' ? 16 : 7
+      const column = `${country[0]}${country[1].toLowerCase()}${term[0].toUpperCase()}${term.substr(1)}`
+      const d = await Promise.allSettled([pTrendCount, pData, pTrendCountsOriginal])
+      if (d[0].status === 'fulfilled' && d[2].status === 'fulfilled') {
+        if (d[1].status === 'fulfilled') {
+          //if (Number(d[0].value[0][column]) >= threshold && Number(d[2].value[0][column]) > 0) {
+          if (Number(d[0].value[0][column]) >= threshold) {
+              updateTrendSummary2(`bsbi-${term}-trend-summary-${country.toLowerCase()}`, d[1].value[0])
+            $(`#bsbi-${term}-msg-${country.toLowerCase()}`).text(`${country} ${term}`)
+          // } else if (Number(d[0].value[0][column]) > 0 && Number(d[2].value[0][column]) === 0) {
+          //   updateTrendSummary2(`bsbi-${term}-trend-summary-${country.toLowerCase()}`, null)
+          //   $(`#bsbi-${term}-msg-${country.toLowerCase()}`).text(`${country} ${term} - agg taxa not present in country in this time period`)
+          } else {
+            updateTrendSummary2(`bsbi-${term}-trend-summary-${country.toLowerCase()}`, null)
+            $(`#bsbi-${term}-msg-${country.toLowerCase()}`).text(`${country} ${term} - hectad threshold not met (${d[0].value[0][column]})`)
+          }
+        } else {
+          updateTrendSummary2(`bsbi-${term}-trend-summary-${country.toLowerCase()}`, null)
+          $(`#bsbi-${term}-msg-${country.toLowerCase()}`).text(`${country} ${term} - no trend file`)
+        }
+      } else {
+        updateTrendSummary2(`bsbi-${term}-trend-summary-${country.toLowerCase()}`, null)
+        $(`#bsbi-${term}-msg-${country.toLowerCase()}`).text(`${country} ${term} - trend count file absent`)
+      }
+    }
 
-  const pIr = new Promise((resolve) => {
-    d3.csv(trendIr)
-      .then(function(d) {
-          trendSummary2('bsbi-trend-summary-ir')
-          updateTrendSummary2('bsbi-trend-summary-ir', d[0], 'rgb(0,255,255)')
-      }).catch(function(){
-        //console.log('Error reading trend summary file', trendIr)
-      }).finally(() => {
-        resolve('')
-      })
-  })
+    await Promise.all([pSave1, pSave2, pSave3, pSave4])
 
-  if (taxon) {
-    await Promise.all([pGb, pIr])
-    await trendSave('bsbi-trend-summary-gb', `${taxonToFile(taxon, taxonId)}altlat-gb`)
-    await trendSave('bsbi-trend-summary-ir', `${taxonToFile(taxon, taxonId)}altlat-gb`)
+    // I can't figure out why, but if I don't put a delay in here, then batch generation of only
+    // trend charts from same batch file produced variable number of download files.
+    function delay(milliseconds){
+      return new Promise(resolve => {
+          setTimeout(resolve, milliseconds)
+      })
+    }
+    await delay(1000)
+
+    if (taxon) {
+      await trendSave('bsbi-long-trend-summary-gb', `${taxonToFile(taxon, taxonId, staceOrderWithAggLong)}trend-long-gb`)
+      await trendSave('bsbi-long-trend-summary-ir', `${taxonToFile(taxon, taxonId, staceOrderWithAggLong)}trend-long-ir`)
+      await trendSave('bsbi-short-trend-summary-gb', `${taxonToFile(taxon, taxonId, staceOrderWithAggShort)}trend-short-gb`)
+      await trendSave('bsbi-short-trend-summary-ir', `${taxonToFile(taxon, taxonId, staceOrderWithAggShort)}trend-short-ir`)
+    }
   }
-
-  return Promise.all([pGb, pIr])
+  return Promise.resolve()
 }
 
 function clearCharts() {
@@ -455,8 +602,10 @@ function clearCharts() {
   if (!$('#download-altlat').is(':checked')) 
     altlat.setChartOpts({data: []})
   if (!$('#download-trend').is(':checked')) {
-    $('#bsbi-trend-summary-gb').html('')
-    $('#bsbi-trend-summary-ir').html('')
+    $('#bsbi-long-trend-summary-gb').html('')
+    $('#bsbi-long-trend-summary-ir').html('')
+    $('#bsbi-short-trend-summary-gb').html('')
+    $('#bsbi-short-trend-summary-ir').html('')
   }
 }
 
@@ -470,9 +619,14 @@ function taxonSelectors() {
   const $sel = $('<select>').appendTo($container)
   $sel.addClass('atlas-taxon-selector-sel')
 
+  const pTaxonList = d3.csv(`${ds.bsbi_atlas.dataRoot}bsbi/taxon_list.csv?prevent-cache=${pcache}`)
+  const pTrendAggs = d3.csv(`${ds.bsbi_atlas.dataRoot}bsbi/trends/aggregateMappings.csv?prevent-cache=${pcache}`)
 
-  d3.csv(ds.bsbi_atlas.dataRoot + `bsbi/taxon_list.csv?prevent-cache=${pcache}`).then(function(data) {
-    const taxaList = data
+  Promise.all([pTaxonList, pTrendAggs]).then(function(data) {
+
+    trendAggs = data[1]
+    const taxaList = data[0]
+
     taxaList.forEach(function(d) {
       let name = ''
       if (d['vernacular']) {
@@ -486,6 +640,7 @@ function taxonSelectors() {
       $opt.attr('data-taxon-name', d['taxonName'])
       //$opt.attr('data-vernacular', d['vernacular'])
       $opt.attr('data-is-hybrid', d['hybrid'])
+      $opt.attr('data-no-status', d['atlasNoStatus'])
 
       $opt.html(name).appendTo($sel)
     })
@@ -497,7 +652,7 @@ function taxonSelectors() {
     $sel.selectpicker()
     $sel.on('changed.bs.select', function () {
 
-      console.log('Identifier:', $(this).val())
+      //console.log('Identifier:', $(this).val())
 
       clearCharts()
 
@@ -505,6 +660,7 @@ function taxonSelectors() {
       currentTaxon.name =  $(this).find(":selected").attr("data-content")
       currentTaxon.shortName =  $(this).find(":selected").attr("data-taxon-name")
       currentTaxon.isHybrid = $(this).find(":selected").attr("data-is-hybrid") === 't'
+      currentTaxon.noStatus = $(this).find(":selected").attr("data-no-status") !== ''
 
       // Ensure that status is set correctly for mapping
       const isHybrid = $(this).find(":selected").attr("data-is-hybrid") === 't'
@@ -519,13 +675,7 @@ function taxonSelectors() {
     })
 
     // For batch mapping
-    aIsHybrid = data.map(t => t.hybrid === 't')
-  }).catch(function(){
-    console.log('Error reading taxon CSV')
-  })
-
-  // No status list for batch mapping
-  d3.csv(`${ds.bsbi_atlas.dataRoot}bsbi/no_status.csv?prevent-cache=${pcache}`).then(function(data) {
-    aNoStatus = data.map(d => d['ddb id'])
+    aIsHybrid = taxaList.filter(t => t.hybrid === 't').map(t => t.ddbid)
+    aNoStatus = taxaList.filter(t => t.atlasNoStatus !== '').map(t => t.ddbid)
   })
 }

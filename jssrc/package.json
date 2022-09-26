@@ -28,6 +28,7 @@
   },
   "dependencies": {
     "d3": "^5.16.0",
-    "lightgallery": "^2.3.0"
+    "lightgallery": "^2.3.0",
+    "stats-lite": "^2.2.0"
   }
 }

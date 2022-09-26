@@ -169,7 +169,7 @@ export function setControlState() {
   }
 
   // status checkbox enabled and checked value
-  const disableStatus = bsbiDataAccess.taxaNoStatusList.indexOf(currentTaxon.identifier) > -1 || currentTaxon.isHybrid
+  const disableStatus = currentTaxon.noStatus || currentTaxon.isHybrid
   const isHybrid = currentTaxon.hybridMapping
 
   if (disableStatus || isHybrid) {
@@ -398,10 +398,10 @@ function mapInterfaceToggle($parent) {
     bsbiDataAccess.displayedMapType = displayedMapType
 
     if (displayedMapType === "slippy") {
-      // Get current width of static map
-      const $svg = $('#staticAtlasMain svg')
-      const w = $svg.width()
-      const h = $svg.height()
+      // Get current width of map div
+      const $div = $('#bsbiMapDiv')
+      const w = $div.width()
+      const h = $div.height()
       slippyMap.setSize(w, h)
     }
     setControlState()
@@ -593,7 +593,7 @@ function mapDownloadButton($parent, i) {
   })
 
   makeRadio('CSV', 'csv', true)
-  makeRadio('GJson', 'geojson', false)
+  makeRadio('GJSON', 'geojson', false)
 
   function makeRadio(label, val, checked) {
 
@@ -724,7 +724,7 @@ function resolutionControl($parent, i) {
   // Overall control container
   const $container = $('<div>').appendTo($parent)
 
-  function makeRadio(label, val, checked) {
+  function makeRadio(label, val, checked, infoId) {
     const $div = $('<div>').appendTo($container)
     $div.attr('class', 'radio')
     const $label = $('<label>').appendTo($div)
@@ -733,6 +733,12 @@ function resolutionControl($parent, i) {
     const $span = $('<span>').appendTo($label)
     $span.text(label)
     $span.css('padding-left', '20px')
+    if (infoId) {
+      const $spanInfo = $('<span>').appendTo($label)
+      $spanInfo.attr('id', infoId)
+      $spanInfo.css('padding-left', '10px')
+      $spanInfo.css('font-weight', 'bold')
+    }
     $radio.attr('type', 'radio')
     $radio.attr('name', 'bsbi-resolution-' + i)
     $radio.attr('class', 'bsbi-resolution-' + val)
@@ -752,8 +758,8 @@ function resolutionControl($parent, i) {
     })
   }
   makeRadio('Hectads', 'hectad', true)
+  //makeRadio('Tetrads', 'tetrad', false, 'tetrad-info')
   makeRadio('Tetrads', 'tetrad', false)
-  //makeRadio('Monads', 'monad', false)
 }
 
 function trendControl($parent) {
@@ -889,13 +895,26 @@ export function mapSetCurrentTaxon(taxon) {
 
 export function createMaps(selector) {
 
+  // Download flag
+  const download = selector === '#bsbiMapDownloadDiv'
+
   // Modify standard UK opts to remove any without CI
   const transOptsSel =  JSON.parse(JSON.stringify(brcatlas.namedTransOpts))
   delete transOptsSel.BI3 // Remove the options without CI
 
   // Modify insets to go further west in order
   // to give more room for legends.
-  transOptsSel.BI4.bounds.xmin = -240000,  //Northern Isles
+  transOptsSel.BI4.bounds.xmin = download ? -265000 : -240000  //Northern Isles
+  if (download) {
+    transOptsSel.BI4.insets[0].imageX = 20
+    transOptsSel.BI4.insets[0].imageY = 19
+    transOptsSel.BI4.insets[1].imageX = -39
+    transOptsSel.BI4.insets[1].imageY = -30
+  }
+  //console.log('bounds', transOptsSel.BI4)
+  //{xmin: 337373, ymin: -92599, xmax: 427671, ymax: -6678}
+
+  
   transOptsSel.BI1.bounds.xmin = -230000,  //No insets
   transOptsSel.BI2.bounds.xmin = -230000,  //CI inset
 
@@ -986,6 +1005,8 @@ export function createMaps(selector) {
     height: height,
     expand: true,
     legendOpts: svgLegendOpts,
+    legendFontSize: download ? '13pt' : '14px',
+    legendFont: download ? 'Minion Pro' : 'sans-serif',
     transOptsKey: getCookie('inset') ? getCookie('inset') : insetType,
     transOptsSel: transOptsSel,
     mapTypesKey: 'status_10_19',
@@ -995,33 +1016,20 @@ export function createMaps(selector) {
     seaFill: 'white',
     gridLineColour: '#7C7CD3',
     gridLineStyle: gridStyle,
+    gridLineWidth: download ? '1.09pt' : 1,
     boundaryColour: '#7C7CD3',
+    boundaryLineWidth: download ? '1.09pt' : 1,
     vcColour: '#7C7CD3',
     vcLineStyle: boundaryType === 'vc' ? '' : 'none',
+    vcLineWidth: download ? '1.09pt' : 1,
     countryColour: '#7C7CD3',
-    countryLineStyle: boundaryType === 'country' ? '' : 'none'
+    countryLineStyle: boundaryType === 'country' ? '' : 'none',
+    countryLineWidth: download ? '1.09pt' : 1,
+    insetLineWidth: download ? '1.09pt' : 1,
   })
 
   const rasterRoot = ds.bsbi_atlas.dataRoot + 'rasters/'
   //staticMap.basemapImage('colour_elevation', true, rasterRoot + 'colour_elevation.png', rasterRoot + 'colour_elevation.pgw')
-
-  // Callbacks for slippy maps
-  function startLoad() {
-    document.getElementById('atlas-loader').style.display = 'inline-block'
-    //develStartMapTiming("download")
-  }
-  function endLoad() {
-    document.getElementById('atlas-loader').style.display = 'none'
-    //develStopMapTiming("download")
-  }
-  function startDraw() {
-    document.getElementById('atlas-loader').style.display = 'inline-block'
-    //develStartMapTiming("display")
-  }
-  function endDraw() {
-    document.getElementById('atlas-loader').style.display = 'none'
-    //develStopMapTiming("display")
-  }
 
   // Create the slippy map
   slippyMap = brcatlas.leafletMap({
@@ -1039,6 +1047,33 @@ export function createMaps(selector) {
     showCountries: boundaryType === 'country'
   })
   $('#slippyAtlasMain').hide()
+
+  $(window).resize(function() {
+    // Get current width of map div
+    const $div = $('#bsbiMapDiv')
+    const w = $div.width()
+    const h = $div.height()
+    console.log('size', w, h)
+    slippyMap.setSize(w, h)
+  })
+}
+
+// Callbacks for slippy maps
+function startLoad() {
+  document.getElementById('atlas-loader').style.display = 'inline-block'
+  //develStartMapTiming("download")
+}
+function endLoad() {
+  document.getElementById('atlas-loader').style.display = 'none'
+  //develStopMapTiming("download")
+}
+function startDraw() {
+  document.getElementById('atlas-loader').style.display = 'inline-block'
+  //develStartMapTiming("display")
+}
+function endDraw() {
+  document.getElementById('atlas-loader').style.display = 'none'
+  //develStopMapTiming("display")
 }
 
 export function changeMap(retPromise) {
@@ -1083,9 +1118,13 @@ export function changeMap(retPromise) {
     if (retPromise) {
       return displayedMap.redrawMap()
     } else {
-      displayedMap.redrawMap().catch(e => {
+      displayedMap.redrawMap().then(() => {
+        //$('#tetrad-info').text('')
+      }).catch(e => {
         console.warn(`Unable to generate map for ${currentTaxon.shortName} (${currentTaxon.identifier}). Error message:`, e)
         displayedMap.clearMap()
+        endLoad()
+        //$('#tetrad-info').text('no data available')
       })
     }
   }

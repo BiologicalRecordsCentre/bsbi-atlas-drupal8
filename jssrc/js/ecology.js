@@ -27,9 +27,21 @@ export function createPhenology(sel) {
   $phenFlexLeft.attr('class', 'phenColumn')
   const $phenFlexRight = $('<div>').appendTo($phenFlexParent)
   $phenFlexRight.attr('class', 'phenColumn')
+
+  const $divp1 = $('<div>').appendTo($phenFlexLeft)
+  $divp1.css('position', 'relative')
   
-  const $apparency = $('<div>').appendTo($phenFlexLeft)
+  const $apparency = $('<div>').appendTo($divp1)
   $apparency.attr('id', 'bsbi-apparency-chart').css('max-width', '400px')
+
+  const $apparencyNoData = $('<div>').appendTo($divp1)
+  $apparencyNoData.attr('id', 'bsbi-apparency-chart-no-data')
+  $apparencyNoData.css('display', 'none')
+  $apparencyNoData.css('position', 'absolute')
+  $apparencyNoData.css('top', '50px')
+  $apparencyNoData.css('width', '100%')
+  $apparencyNoData.css('text-align', 'center')
+  $apparencyNoData.text('No data available for chart')
 
   phen1 = brccharts.phen1({
     selector: '#bsbi-apparency-chart',
@@ -44,7 +56,9 @@ export function createPhenology(sel) {
     showTaxonLabel: false,
     axisLeft: 'off',
     showLegend: false,
-    interactivity: 'none'
+    interactivity: 'none',
+    font: 'Arial',
+    monthFontSize: 11
   })
   
   const $phenology = $('<div>').appendTo($phenFlexLeft)
@@ -63,11 +77,25 @@ export function createPhenology(sel) {
     perRow: 1,
     expand: true,
     showTaxonLabel: false,
-    interactivity: 'none'
+    interactivity: 'none',
+    font: 'Arial',
+    monthFontSize: 11
   })
 
-  const $apparencyByLat = $('<div>').appendTo($phenFlexRight)
+  const $divp3 = $('<div>').appendTo($phenFlexRight)
+  $divp3.css('position', 'relative')
+
+  const $apparencyByLat = $('<div>').appendTo($divp3)
   $apparencyByLat.attr('id', 'bsbi-apparency-by-lat-chart').css('max-width', '400px')
+
+  const $apparencyByLatNoData = $('<div>').appendTo($divp3)
+  $apparencyByLatNoData.attr('id', 'bsbi-apparency-by-lat-chart-no-data')
+  $apparencyByLatNoData.css('display', 'none')
+  $apparencyByLatNoData.css('position', 'absolute')
+  $apparencyByLatNoData.css('top', '50px')
+  $apparencyByLatNoData.css('width', '100%')
+  $apparencyByLatNoData.css('text-align', 'center')
+  $apparencyByLatNoData.text('No data available for chart')
 
   // $apparencyByLat = $('<div>').appendTo($phenFlexRight)
   // $apparencyByLat.attr('id', 'bsbi-apparency-by-lat-chart').css('max-width', '400px')
@@ -88,7 +116,9 @@ export function createPhenology(sel) {
     interactivity: 'mousemove',
     margin: {left: 40, right: 0, top: 20, bottom: 5},
     axisLeftLabel: 'Latitudinal band',
-    axisLabelFontSize: 12
+    axisLabelFontSize: 12,
+    font: 'Arial',
+    monthFontSize: 12
   })
 
   //latPhenNormalizeCheckbox($phenFlexRight, phen3) 
@@ -105,8 +135,20 @@ export function createEcology(sel) {
   
   //$('<h4>').appendTo($(sel)).text('Altitude vs Latitude')
 
-  const $altlat = $('<div>').appendTo($(sel))
+  const $altlatp = $('<div>').appendTo($(sel))
+  $altlatp.css('position', 'relative')
 
+  const $altlatNoText = $('<div>').appendTo($altlatp)
+  $altlatNoText.attr('id', 'bsbi-altlat-chart-no-data')
+  $altlatNoText.css('display', 'none')
+  $altlatNoText.css('position', 'absolute')
+  $altlatNoText.css('top', '50px')
+  $altlatNoText.css('width', '100%')
+  $altlatNoText.css('max-width', '600px')
+  $altlatNoText.css('text-align', 'center')
+  $altlatNoText.text('No data available for chart')
+
+  const $altlat = $('<div>').appendTo($altlatp)
   const $p2 = $('<p>').appendTo($(sel))
   $p2.text("Explanation of latitude/altitude chart. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque blandit dui vel mauris maximus interdum. Aliquam orci eros, venenatis vel purus nec, venenatis congue leo. Pellentesque rhoncus metus eros, tincidunt congue massa volutpat facilisis. Curabitur pellentesque turpis velit, quis ornare mauris ullamcorper a.")
   
@@ -160,7 +202,7 @@ export function createEcology(sel) {
     height: 300,
     perRow: 1,
     expand: true,
-    margin: {left: 45, right: 10, top: 20, bottom: 35},
+    margin: {left: 55, right: 10, top: 20, bottom: 35},
     showTaxonLabel: false,
     showLegend: true,
     axisLabelFontSize: 12,
@@ -248,10 +290,14 @@ export function changePhenology(dataRoot, identifier) {
   d3.csv(fileAll + '?prevent-cache=')
     .then(function(data) {
       apparency(phen1, data)
+      $('#bsbi-apparency-chart').css('opacity', 1)
+      $('#bsbi-apparency-chart-no-data').hide()
     })
     .catch(function() {
       console.warn(`Apparency chart failed for ${fileAll}. Error message:`, e)
       phen1.setChartOpts({data: []})
+      $('#bsbi-apparency-chart').css('opacity', 0.5)
+      $('#bsbi-apparency-chart-no-data').show()
     })
 
   // Apparency by latitude
@@ -261,10 +307,14 @@ export function changePhenology(dataRoot, identifier) {
       apparencyByLatData = data // Saved so that apparencyByLat if 
                                 // data type dropdown used.
       apparencyByLat(phen3, apparencyByLatData)
+      $('#bsbi-apparency-by-lat-chart').css('opacity', 1)
+      $('#bsbi-apparency-by-lat-chart-no-data').hide()
     })
     .catch(function() {
       console.warn(`Apparency by latitude chart failed for ${fileLat}. Error message:`, e)
       phen3.setChartOpts({data: [], metrics: [], spread: false})
+      $('#bsbi-apparency-by-lat-chart').css('opacity', 0.5)
+      $('#bsbi-apparency-by-lat-chart-no-data').show()
     })
 
   // Phenology
@@ -286,10 +336,14 @@ export function changeEcology(dataRoot, identifier) {
   // Using pre-processed altlat data
   const altlatdata = `${mapRoot}altlat/${identifier.replace(/\./g, "_")}.csv`
   d3.csv(altlatdata).then(function(data){
+    $('#bsbi-altlat-chart').css('opacity', 1)
+    $('#bsbi-altlat-chart-no-data').hide()
     return altLat(altlat, data)
   }).catch(e => {
     console.warn(`altlat chart failed for ${altlatdata}. Error message:`, e)
     altlat.setChartOpts({data: []})
+    $('#bsbi-altlat-chart').css('opacity', 0.25)
+    $('#bsbi-altlat-chart-no-data').show()
   })
 }
 
@@ -321,10 +375,20 @@ export function phenology(chart, data, textId) {
   const ls = data[0].phenLeafStart
   const le = data[0].phenLeafEnd
 
-  const flowerStart = m2d[Number(fs)-1]
-  const flowerEnd = m2d[Number(fe)]
-  const leafStart = m2d[Number(ls)-1]
-  const leafEnd = m2d[Number(le)]
+  let flowerStart = m2d[Number(fs)-1]
+  let flowerEnd = m2d[Number(fe)]
+  let leafStart = m2d[Number(ls)-1]
+  let leafEnd = m2d[Number(le)]
+
+  if (leafEnd === leafStart) {
+    leafStart = 1
+    leafEnd = 365
+  }
+
+  if (flowerEnd === flowerStart) {
+    flowerStart = 1
+    flowerEnd = 365
+  }
 
   //console.log('ls le', ls, le)
   
@@ -385,16 +449,24 @@ export function phenology(chart, data, textId) {
     const flowerText = tweakRef(data[0].phenFlowerRef)
     const leafText = tweakRef(data[0].phenLeafRef)
 
-    let source
+    let source = ''
     if (flowerRange.length) {
-      source = `Data for flower phenology from ${flowerText}.`
+      if (flowerText) {
+        source = `Data for flower phenology from ${flowerText}.`
+      } else {
+        source = `Data for flower phenology predicted.`
+      }
     }
     if (flowerRange.length && leafRange.length) {
       //source = `${source}</br>`
       source = `${source}  `
     }
     if (leafRange.length) {
-      source = `${source}Data for leafing phenology from ${leafText}.`
+      if (leafText) {
+        source = `${source}Data for leafing phenology from ${leafText}.`
+      } else {
+        source = `${source}Data for leafing phenology predicted.`
+      }
     }
     $(`#${textId}`).html(source)
   }

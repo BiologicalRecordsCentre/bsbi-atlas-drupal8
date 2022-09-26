@@ -71,16 +71,20 @@ export function trendSummary(id) {
 
 export function updateTrendSummary2(id, d) {
 
-  setColour(`${id}_decline_strong`, d.declineStrong)
-  setColour(`${id}_decline_mod`, d.declineMod)
-  setColour(`${id}_stable`, d.stable)
-  setColour(`${id}_increase_mod`, d.increaseMod)
-  setColour(`${id}_increase_strong`, d.increaseStrong)
+  if (d) {
+    $(`#${id}-swatches`).css('display', '') //.show()
+    $(`#${id}-no-trend`).css('display', 'none') //.hide()
+    setColour(`${id}_decline_strong`, d.declineStrong)
+    setColour(`${id}_decline_mod`, d.declineMod)
+    setColour(`${id}_stable`, d.stable)
+    setColour(`${id}_increase_mod`, d.increaseMod)
+    setColour(`${id}_increase_strong`, d.increaseStrong)
+  } else {
+    $(`#${id}-swatches`).css('display', 'none') //.hide()
+    $(`#${id}-no-trend`).css('display', '') //.show()
+  }
 
   function setColour(id, val) {
-
-    //const baseColour = rgbColourString.substring(0,rgbColourString.length-1).replace('rgb', 'rgba')
-    //d3.select(`#${id}`).attr('fill', `${baseColour},${Number(val)/100})`)
 
     d3.select(`#${id}`).attr('fill', `rgb(${255 - 255 * Number(val)/100},255,255)`)
     const grey = 220 - Math.floor((val/100) * 220)
@@ -92,7 +96,7 @@ export function updateTrendSummary2(id, d) {
   }
 }
 
-export function trendSummary2(id, asCircle) {
+export function trendSummary2(id, font, fontSize) {
 
   const svgArrow = `M 2250 7256 l 0 -2813 l -61 -7 c -34 -3 -526 -6 -1093 -6 l -1031 -1 l 66 -62 c 36 -34 756 -714 1600 -1512 c 844 -797 1820 -1719 2169 -2049 c 349 -329 667 -630 705 -668 l 70 -68 l 230 217 c 1454 1373 3719 3512 4012 3790 l 373 353 l -1090 0 l -1090 0 l 0 2820 l 0 2820 l -2430 0 l -2430 0 l 0 -2814 z`
   const svgSquare = `M 5 3968 c -3 -7 -4 -897 -3 -1978 l 3 -1965 l 2080 0 l 2080 0 l 0 1975 l 0 1975 l -2078 3 c -1657 2 -2079 0 -2082 -10 z`
@@ -141,53 +145,52 @@ export function trendSummary2(id, asCircle) {
       da: [ss*3, ss]
     }
   ]
-  
+
   // Graphic
   const divParent = d3.select(`#${id}`)
   const svg = divParent.append('svg')
-    .attr('width', ss * 5)
-    .attr('height', ss)
-    //.attr('stroke', asCircle ? 'none' : 'grey')
+    .attr('width', ss * 5 + 2)
+    .attr('height', ss + 2)
     .style('overflow', 'visible')
     .style('vertical-align', 'bottom')
 
-  if (!asCircle) {
-    svg.append('rect')
-      .attr('width', ss * 5)
-      .attr('height', ss)
-      .attr('stroke','grey')
-      .attr('fill','none')
-      .style('vertical-align', 'bottom')
+  const gMain = svg.append('g')
+  gMain.attr('transform', 'translate(1 1)')
+  // Don't set display of gSwatches to 'none' here otherwise Firefox doesn't calculate bbox
+  const gSwatches = gMain.append('g').attr('id', `${id}-swatches`) //.style('display', 'none')
+  const tNoTrend = gMain.append('text').attr('id', `${id}-no-trend`).text('No trend').style('display', 'none')
+    .style('display', 'none')
+    .attr('text-anchor', 'middle')
+    .attr('x', ss * 5 / 2)
+    .attr('y', ss/2)
+    .attr('dominant-baseline', 'mathematical')
+
+  if (font) {
+    tNoTrend.style('font-family', font)
+    tNoTrend.style('font-size', fontSize)
   }
+
+  gMain.append('rect')
+    .attr('width', ss * 5)
+    .attr('height', ss)
+    .attr('stroke','grey')
+    .attr('fill','none')
+    .style('vertical-align', 'bottom')
 
   // Swatches
   swatches.forEach((s,i) => {
 
-    let indicator
-    if (asCircle) {
-      indicator = svg.append('circle')
-        .attr('id', s.id)
-        .attr('r', sr/2)
-        .attr('cx', i * ss + ss/2)
-        .attr('cy', ss/2)
-        .attr('stroke', 'grey')
-        .attr('fill', 'white')
-        .attr('clip-path', 'circle()')
-    } else {
-      indicator = svg.append('rect')
-        .attr('id', s.id)
-        .attr('width', ss)
-        .attr('height', ss)
-        .attr('x', i * ss)
-        .attr('fill', 'white')
-        //.attr('stroke', 'grey')
-        //.style('stroke-dasharray', s.da.toString())
-    }
+    const indicator = gSwatches.append('rect')
+      .attr('id', s.id)
+      .attr('width', ss)
+      .attr('height', ss)
+      .attr('x', i * ss)
+      .attr('fill', 'white')
 
     indicator.append('title').attr('data-title', s.text).text(s.text)
 
     if (s.svg) {
-      const path = svg.append('path').attr('d', s.svg).style('visibility', 'hidden')
+      const path = gSwatches.append('path').attr('d', s.svg).style('visibility', 'hidden')
       const svgbbox = path.node().getBBox()
       path.remove()
 
@@ -199,7 +202,7 @@ export function trendSummary2(id, asCircle) {
       const xRot = ss/2 + i*ss
       const yRot = ss/2
 
-      const symbol = svg.append('path')
+      const symbol = gSwatches.append('path')
         .attr('id', `${s.id}-path`)
         .attr('d', s.svg)
         .attr('transform', `
@@ -211,11 +214,14 @@ export function trendSummary2(id, asCircle) {
         symbol.append('title').text(s.text)
     }
   })
+
+  gSwatches.style('display', 'none')
 }
 
 export async function trendSave(id, filename) {
 
   const svg = d3.select(`#${id} svg`)
+
   return new Promise((resolve) => {
     const blob1 =  serialize(svg)
     if(filename) {
@@ -239,7 +245,7 @@ export async function trendSave(id, filename) {
     const cloneSvg = domSvg.cloneNode(true)
     const d3Clone = d3.select(cloneSvg)
     // Explicitly change text in clone to required font
-    d3Clone.selectAll('text').style('font-family','Arial, Helvetica, sans-serif')
+    d3Clone.selectAll('text').style('Minion Pro')
   
     cloneSvg.setAttributeNS(xmlns, "xmlns", svgns)
     cloneSvg.setAttributeNS(xmlns, "xmlns:xlink", xlinkns)

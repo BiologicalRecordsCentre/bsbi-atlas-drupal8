@@ -11,7 +11,6 @@ bsbiDataAccess.showStatus = true
 bsbiDataAccess.resolution = 'hectad'
 bsbiDataAccess.displayedMapType = 'static'
 bsbiDataAccess.taxaHybridList = []
-bsbiDataAccess.taxaNoStatusList = []
 bsbiDataAccess.changeColours = ['#FAD0C8', '#DD5A2F', '#525252']
 bsbiDataAccess.symboltype ='circle'
 bsbiDataAccess.periodColours = {}
@@ -605,11 +604,11 @@ function distAllClassesTetrad(identifier) {
         }
       }
     }).then(function (data) {
-      resolve({
-        records: data,
-        precision: 2000,
-        size: 1,
-        legend: {
+
+      console.log('Tetrad data', data)
+      let legend
+      if (data.length) {
+        legend = {
           lines:[
             {
               colour: 'black',
@@ -620,9 +619,29 @@ function distAllClassesTetrad(identifier) {
             }
           ]
         }
+      } else {
+        legend = {
+          title: 'No data available',
+          lines: []
+        }
+      }
+      resolve({
+        records: data,
+        precision: 2000,
+        size: 1,
+        legend: legend
       })
     })["catch"](function (e) {
-      reject(e)
+      //reject(e)
+      resolve({
+        records: [],
+        precision: 2000,
+        size: 1,
+        legend: {
+          title: 'No data available',
+          lines: []
+        }
+      })
     })
   })
 }
@@ -809,12 +828,10 @@ function change(identifier, early, late, legendTitle) {
         }
       }
     }).then(function (data) {
-      resolve({
-        records: data,
-        size: 1,
-        precision: 10000,
-        opacity: 1,
-        legend: {
+
+      let legend
+      if (data.length) {
+        legend = {
           title: legendTitle,
           size: 1,
           precision: 10000,
@@ -833,6 +850,18 @@ function change(identifier, early, late, legendTitle) {
             shape: 'triangle-down'
           }]
         }
+      } else {
+        legend = {
+          title: 'No data available',
+          lines: []
+        }
+      }
+      resolve({
+        records: data,
+        size: 1,
+        precision: 10000,
+        opacity: 1,
+        legend: legend
       })
     })["catch"](function (e) {
       reject(e)
@@ -861,15 +890,10 @@ bsbiDataAccess.bsbiHectadDateTetFreq = function(identifier) {
         }
       }
     }).then(function (data) {
-      resolve({
-        records: data,
-        //size: 1,
-        colour: 'black',
-        //shape: bsbiDataAccess.displayedMapType === 'static' ? 'circle' : 'circlerad',
-        shape: 'circle',
-        precision: 10000,
-        opacity: 1,
-        legend: {
+
+      let legend
+      if (data.length) {
+        legend = {
           title: 'Tetrad frequency',
           size: 1,
           shape: 'circle',
@@ -893,6 +917,22 @@ bsbiDataAccess.bsbiHectadDateTetFreq = function(identifier) {
             size: Math.sqrt(25)/5 * legendSizeFact,
           }]
         }
+      } else {
+        legend = {
+          title: 'No data available',
+          lines: []
+        }
+      }
+
+      resolve({
+        records: data,
+        //size: 1,
+        colour: 'black',
+        //shape: bsbiDataAccess.displayedMapType === 'static' ? 'circle' : 'circlerad',
+        shape: 'circle',
+        precision: 10000,
+        opacity: 1,
+        legend: legend
       })
     })["catch"](function (e) {
       reject(e)
