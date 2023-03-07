@@ -1,18 +1,20 @@
 bsbiatlas:
-  version: 1.x
+  version: 1.1
   css:
     layout:
       css/bsbi-atlas.css: {}
       css/bootstrap-select.min.css: {}
       css/lightgallery-bundle.min.css: {}
+      css/picker.css: {}
   js:
+    js/taxonpicker.min.umd.js: {}
     js/bootstrap-select.min.js: {}
     js/bsbi-atlas-min.umd.js: {}
     js/jscolor.min.js: {}
     js/lightgallery.umd.js: {}
     js/lg-thumbnail.umd.js: {}
     js/lg-zoom.umd.js: {}
-
+    
   dependencies:
     - core/jquery
     - core/drupal
@@ -22,7 +24,26 @@ bsbiatlas:
     - brc_vis/brcvis_core_charts
 
 bsbiatlasgen:
-  version: 1.x
+  version: 1.1
   css:
     layout:
       css/bsbi-atlas-general.css: {}
+  js:
+    js/bsbi-atlas-gen-min.umd.js: {}
+
+bsbiatlastaxsel:
+  version: 1.1
+  css:
+    layout:
+      css/bsbi-atlas.css: {}
+      css/bootstrap-select.min.css: {}
+      css/picker-standalone.css: {}
+  js:
+    js/taxonpicker.min.umd.js: {}
+    js/bootstrap-select.min.js: {}
+    js/bsbi-atlas-taxsel-min.umd.js: {}
+
+  dependencies:
+    - core/jquery
+    - core/drupal
+    - core/drupalSettings

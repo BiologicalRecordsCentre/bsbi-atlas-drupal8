@@ -1,4 +1,5 @@
 import * as d3 from 'd3'
+import { pcache } from './gen'
 
 // Only one export from this file - the data
 // access structure. All the data access functions
@@ -6,6 +7,7 @@ import * as d3 from 'd3'
 export const bsbiDataAccess = {}
 
 bsbiDataAccess.bsbiDataRoot = ''
+bsbiDataAccess.sensitiveTetrad = []
 bsbiDataAccess.periodClasses = 'standard'
 bsbiDataAccess.showStatus = true
 bsbiDataAccess.resolution = 'hectad'
@@ -364,7 +366,7 @@ bsbiDataAccess.hybrid = function(identifier) {
 
 function getCSV(identifier, type) {
   const folder = type ? type : 'hectads'
-  const file = `${bsbiDataAccess.bsbiDataRoot}${folder}/${identifier.replace(".", "_")}.csv`
+  const file = `${bsbiDataAccess.bsbiDataRoot}${folder}/${identifier.replace(".", "_")}.csv?prevent-cache=${pcache}`
   return file
 }
 
@@ -586,64 +588,76 @@ function distAllClasses(identifier) {
 
 function distAllClassesTetrad(identifier) {
 
-  bsbiDataAccess.dotCaption = `Tetrad:`
+  if (bsbiDataAccess.sensitiveTetrad.find(i => i === identifier)) {
+    return Promise.resolve({
+      records: [],
+      precision: 2000,
+      size: 1,
+      legend: {
+        title: 'Due to the sensitivity of this species tetrad data are not displayed.',
+        lines: []
+      }
+    })
+  } else {
+    bsbiDataAccess.dotCaption = `Tetrad:`
 
-  return new Promise(function (resolve, reject) {
+    return new Promise(function (resolve, reject) {
 
-    d3.csv(getCSV(identifier, 'tetrads'), function (r) {
-      if (r.tetrad ) {
-        return {
-          gr: r.tetrad,
-          //shape: bsbiDataAccess.symboltype, //'circle' dev only,
-          shape: 'square',
-          colour: 'black',
+      d3.csv(getCSV(identifier, 'tetrads'), function (r) {
+        if (r.tetrad ) {
+          return {
+            gr: r.tetrad,
+            //shape: bsbiDataAccess.symboltype, //'circle' dev only,
+            shape: 'square',
+            colour: 'black',
+            size: 1,
+            opacity: 1,
+            caption: `Tetrad: <b>${r.tetrad}</b>`,
+            noCaption: bsbiDataAccess.dotCaption
+          }
+        }
+      }).then(function (data) {
+
+        //console.log('Tetrad data', data)
+        let legend
+        if (data.length) {
+          legend = {
+            lines:[
+              {
+                colour: 'black',
+                opacity: 1,
+                text: 'Present in tetrad',
+                //shape: bsbiDataAccess.symboltype === 'square' ? 'square' : 'circle', //'circle' dev only
+                shape: 'square'
+              }
+            ]
+          }
+        } else {
+          legend = {
+            title: 'No data available',
+            lines: []
+          }
+        }
+        resolve({
+          records: data,
+          precision: 2000,
           size: 1,
-          opacity: 1,
-          caption: `Tetrad: <b>${r.tetrad}</b>`,
-          noCaption: bsbiDataAccess.dotCaption
-        }
-      }
-    }).then(function (data) {
-
-      console.log('Tetrad data', data)
-      let legend
-      if (data.length) {
-        legend = {
-          lines:[
-            {
-              colour: 'black',
-              opacity: 1,
-              text: 'Present in tetrad',
-              //shape: bsbiDataAccess.symboltype === 'square' ? 'square' : 'circle', //'circle' dev only
-              shape: 'square'
-            }
-          ]
-        }
-      } else {
-        legend = {
-          title: 'No data available',
-          lines: []
-        }
-      }
-      resolve({
-        records: data,
-        precision: 2000,
-        size: 1,
-        legend: legend
-      })
-    })["catch"](function (e) {
-      //reject(e)
-      resolve({
-        records: [],
-        precision: 2000,
-        size: 1,
-        legend: {
-          title: 'No data available',
-          lines: []
-        }
+          legend: legend
+        })
+      })["catch"](function (e) {
+        //reject(e)
+        resolve({
+          records: [],
+          precision: 2000,
+          size: 1,
+          legend: {
+            title: 'No data available',
+            lines: []
+          }
+        })
       })
     })
-  })
+  }
 }
 
 function distAllClassesMonad(identifier) {

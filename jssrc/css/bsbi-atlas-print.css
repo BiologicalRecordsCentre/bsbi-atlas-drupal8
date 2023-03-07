@@ -10,7 +10,7 @@
   }
 
   #bsbi-citation-div {
-    display: block;
+    display: block !important;
   }
   #bsbi-citation-div button {
     display: none;
@@ -20,7 +20,7 @@
   }
 
   #bsbi-reference-div {
-    display: block;
+    display: block !important;
   }
   #bsbi-reference-div button {
     display: none;
@@ -28,9 +28,12 @@
   #bsbi-reference-toggle {
     display: none;
   }
+  #dotCaption {
+    display: none;
+  }
 
   #bsbi-taxa-covered-list {
-    display: block;
+    display: block !important;
   }
   #bsbi-taxa-covered-toggle {
     display: none;
@@ -41,5 +44,21 @@
   }
   a[href]:after {
     content: none !important;
+  }
+
+  .trend-sum-agg-detail {
+    display: inline !important;
+  }
+
+  .trend-sum-agg-showhide {
+    display: none !important;
+  }
+
+  .bsbi-atlas-phenology-controls {
+    display: none !important;
+  }
+
+  .bsbi-atlas-trend-controls {
+    display: none !important;
   }
 }

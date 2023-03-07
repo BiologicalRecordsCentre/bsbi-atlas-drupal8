@@ -27,9 +27,9 @@ class AtlasPartnerLogos extends BlockBase {
     $ceh = $base_path . drupal_get_path('module', 'bsbi_atlas') . '/images/UKCEH-logo.png';
     $brc = $base_path . drupal_get_path('module', 'bsbi_atlas') . '/images/BRC-logo.png';
 
-    $html = '<p><img src="' . $bsbi . '" class="partner-logo" style="width:100%"/></p>';
-    $html .= '<p><img src="' . $ceh . '" class="partner-logo" style="width:100%"/></p>';
-    $html .= '<p><img src="' . $brc . '" class="partner-logo" style="width:100%"/></p>';
+    $html = '<p><img alt="Botanical Society of Britain & Ireland logo" src="' . $bsbi . '" class="partner-logo" style="width:100%"/></p>';
+    $html .= '<p><img alt="UK Centre for Ecology & Hydrology logo" src="' . $ceh . '" class="partner-logo" style="width:100%"/></p>';
+    $html .= '<p><img alt="Biological Records Centre logo" src="' . $brc . '" class="partner-logo" style="width:100%"/></p>';
 
     return [
       '#markup' => $html,

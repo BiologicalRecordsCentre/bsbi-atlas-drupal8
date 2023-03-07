@@ -10,7 +10,7 @@ export function setBaseMetaTags() {
   addMetaTags('author', 'Pescott, O. L.')
   addMetaTags('author', 'Roy, D. B.')
   addMetaTags('author', 'Walker, K. J.')
-  addMetaTags('year', '2022')
+  addMetaTags('year', '2023')
   addMetaTags('url', location.origin + '/atlas')
 }
 

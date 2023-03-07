@@ -61,5 +61,39 @@ export default [
       babel({ babelHelpers: 'bundled', presets: ['@babel/preset-env'] }),
       terser()
 		]
+  },
+  // Minified browser-friendly UMD build for standaloneTaxon selector
+  {
+		input: 'index2.js',
+		output: {
+			name: 'bsbi-atlas-taxsel',
+			file: pkg.browser_min_taxsel,
+			format: 'umd',
+      sourcemap: true
+		},
+		plugins: [
+			resolve(), // so Rollup can find node libs
+      commonjs(), // so Rollup can convert CommonJS modules to an ES modules
+      json(), // required to import package into index2.js
+      babel({ babelHelpers: 'bundled', presets: ['@babel/preset-env'] }),
+      terser()
+		]
+  },
+  // Minified browser-friendly UMD build for all pages (for metatags)
+  {
+		input: 'index3.js',
+		output: {
+			name: 'bsbi-atlas-gen',
+			file: pkg.browser_min_gen,
+			format: 'umd',
+      sourcemap: true
+		},
+		plugins: [
+			resolve(), // so Rollup can find node libs
+      commonjs(), // so Rollup can convert CommonJS modules to an ES modules
+      json(), // required to import package into index3.js
+      babel({ babelHelpers: 'bundled', presets: ['@babel/preset-env'] }),
+      terser()
+		]
   }
 ]

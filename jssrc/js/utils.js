@@ -1,3 +1,5 @@
+const $ = jQuery // eslint-disable-line no-undef
+
 export function copyToClipboard(textToCopy) {
   // https://stackoverflow.com/questions/51805395/navigator-clipboard-is-undefined
   // navigator clipboard api needs a secure context (https)
@@ -48,9 +50,33 @@ export function getCookie(cname) {
 }
 
 export function getCitation(currentTaxon, forImageDownload) {
+
+  //const taxon =  currentTaxon.shortName.replace(/ x /g, ' × ')
+  //const taxon = $('<p>').html(currentTaxon.name).text()
+  const taxon = $('<p>').html(currentTaxon.formattedName).text()
+
   if (forImageDownload) {
-    return `<i>${currentTaxon.shortName.replace(/\s/g, '</i> <i>')}</i> in <i>BSBI</i> <i>Online</i> <i>Atlas</i> <i>2020</i>, eds P.A. Stroh, T. A. Humphrey, R.J. Burkmar, O.L. Pescott, D.B. Roy, & K.J. Walker. ${location.origin}/atlas/${currentTaxon.identifier} [Accessed ${new Date().toLocaleDateString('en-GB')}]`
+    return `<i>${taxon.replace(/\s/g, '</i> <i>')}</i> in <i>BSBI</i> <i>Online</i> <i>Atlas</i> <i>2020</i>, eds P.A. Stroh, T. A. Humphrey, R.J. Burkmar, O.L. Pescott, D.B. Roy, & K.J. Walker. ${location.origin}/atlas/${currentTaxon.identifier} [Accessed ${new Date().toLocaleDateString('en-GB')}]`
   } else {
-    return `<i>${currentTaxon.shortName}</i> in <i>BSBI Online Plant Atlas 2020</i>, eds P.A. Stroh, T. A. Humphrey, R.J. Burkmar, O.L. Pescott, D.B. Roy, & K.J. Walker. ${location.origin}/atlas/${currentTaxon.identifier} [Accessed ${new Date().toLocaleDateString('en-GB')}]`
+    return `<i>${taxon}</i> in <i>BSBI Online Plant Atlas 2020</i>, eds P.A. Stroh, T. A. Humphrey, R.J. Burkmar, O.L. Pescott, D.B. Roy, & K.J. Walker. ${location.origin}/atlas/${currentTaxon.identifier} [Accessed ${new Date().toLocaleDateString('en-GB')}]`
   }
+}
+
+export function addSvgAccessibility(id, subsel, title, desc) {
+
+  const $svg = $(`#${id}${subsel}`)
+
+  const $title = $(`#${id}${subsel} > title`)
+  const $desc = $(`#${id}${subsel} > desc`)
+  if ($title.length) {
+    $title.text(title)
+  } else {
+    $('<title>').attr('id', `${id}-svg-title`).text(title).appendTo($svg)
+  }
+  if ($desc.length) {
+    $desc.text(desc)
+  } else {
+    $('<desc>').attr('id', `${id}-svg-desc`).text(desc).appendTo($svg)
+  }
+  $svg.attr('aria-labelledby', `${id}-svg-title ${id}-svg-desc`)
 }

@@ -153,31 +153,31 @@ export function develMainMapStyles(selector, changeMap) {
   const $div2 =  $('<div style="flex: 1">').appendTo($div0)
   const $div3 =  $('<div style="flex: 1">').appendTo($div0)
 
-  $('<h4>').appendTo($div1).text('Without status')
+  $('<div class="sect-subhead">').appendTo($div1).text('Without status')
   makeColourPicker('x', '2000_19', $div1)
   makeColourPicker('x', '1987_99', $div1)
   makeColourPicker('x', '1970_86', $div1)
   makeColourPicker('x', '1930_69', $div1)
   makeColourPicker('x', 'pre_1930', $div1)
 
-  $('<h4>').appendTo($div2).text('Native status')
+  $('<div class="sect-subhead">').appendTo($div2).text('Native status')
   makeColourPicker('n', '2000_19', $div2)
   makeColourPicker('n', '1987_99', $div2)
   makeColourPicker('n', '1970_86', $div2)
   makeColourPicker('n', '1930_69', $div2)
   makeColourPicker('n', 'pre_1930', $div2)
 
-  $('<h4>').appendTo($div3).text('Alien status')
+  $('<div class="sect-subhead">').appendTo($div3).text('Alien status')
   makeColourPicker('a', '2000_19', $div3)
   makeColourPicker('a', '1987_99', $div3)
   makeColourPicker('a', '1970_86', $div3)
   makeColourPicker('a', '1930_69', $div3)
   makeColourPicker('a', 'pre_1930', $div3)
 
-  $('<h4>').appendTo($colours).text('Borders')
+  $('<div class="sect-subhead">').appendTo($colours).text('Borders')
   makeStrokeColourPicker($colours)
 
-  $('<h4>').appendTo($colours).text('Init colours from Colourbrewer')
+  $('<div class="sect-subhead">').appendTo($colours).text('Init colours from Colourbrewer')
   const $sel =  $('<select>').appendTo($colours)
   Object.keys(colorbrewer).forEach(cs => {
     $('<option>').text(cs).appendTo($sel)

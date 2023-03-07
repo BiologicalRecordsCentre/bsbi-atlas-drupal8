@@ -1,11 +1,11 @@
 import { bsbiDataAccess } from './dataAccessAtlas'
-import { setCookie, getCookie, getCitation} from './utils'
+import { setCookie, getCookie, getCitation, addSvgAccessibility} from './utils'
 
 const $ = jQuery // eslint-disable-line no-undef
 const ds = drupalSettings // eslint-disable-line no-undef
 
 let currentTaxon 
-let gridStyle = getCookie('gridstyle') ? getCookie('gridstyle') : 'solid'
+let gridStyle = getCookie('gridstyle') ? getCookie('gridstyle') : 'none'
 let backdrop = getCookie('backdrop') ? getCookie('backdrop') : 'colour_elevation'
 let slippyMap, staticMap
 let mapType = 'allclass'
@@ -1053,7 +1053,7 @@ export function createMaps(selector) {
     const $div = $('#bsbiMapDiv')
     const w = $div.width()
     const h = $div.height()
-    console.log('size', w, h)
+    //console.log('size', w, h)
     slippyMap.setSize(w, h)
   })
 }
@@ -1085,18 +1085,28 @@ export function changeMap(retPromise) {
     displayedMap = slippyMap
   }
 
+  let mapTypeText
   if (mapType === 'status') {
     const access = periods[atlasRangeIndex-1].access
     displayedMap.setMapType(access)
+    mapTypeText = 'distribution by year range'
   } else if (mapType === 'allclass') {
     displayedMap.setMapType('distAllClasses')
+    if ($('.atlas-status-checkbox').prop('checked')) {
+      mapTypeText = 'distribution overview with native/alien status'
+    } else {
+      mapTypeText = 'distribution overview'
+    }
   } else if (mapType === 'trends') {
     const access = trends[atlasTrendIndex-1].access
     displayedMap.setMapType(access)
+    mapTypeText = 'change'
   } else if (mapType === 'tetrad') {
     displayedMap.setMapType('Tetrad frequency')
+    mapTypeText = 'tetrad frequency'
   } else if (mapType === 'hybrid') {
     displayedMap.setMapType('hybrid')
+    mapTypeText = 'distribution of hybrid with hybrid parents'
   }
 
   // To try to keep the legend around the same apparent size when
@@ -1131,6 +1141,10 @@ export function changeMap(retPromise) {
 
   // Initialise dot caption
   $('#dotCaption').html(bsbiDataAccess.dotCaption)
+
+  // Set the SVG accessibility
+  const withStatus = $('.atlas-status-checkbox').prop('checked')
+  addSvgAccessibility('bsbiMapDiv', '>div>svg', `Map of ${mapTypeText}`, `Map showing ${mapTypeText} for ${currentTaxon.shortName}`)
 }
 
 export function createMapControls(selector) {

@@ -1,7 +1,7 @@
 name: BSBI Atlas Drupal module
 description: Implements BSBI 2020 Atlas.
 package: Custom
-version: 1.0
+version: 1.1
 type: module
 core: 8.x
 core_version_requirement: ^8 || ^9

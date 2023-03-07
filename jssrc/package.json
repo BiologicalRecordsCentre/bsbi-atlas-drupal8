@@ -6,6 +6,8 @@
   "main": "../js/bsbi-atlas.umd.js",
   "browser": "../js/bsbi-atlas.umd.js",
   "browser_min": "../js/bsbi-atlas-min.umd.js",
+  "browser_min_taxsel": "../js/bsbi-atlas-taxsel-min.umd.js",
+  "browser_min_gen": "../js/bsbi-atlas-gen-min.umd.js",
   "browser_css": "../css/bsbi-atlas.css",
   "scripts": {
     "lint": "npx eslint js",
@@ -28,6 +30,7 @@
   },
   "dependencies": {
     "d3": "^5.16.0",
+    "d3-fetch": "^3.0.1",
     "lightgallery": "^2.3.0",
     "stats-lite": "^2.2.0"
   }

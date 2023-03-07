@@ -1,0 +1,140 @@
+div.dropdown-list {
+    display: none;
+    background-color: white;
+    width: 100%;
+    /* padding: 3px 1em 0 0; */
+    padding: 0;
+    margin: 0;
+    z-index:10001;
+    position: absolute;
+    box-shadow: 6px 6px 10px grey;
+}
+
+div.dropdown-wrapper {
+    position: relative;
+}
+
+input.dropdown-input {
+    width: 100%;
+}
+
+div.dropdown-list ul {
+    padding: 0;
+}
+
+div.dropdown-list li {
+    display: block;
+    border-width: 0 0 1px 0;
+    border-color: gray;
+    border-style: solid;
+}
+
+div.dropdown-wrapper.dropdown-focused div.dropdown-list {
+    display: block;
+}
+
+span.rank-name {
+    font-style: normal;
+}
+
+/*
+div.card div.card-invalid-feedback, div.accordion-item div.card-invalid-feedback {
+  display: none;
+}
+
+div.card.is-invalid div.card-invalid-feedback, div.accordion-item.is-invalid div.card-invalid-feedback{
+  display: block;
+  color: red;
+  font-weight: bolder;
+}
+ */
+
+div.icon-show-collapsed {
+    display: none;
+    vertical-align: bottom;
+    text-decoration: none !important;
+    border: none !important;
+}
+
+.collapsed div.icon-show-collapsed {
+    display: inline-block;
+}
+
+div.icon-hide-collapsed {
+    display: inline-block;
+    vertical-align: bottom;
+    text-decoration: none !important;
+    border: none !important;
+}
+
+span.italictaxon {
+    font-style: italic;
+    display: inline-block;
+}
+
+span.taxon-qualifier {
+    font-style: normal;
+    font-weight: bolder;
+}
+
+span.taxon-qualifier-latin {
+    font-style: italic;
+    font-weight: bolder;
+}
+
+span.taxauthority {
+    font-weight: lighter;
+    font-style: normal;
+}
+
+q.taxon-vernacular {
+    font-weight: bold;
+    display: inline-block;
+}
+
+a.list-group-item.taxon-selected {
+    background-color: Highlight;
+    color: HighlightText;
+}
+
+div.list-group p.taxon-picker-type-prompt {
+    color: darkgreen;
+    padding: 3px;
+    font-weight: bolder;
+}
+
+@media (min-width: 481px) {
+    div.dropdown-wrapper.dropdown-focused div.dropdown-list {
+        display: block;
+        width: 60em;
+        max-width: 95vw;
+        margin-left: 0;
+    }
+}
+
+@media (max-width: 480px) {
+    div.dropdown-wrapper.dropdown-focused {
+        position: fixed;
+        top: 0px;
+        left: 0px;
+        width: 100vw;
+        padding: 5px;
+    }
+
+    div.dropdown-wrapper.dropdown-focused div.dropdown-list {
+        display: block;
+        width: 90vw;
+    }
+
+    span.pref-taxon-name {
+        display: none;
+    }
+
+    body.hide-controls {
+        overflow: hidden;
+    }
+
+    body.hide-controls div.bsbi-atlas-map-controls {
+        display: none;
+    }
+}

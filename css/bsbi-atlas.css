@@ -1,3 +1,17 @@
+@media (min-width: 500px) {
+  #atlas-home-cover-image{
+    width: 250px;
+    float: left;
+    margin: 0 0.5em 0.5em 0;
+  }
+}
+@media (max-width: 499px) {
+  #atlas-home-cover-image{
+    width: 100%;
+    margin: 0 0 0.5em 0;
+  }
+}
+
 .atlas-loader {
   border: 5px solid #f3f3f3; /* Light grey */
   border-top: 5px solid #3498db; /* Blue */
@@ -34,23 +48,17 @@
   flex: 1;
 }
 
-.atlas-taxon-selector-div {
+.bsbi-atlas-taxon-selector-flex-parent {
   display: flex;
-  /* flex-direction: row;
-  flex-wrap: nowrap; */
-  width: 100%;
 }
 
-.atlas-taxon-selector-sel {
-  /* display: flex; */
-  /* flex-direction: column; */
-  flex: 10;
+.atlas-taxon-selector-div {
+  flex: 100;
 }
 
 .atlas-taxon-selector-link {
-  /* display: flex; */
-  /* flex-direction: column; */
   margin-left: 0.5em;
+  margin-bottom: 15px !important;
   flex: 1;
 }
 
@@ -188,10 +196,6 @@ taxon {
   font-size: 14px;
 }
 
-#bsbi-taxa-covered-list {
-  display: none;
-}
-
 #bsbi-citation-toggle {
   cursor: pointer;
   font-size: 14px;
@@ -285,6 +289,12 @@ taxon {
   font-size: 0.7em;
 }
 
+.bsbi-text-ref {
+  font-size: 0.9em;
+  padding-left: 22px ;
+  text-indent: -22px ;
+}
+
 
 /* Minion Pro font for book images */
 @font-face {
@@ -298,6 +308,30 @@ taxon {
   font-weight: normal;
   font-style: normal;
   font-display: swap;
+}
+
+span.ref[title] {
+  text-decoration:underline;
+  text-decoration-style: dotted;
+}
+
+div.sect-subhead {
+  font-size: 18px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  line-height: 1.1;
+}
+
+.grid-trend-sum {
+  display: inline-grid;
+  grid-template-columns: auto auto;
+  align-items: center;
+}
+.grid-trend-sum-item {
+  padding: 2px;
+}
+.bsbi-atlas-taxon-selector-standalone {
+  margin-bottom: 1em;
 }@media print {
   .nav-tabs {
     display: none;
@@ -310,7 +344,7 @@ taxon {
   }
 
   #bsbi-citation-div {
-    display: block;
+    display: block !important;
   }
   #bsbi-citation-div button {
     display: none;
@@ -320,7 +354,7 @@ taxon {
   }
 
   #bsbi-reference-div {
-    display: block;
+    display: block !important;
   }
   #bsbi-reference-div button {
     display: none;
@@ -328,9 +362,12 @@ taxon {
   #bsbi-reference-toggle {
     display: none;
   }
+  #dotCaption {
+    display: none;
+  }
 
   #bsbi-taxa-covered-list {
-    display: block;
+    display: block !important;
   }
   #bsbi-taxa-covered-toggle {
     display: none;
@@ -341,5 +378,21 @@ taxon {
   }
   a[href]:after {
     content: none !important;
+  }
+
+  .trend-sum-agg-detail {
+    display: inline !important;
+  }
+
+  .trend-sum-agg-showhide {
+    display: none !important;
+  }
+
+  .bsbi-atlas-phenology-controls {
+    display: none !important;
+  }
+
+  .bsbi-atlas-trend-controls {
+    display: none !important;
   }
 }

@@ -1,5 +1,5 @@
 import * as d3 from 'd3'
-import { setCookie, getCookie } from './utils'
+import { setCookie, getCookie, addSvgAccessibility } from './utils'
 import * as stats from 'stats-lite'
 
 const $ = jQuery // eslint-disable-line no-undef
@@ -8,6 +8,7 @@ const ds = drupalSettings // eslint-disable-line no-undef
 let gam, linmod, bar, density
 let $gamNoData, $linmodNoData, $barNoData, $densityNoData
 import { pcache } from './gen'
+//import { scaleDivergingLog } from 'd3'
 
 let regionType = getCookie('trend-region') ? getCookie('trend-region') : 'Britain'
 let termType = getCookie('trend-term') ? getCookie('trend-term') : 'long'
@@ -17,7 +18,7 @@ let currentTaxon
 
 export function createTrends(sel) {
 
-  $('<h4 id="bsbiTrendsTitle">').appendTo($(sel)).text('')
+  $('<div class="sect-subhead" id="bsbiTrendsTitle">').appendTo($(sel)).text('')
   $('<p id="bsbiTrendsAggNote">').appendTo($(sel)).text('')
 
   const $trends1 = $('<div>').appendTo($(sel))
@@ -27,138 +28,179 @@ export function createTrends(sel) {
 
   const $p1 = $('<p>').appendTo($(sel))
   $p1.html(`
-  The trends above rely on the frequency scaling using local occupancy (“Frescalo”) approach of Hill (2012). 
-  The method was designed to adjust for locally variable recording effort across time periods, 
-  and has been used on many distribution datasets (Pescott et al., 2019). Here, we apply 
-  Frescalo to vascular plant data gridded at the 10 km scale within the following time 
-  periods: 1930–69; 1987–99; 2000–09; 2010–19. These are a subset of the “date-classes” used 
-  by the BSBI to organise their data, and roughly designate multi-year periods within which 
-  specific national recording projects occurred (Preston et al., 2002).
+  <i>Trends, “effort” adjustments and residual bias</i><br/>
+  The trends above are ultimately based on the FREquency SCAling LOcal (“Frescalo”) approach of Hill (2012). 
+  The method was designed to adjust for locally variable recording effort across time periods, and has been 
+  used on many distribution datasets. Here, we apply Frescalo to vascular plant data gridded at the 10 km 
+  scale across the following time periods: 1930–69; 1987–99; 2000–09; and 2010–19. These are a subset of 
+  the “date-classes” used by the BSBI to organise their data, and roughly designate multi-year periods within 
+  which specific national recording projects occurred. Readers should keep in mind that Frescalo only adjusts 
+  for variable overall recording effort between times and places, and not for systematic biases in the relative 
+  attention paid to species. There is a strong argument for creating formal “risk-of-bias” assessments for 
+  every modelled trend presented here; unfortunately we have not had the resources to achieve this fully to 
+  date, although it remains a longer-term aim. See Chapters 6 and 7 of Stroh <i>et al.</i> (2023) and the references 
+  below for more information.
   `)
   const $p2 = $('<p>').appendTo($(sel))
   $p2.html(`
-  Outputs from the Frescalo model include per taxon/time period estimates of mean relative occupancy and 
-  their standard deviations. Below, we plot these estimates (filled white circles with black lines) 
-  in Figures 1 and 2, along with a GAM smoother (Fig. 1) and a Monte Carlo-based 100-member set of 
-  linear regressions compatible with these (Fig. 2). The trend magnitude frequency chart in Figure 
-  3 is based on discretising the compatible linear trend set displayed in Figure 2, in order to 
-  more clearly display the model-based uncertainty associated with the Frescalo outputs. 
-  Pescott et al. (2022) describe the rationale for this in more detail. Finally, Figure 4 … [TO BE COMPLETED].
+  <i>Figure 1. Smoothed time trend.</i><br/>
+  The filled white circles and black bars are the Frescalo-estimated means and standard deviations of a 
+  species’ relative frequency in each time period, plotted at the median of the relevant BSBI date-class. 
+  The smoothed trend is estimated by fitting 100 generalised additive models to data resampled from the 
+  Frescalo means and standard deviations; the blue line is the median of these model fits, whist the grey 
+  ribbon is its 90% uncertainty interval.
   `)
 
   const $p3 = $('<p>').appendTo($(sel))
   $p3.html(`
-  [NEW PARAGRAPH: OTHER TEXT ABOUT DECISIONS WITH REGARDS TO INCLUDING AND EXCLUDING SPECIES IN MODELLING AND/OR DISPLAY]
+  <i>Figure 2. 100 compatible linear trends.</i><br/>
+  The filled white circles and black bars are as for Figure 1. The transparent blue lines represent a random 
+  selection of 100 trends that are compatible with these estimates (technically a “line ensemble”). 
+  See Pescott <i>et al.</i> (2022) and Stroh <i>et al.</i> (2023) for more information.
   `)
+
+  const $p4 = $('<p>').appendTo($(sel))
+  $p4.html(`
+  <i>Figure 3. Distribution of linear slope estimates.</i><br/>
+  The solid blue line is the distribution of the 100 slope estimates from Figure 2 (the solid grey line is the 
+  density across all species for comparison). The broken vertical grey lines represent the classes erected 
+  by us for summarising this linear trend information and its uncertainty.
+  `)
+
+  const $p5 = $('<p>').appendTo($(sel))
+  $p5.html(`
+  <i>Figure 4. Classification of slope estimates.</i><br/>
+  This bar chart is a simple count of how many of the 100 trend line slopes (Figs 2 and 3) fall into the five 
+  size classes illustrated in Figure 3. This method of summarising variation in species’ estimated linear 
+  trends is behind the summary “strips” presented on the Summary tab. These are also used for the species’ 
+  accounts in Stroh <i>et al.</i> (2023).
+  `)
+
+  const $refHead = $('<p>').appendTo($(sel))
+  $refHead.css('margin-bottom', '0')
+  $refHead.html(`<i>Further information</i>`)
   
-  $('<h4>').appendTo($(sel)).text('References')
   let $ref 
   $ref = $('<p>').appendTo($(sel))
+  $ref.addClass('bsbi-text-ref')
+  $ref.html(`
+  Boyd, R.J., Powney, G.D., Burns, F., Danet, A., Duchenne, F., Grainger, M.J., Jarvis, S.G., Martin, G., Nilsen, E.B., 
+  Porcher, E., Stewart, G.B., Wilson, O.J. and Pescott, O.L. 2022. ROBITT: A tool for assessing the risk-of-bias in 
+  studies of temporal trends in ecology. <i>Methods in Ecology and Evolution</i> 13, 1497-1507. 
+  <a target= "_blank" href="https://doi.org/10.1111/2041-210X.13857">https://doi.org/10.1111/2041-210X.13857</a>
+  `)
+  $ref = $('<p>').appendTo($(sel))
+  $ref.addClass('bsbi-text-ref')
   $ref.html(`
   Hill, M.O. 2012. Local frequency as a key to interpreting species occurrence data when recording effort is not known. 
-  <i>Methods in Ecology and Evolution</i> 3, 195–205.
+  <i>Methods in Ecology and Evolution</i> 3, 195–205. 
+  <a target= "_blank" href="https://doi.org/10.1111/j.2041-210X.2011.00146.x">https://doi.org/10.1111/j.2041-210X.2011.00146.x</a>
   `)
   $ref = $('<p>').appendTo($(sel))
+  $ref.addClass('bsbi-text-ref')
   $ref.html(`
-  Pescott, O.L., Humphrey, T.A., Stroh, P.A., Walker, K.J. 2019. Temporal changes in distributions and the species 
+  Pescott, O.L., Humphrey, T.A., Stroh, P.A. and Walker, K.J. 2019. Temporal changes in distributions and the species 
   atlas: How can British and Irish plant data shoulder the inferential burden? <i>British & Irish Botany</i> 1, 250–282. 
-  <a href="https://doi.org/10.33928/bib.2019.01.250" target="_blank">https://doi.org/10.33928/bib.2019.01.250</a>
+  <a target= "_blank" href="https://doi.org/10.33928/bib.2019.01.250">https://doi.org/10.33928/bib.2019.01.250</a>
   `)
   $ref = $('<p>').appendTo($(sel))
+  $ref.addClass('bsbi-text-ref')
   $ref.html(`
   Pescott, O.L., Stroh, P.A., Humphrey, T.A. and Walker, K.J. 2022. Simple methods for improving the communication 
   of uncertainty in species’ temporal trends. <i>Ecological Indicators</i>, 141, 109117. 
-  <a href="https://doi.org/10.1016/j.ecolind.2022.109117" target="_blank">https://doi.org/10.1016/j.ecolind.2022.109117</a>
+  <a target= "_blank" href="https://doi.org/10.1016/j.ecolind.2022.109117">https://doi.org/10.1016/j.ecolind.2022.109117</a>
   `)
   $ref = $('<p>').appendTo($(sel))
+  $ref.addClass('bsbi-text-ref')
   $ref.html(`
   Preston, C.D., Pearman, D.A., Dines, T.D. (Eds.) 2002. <i>New Atlas of the British and Irish Flora</i>. Oxford University 
   Press, Oxford, England.
   `)
-  
+  $ref = $('<p>').appendTo($(sel))
+  $ref.addClass('bsbi-text-ref')
+  $ref.html(`
+  Stroh, P.A., Walker, K.J., Humphrey, T.A., Pescott, O.L. and Burkmar, R.J. (eds). 2023. <i>Plant Atlas 2020. 
+  Mapping changes in the distribution of the British and Irish flora.</i> 2 volumes. Botanical Society of Britain 
+  and Ireland, Durham & Princeton University Press, Princeton.
+  `)
+
   const $gam = $('<div>').appendTo($trends1)
   $gam.attr('id', 'bsbi-gam-chart')
     .attr('class', 'phenColumn')
     .css('max-width', '400px')
     .css('position', 'relative')
-    .text('Figure 1')
+    .text('Figure 1. Smoothed time trend.')
 
-  gam = brccharts.trend2({
+  gam = brccharts.yearly({
     selector: '#bsbi-gam-chart',
-    data: [], 
-    means: [],
-    // yearMin: 1947,
-    // yearMax: 2022,
     width: 350,
     height: 250,
-    margin: {left: 50, right: 10, top: 10, bottom: 55},
+    margin: {left: 50, right: 0, top: 5, bottom: 55},
     expand: true,
-    axisLeft: 'tick',
-    axisBottom: 'tick',
+    perRow: 1,
+    taxa: ['dummy'], // A value is needed here even for blank charts
+    yAxisOpts: {numFormat: '.2f', minMax: null, fixedMin: null},
     axisRight: 'on',
     axisTop: 'on',
+    metrics: [],
+    showLegend: false,
+    showTaxonLabel: false,
+    showCounts: 'line',
     axisLeftLabel: 'Relative frequency',
     axisLabelFontSize: 12,
-    style: {
-      vStroke: 'blue',
-      vStrokeWidth: 2,
-      cStroke: 'grey',
-      cStrokeWidth: 0.5,
-      cFill: 'rgb(230,230,230)',
-      mRad: 3,
-      mFill: 'white',
-      mStroke: 'black',
-      sdStroke: 'black'
-    }
+    xPadPercent: 0.03,
+    yPadPercent: 0.03,
+    minYearTrans: 1940,
+    maxYearTrans: 2030,
+    minYear: 1949,
+    maxYear: 2019
   })
-
+  
   $gamNoData = $('<div>').appendTo($gam)
   $gamNoData.text('No trend available for this combination')
     .css('position', 'absolute')
     .css('margin', '3em')
-    .css('top', '0px')
+    .css('top', '5px')
     .css('left', '50px')
     .css('display', 'none')
-    
+
   const $linmod = $('<div>').appendTo($trends1)
   $linmod.attr('id', 'bsbi-linmod-chart')
     .attr('class', 'phenColumn')
     .css('max-width', '400px')
     .css('position', 'relative')
-    .text('Figure 2')
+    .text('Figure 2. 100 compatible linear trends.')
     
-  linmod = brccharts.trend3({
+  linmod = brccharts.yearly({
     selector: '#bsbi-linmod-chart',
-    data: [], 
-    means: [], 
-    // yearMin: 1947,
-    // yearMax: 2022,
     width: 350,
     height: 250,
-    margin: {left: 50, right: 10, top: 10, bottom: 55},
+    margin: {left: 50, right: 0, top: 5, bottom: 55},
     expand: true,
-    axisLeft: 'tick',
-    axisBottom: 'tick',
+    perRow: 1,
+    taxa: ['dummy'], // A value is needed here even for blank charts
+    yAxisOpts: {numFormat: '.2f', minMax: null, fixedMin: null},
     axisRight: 'on',
     axisTop: 'on',
+    metrics: [],
+    showLegend: false,
+    showTaxonLabel: false,
+    showCounts: 'line',
     axisLeftLabel: 'Relative frequency',
     axisLabelFontSize: 12,
-    style: {
-      vStroke: 'blue',
-      vStrokeWidth: 2,
-      vOpacity: 0.05,
-      mRad: 3,
-      mFill: 'white',
-      mStroke: 'black',
-      sdStroke: 'black'
-    }
+    xPadPercent: 0.03,
+    yPadPercent: 0.03,
+    minYearTrans: 1940,
+    maxYearTrans: 2030,
+    minYear: 1949,
+    maxYear: 2019
   })
-
+    
   $linmodNoData = $('<div>').appendTo($linmod)
   $linmodNoData.text('No trend available for this combination')
     .css('position', 'absolute')
     .css('margin', '3em')
-    .css('top', '0px')
+    .css('top', '5px')
     .css('left', '50px')
     .css('display', 'none')
 
@@ -168,7 +210,7 @@ export function createTrends(sel) {
     .attr('class', 'phenColumn')
     .css('max-width', '400px')
     .css('position', 'relative')
-    .text('Figure 3')
+    .text('Figure 3. Distribution of linear slope estimates.')
     
   density = brccharts.density({
     selector: '#bsbi-density-chart',
@@ -204,7 +246,7 @@ export function createTrends(sel) {
     .attr('class', 'phenColumn')
     .css('max-width', '400px')
     .css('position', 'relative')
-    .text('Figure 4')
+    .text('Figure 4. Classification of slope estimates.')
     
   bar = brccharts.bar({
     selector: '#bsbi-bar-chart',
@@ -251,12 +293,6 @@ export function changeTrends(taxon) {
   }
   $('#bsbiTrendsTitle').html(`<b>${termTypeText}</b> effort-adjusted 10 km distribution trends for <b>${regionTypeText}</b>`)
 
-  if (currentTaxon[`${termType}TrendAgg`]) {
-    setTrendsAggHtml(currentTaxon, termType, $('#bsbiTrendsAggNote'))
-  } else {
-    $('#bsbiTrendsAggNote').html('')
-  }
-
   loadData().then(d => {
     
     // Set flag to exclude if data deficient
@@ -282,9 +318,20 @@ export function changeTrends(taxon) {
       }
     }
 
+    // Set boolean to indicate whether or not tren has been explicitly excluded in file
+    const regionAbrv = {Britain: 'br', England: 'en', Scotland: 'sc', Wales: 'wa', Ireland: 'ir', Republic: 'ri', Northern: 'ni'}
+    const explicitExlusion = trendExclusion(currentTaxon.trendExclude, regionAbrv[regionType], termType)
+
     let gamData, linmodData, barData, densityData
 
-    if (d[0].status === 'fulfilled' && !dataDeficient) {
+    if (d[0].status === 'fulfilled' && !dataDeficient && !explicitExlusion) {
+
+      // Set the aggregate taxon note if necessary
+      if (currentTaxon[`${termType}TrendAgg`]) {
+        setTrendsAggHtml(currentTaxon, termType, $('#bsbiTrendsAggNote'))
+      } else {
+        $('#bsbiTrendsAggNote').html('')
+      }
       
       $gamNoData.hide()
       // If termType is short, add extra points to start of array to make 
@@ -299,10 +346,11 @@ export function changeTrends(taxon) {
         gamData = d[0].value
       }
     } else {
+      $('#bsbiTrendsAggNote').html('')
       gamData = []
       $gamNoData.show()
     }
-    if (d[1].status === 'fulfilled' && !dataDeficient) {
+    if (d[1].status === 'fulfilled' && !dataDeficient  && !explicitExlusion) {
       linmodData = d[1].value
       densityData = [linmodData.map(d => {return {slope: Number(d.gradient)}})]
       $linmodNoData.hide()
@@ -313,31 +361,122 @@ export function changeTrends(taxon) {
       $linmodNoData.show()
       $densityNoData.show()
     }
-    const meanLinmodData = d[4].status === 'fulfilled' && !dataDeficient ? d[4].value : []
+    const meanLinmodData = d[4].status === 'fulfilled' && !dataDeficient  && !explicitExlusion ? d[4].value : []
     if (densityData.length) {
       densityData.push(meanLinmodData)
     }
-    const linmodCentiles = d[5].status === 'fulfilled' && !dataDeficient ? d[5].value : []
-    const means = d[2].status === 'fulfilled' && !dataDeficient ? d[2].value : []
+    const linmodCentiles = d[5].status === 'fulfilled' && !dataDeficient  && !explicitExlusion ? d[5].value : []
+    const means = d[2].status === 'fulfilled' && !dataDeficient  && !explicitExlusion ? d[2].value : []
     // Reverse the order of means to make for smooth transitions between
     // short and long term trends
     means.reverse()
-    if (d[3].status === 'fulfilled' && !dataDeficient) {
+
+    // Update bar chart
+    if (d[3].status === 'fulfilled' && !dataDeficient  && !explicitExlusion) {
       barData = d[3].value[0]
       $barNoData.hide()
     } else {
       barData = []
       $barNoData.show()
     }
-    let yMin, yMax
+    bar.updateChart(barData)
+
+    // Set the SVG accessibility
+    addSvgAccessibility('bsbi-bar-chart', '>svg', 'Classification of slope estimates', `Classification of ${termType}-term slope estimates for ${currentTaxon.shortName} in ${regionTypeText}`)
+
+    // Set y axis extents for gam and linmod
+    let yMin = null
+    let yMax = null
     if (scaleType === 'across') {
       yMin = -0.2
       yMax = 1
     }
-    gam.updateChart(gamData, means, termType === 'long' ? 1947 : 1990, 2022, yMin, yMax, true, [{y: 0, stroke: 'rgb(210,210,210)', strokeWidth: 1}])
-    linmod.updateChart(linmodData, means, termType === 'long' ? 1947 : 1990, 2022, yMin, yMax, true, [{y: 0, stroke: 'rgb(210,210,210)', strokeWidth: 1}])
-    bar.updateChart(barData)
+
+    // Zero line will be plotted on gam and linmod if scaling across species
+    const zeroLine = {
+      taxon: currentTaxon.identifier,
+      gradient: 0,
+      intercept: 0,
+      colour: 'rgb(201, 210, 210)',
+      width: 1,
+      opacity: 0.5
+    }
+
+    // Update gam chart
+    gam.setChartOpts({
+      metrics:  [{ 
+        prop: 'value', 
+        colour: 'blue', 
+        opacity: gamData.length ? 1 : 0,
+        lineWidth: 2,
+        bandUpper: 'upper', 
+        bandLower: 'lower', 
+        bandFill: 'silver', 
+        bandStroke: 'rgb(200,200,200)',
+        bandOpacity: gamData.length ? 0.3 : 0,
+        bandStrokeOpacity: gamData.length ? 1 : 0,
+        bandStrokeWidth: 1,
+      }],
+      data: gamData.map(d => {
+        const d1 = {...d}
+        d1.taxon = currentTaxon.identifier
+        return d1
+      }),
+      dataPoints: means.map(d => {
+        return {
+          taxon: currentTaxon.identifier,
+          year: d.year,
+          y: d.mean,
+          upper: d.mean + d.sd,
+          lower: d.mean - d.sd
+        }
+      }),
+      dataTrendLines: scaleType === 'across' ? [zeroLine] : [],
+      minYear: termType === 'long' ? 1949 : 1993,
+      minCount: yMin,
+      maxCount: yMax,
+      taxa: [currentTaxon.identifier]
+    })
+    // Set the SVG accessibility
+    addSvgAccessibility('bsbi-gam-chart', '>div>svg', 'Smoothed time trend', `Smoothed ${termType}-term time trend for ${currentTaxon.shortName} in ${regionTypeText}`)
+
+    // Update linmod chart
+    const yearlyTrendLines = linmodData.map(d => {
+      return {
+        gradient: d.gradient,
+        intercept: d.intercept,
+        taxon: currentTaxon.identifier,
+        colour: 'blue',
+        width: 2,
+        opacity: 0.05
+      }
+    })
+    if (scaleType === 'across') {
+      yearlyTrendLines.push(zeroLine)
+    }
+
+    linmod.setChartOpts({
+      metrics: [],
+      dataPoints: means.map(d => {
+        return {
+          taxon: currentTaxon.identifier,
+          year: d.year,
+          y: d.mean,
+          upper: d.mean + d.sd,
+          lower: d.mean - d.sd
+        }
+      }),
+      dataTrendLines: yearlyTrendLines,
+      minYear: termType === 'long' ? 1949 : 1993,
+      minCount: yMin,
+      maxCount: yMax,
+      taxa: [currentTaxon.identifier]
+    })
+    // Set the SVG accessibility
+    addSvgAccessibility('bsbi-linmod-chart', '>div>svg', 'Compatible linear trends', `Compatible ${termType}-term linear trends for ${currentTaxon.shortName} in ${regionTypeText}`)
+
   
+    // Update density chart
     const xlines = [
       {x: -0.004, stroke: 'silver', strokeWidth: 1, strokeDasharray: '3 3'},
       {x: -0.001, stroke: 'silver', strokeWidth: 1, strokeDasharray: '3 3'},
@@ -359,7 +498,21 @@ export function changeTrends(taxon) {
     } else {
       density.updateChart([])
     }
+
+    // Set the SVG accessibility
+    addSvgAccessibility('bsbi-density-chart', '>svg', 'Distribution of linear slope estimates', `Distribution of ${termType}-term linear slope estimates for ${currentTaxon.shortName} in ${regionTypeText}`)
+
   })
+
+  // Hidden download function
+  window.bsbi_download_trend = function(asBmp) {
+    const filename = `${currentTaxon.shortName.replace(' ','-')}-${currentTaxon.identifier.replace('.','-')}-${regionType}-${termType}`
+    const asSvg = !asBmp
+    gam.saveImage(asSvg, `${filename}-fig1-${scaleType}`)
+    linmod.saveImage(asSvg, `${filename}-fig2-${scaleType}`)
+    density.saveImage(asSvg, `${filename}-fig3-${scaleTypeDensity}`)
+    bar.saveImage(asSvg, `${filename}-fig4`)
+  }
 }
 
 function loadData() {
@@ -369,7 +522,7 @@ function loadData() {
   const trendsRoot = ds.bsbi_atlas.dataRoot + 'bsbi/trends/'
   const trendCountRoot = ds.bsbi_atlas.dataRoot + 'bsbi/trends/hectad-counts'
   const pTrendCounts = d3.csv(`${trendCountRoot}/${tIdentifier.replace(/\./g, "_")}.csv?prevent-cache=${pcache}`)
-  const pGam = d3.csv(`${trendsRoot}${termType}/trends-gam/${regionType}/${tIdentifier.replace(/\./g, "_")}.csv?${pcache}`, function(d){
+  const pGam = d3.csv(`${trendsRoot}${termType}/trends-gam/${regionType}/${tIdentifier.replace(/\./g, "_")}.csv?prevent-cache=${pcache}`, function(d){
     return {
       year: Number(d.year),
       value: Number(d.x50),
@@ -377,20 +530,20 @@ function loadData() {
       lower: Number(d.x5)
     }
   })
-  const pLinmod = d3.csv(`${trendsRoot}${termType}/trends-linmod/${regionType}/${tIdentifier.replace(/\./g, "_")}.csv?${pcache}`, function(d){
+  const pLinmod = d3.csv(`${trendsRoot}${termType}/trends-linmod/${regionType}/${tIdentifier.replace(/\./g, "_")}.csv?prevent-cache=${pcache}`, function(d){
     return {
       gradient: Number(d.gradient),
       intercept: Number(d.intercept)
     }
   })
-  const pMeans = d3.csv(`${trendsRoot}${termType}/trends-lt-mean-sd/${regionType}/${tIdentifier.replace(/\./g, "_")}.csv?${pcache}`, function(d){
+  const pMeans = d3.csv(`${trendsRoot}${termType}/trends-lt-mean-sd/${regionType}/${tIdentifier.replace(/\./g, "_")}.csv?prevent-cache=${pcache}`, function(d){
     return {
       year: Number(d.year),
       mean: Number(d.mean),
       sd: Number(d.std),
     }
   })
-  const pSummaries = d3.csv(`${trendsRoot}${termType}/trends-summaries/${regionType}/${tIdentifier.replace(/\./g, "_")}.csv?${pcache}`, function(d){
+  const pSummaries = d3.csv(`${trendsRoot}${termType}/trends-summaries/${regionType}/${tIdentifier.replace(/\./g, "_")}.csv?prevent-cache=${pcache}`, function(d){
     return [
       {value: Number(d.declineStrong), label: 'Strong decline', stroke: 'grey', strokeWidth: 1, fill: 'rgb(230,230,230)'},
       {value: Number(d.declineMod), label: 'Moderate decline', stroke: 'grey', strokeWidth: 1, fill: 'rgb(230,230,230)'},
@@ -399,12 +552,12 @@ function loadData() {
       {value: Number(d.increaseStrong), label: 'Strong increase', stroke: 'grey', strokeWidth: 1, fill: 'rgb(230,230,230)'}
     ]
   })
-  const pLinmodMeans = d3.csv(`${trendsRoot}${termType}/trends-linmod/${regionType}/mean-gradients.csv?${pcache}`, function(d){
+  const pLinmodMeans = d3.csv(`${trendsRoot}${termType}/trends-linmod/${regionType}/mean-gradients.csv?prevent-cache=${pcache}`, function(d){
     return {
       slope: Number(d.gradient)
     }
   })
-  const pLinmodCentiles = d3.csv(`${trendsRoot}${termType}/trends-linmod/centiles.csv?${pcache}`, function(d){
+  const pLinmodCentiles = d3.csv(`${trendsRoot}${termType}/trends-linmod/centiles.csv?prevent-cache=${pcache}`, function(d){
     return {
       region: d.region,
       c5: Number(d.c5),
@@ -420,54 +573,64 @@ export function createTrendControls(selector) {
   termSelector(trendControlRow(selector))
   scalingSelector((trendControlRow(selector)))
   scalingSelector2((trendControlRow(selector)))
+
+  window.downloadTrends = (asSvg) => {
+
+    let region
+    if (regionType === 'Northern') {
+      region = 'northern_ireland'
+    } else if (regionType === 'Republic') {
+      region = 'republic_of_ireland'
+    } else {
+      region = regionType.toLowerCase()
+    }
+    const taxon = currentTaxon.shortName.replace(/[^a-z0-9]/gi, '_').toLowerCase()
+    const filename = `${taxon}-${region}-${termType}`
+    gam.saveImage(asSvg, `${filename}-fig1`)
+    linmod.saveImage(asSvg, `${filename}-fig2`)
+    density.saveImage(asSvg, `${filename}-fig3`)
+    bar.saveImage(asSvg, `${filename}-fig4`)
+  }
 }
 
 export function setTrendsAggHtml(currentTaxon, termType, $ctl) {
-
-  //const captionRoot = ds.bsbi_atlas.dataRoot + 'bsbi/captions/'
-  // const pCaptions = []
-  // currentTaxon.trendAggTaxa.split(',').forEach(ddbid => {
-  //   const captionFile = `${captionRoot}${ddbid.replace(/\./g, "_")}.csv?prevent-cache=${pcache}`
-  //   pCaptions.push(d3.csv(captionFile))
-  // })
-  // Promise.allSettled(pCaptions).then(captions => {
-  //   console.log(captions)
-  //   const aggTaxa = captions.map(c => c.value[0].formattedName).join(', ')
-  //   const html = `(Trend for aggregate taxon <i>${currentTaxon[termType + 'TrendAggName'].replace('agg.', '</i>agg.<i>' )}</i>) ${aggTaxa}`
-  //   $ctl.html(html)
-  // })
 
   $ctl.html('')
   const $span1 = $('<span>').appendTo($ctl)
   $span1.html(`(Trend for aggregate taxon ${enrichName(currentTaxon[termType + 'TrendAggName'])}`)
 
-  console.log(currentTaxon.trendAggTaxaNames, currentTaxon.trendAggTaxa)
-  let aggTaxa = currentTaxon.trendAggTaxaNames.split(',').map((t,i) => {
-    return enrichName(t, currentTaxon.trendAggTaxa.split(',')[i])
-  }).join(', ')
-  // Replace last comma with 'and'
-  const lastIndex = aggTaxa.lastIndexOf(', ')
-  aggTaxa = `${aggTaxa.substring(0, lastIndex)} and ${aggTaxa.substring(lastIndex + 1)}`
+  if (currentTaxon.trendAggTaxaNames) {
+    let aggTaxa = currentTaxon.trendAggTaxaNames.split(',').map((t,i) => {
+      return enrichName(t, currentTaxon.trendAggTaxa.split(',')[i])
+    }).join(', ')
+    // Replace last comma with 'and'
+    const lastIndex = aggTaxa.lastIndexOf(', ')
+    aggTaxa = `${aggTaxa.substring(0, lastIndex)} and ${aggTaxa.substring(lastIndex + 1)}`
 
-  const $span2 = $('<span>').appendTo($ctl)
-  $span2.css('display', 'none')
-  $span2.html(` - comprises ${aggTaxa}`)
+    const $span2 = $('<span>').appendTo($ctl)
+    $span2.addClass('trend-sum-agg-detail')
+    $span2.css('display', 'none')
+    $span2.html(` - comprises ${aggTaxa}`)
 
-  const $span3 = $('<span>').appendTo($ctl)
-  $span3.css('cursor', 'pointer')
-  $span3.data('data-val', 'hide')
-  $span3.html(' - <b>[show more]</b>)')
-  $span3.on('click', function() {
-    if ($(this).data('data-val') === 'hide') {
-      $(this).data('data-val', 'show') 
-      $(this).html(' - <b>[show less]</b>)') 
-      $span2.show()
-    } else {
-      $(this).data('data-val', 'hide')
-      $(this).html(' - <b>[show more]</b>)') 
-      $span2.hide()
-    }
-  })
+    const $span3 = $('<span>').appendTo($ctl)
+    $span3.addClass('trend-sum-agg-showhide')
+    $span3.css('cursor', 'pointer')
+    $span3.data('data-val', 'hide')
+    $span3.html(' - <b>[show more]</b>')
+    $span3.on('click', function() {
+      if ($(this).data('data-val') === 'hide') {
+        $(this).data('data-val', 'show') 
+        $(this).html(' - <b>[show less]</b>') 
+        $span2.show()
+      } else {
+        $(this).data('data-val', 'hide')
+        $(this).html(' - <b>[show more]</b>') 
+        $span2.hide()
+      }
+    })
+    const $span4 = $('<span>').appendTo($ctl)
+    $span4.html(')')
+  }
   
   function enrichName(name, ddbid) {
 
@@ -669,4 +832,48 @@ function scalingSelector2($parent) {
   // This seems to be necessary if interface regenerated,
   // e.g. changing from tabbed to non-tabbed display.
   $sel.selectpicker()
+}
+
+const regions=['br', 'en', 'ir', 'ni', 'ri', 'sc', 'wa']
+
+export function encodeTrendExclusion(t) {
+  // The no-trend file shows which trend charts should be excluded
+  // for a given taxon. The argument passed to this function is either
+  // an object representing a line from that file or false if there
+  // was no line for the taxon being considered. This function returns
+  // a string representing for each of the regions for which trends
+  // can be displayed and each of the long/short terms, whether the
+  // trend should be excluded (represented by a 1), or
+  // included (if known) (represented by a 0).
+  if (t) {
+    let short = ''
+    let long = ''
+    regions.forEach(r => {
+      const sl = t[r].split(',')
+      if (sl.includes('l')) {
+        long += '1'
+      } else {
+        long += '0'
+      }
+      if (sl.includes('s')) {
+        short += '1'
+      } else {
+        short += '0'
+      }
+    })
+    return `${short}${long}`
+  } else {
+    return '00000000000000'
+  }
+}
+
+export function trendExclusion(trendExcludeAttr, country, term) {
+
+  const regionIndex = regions.indexOf(country)
+  const termIndexAdjust = term === 'short' ? 0 : 7
+  const i = regionIndex + termIndexAdjust
+
+  // console.log(trendExcludeAttr, country, term, regionIndex, termIndexAdjust) 
+
+  return (trendExcludeAttr.substr(i, 1) === '1')
 }

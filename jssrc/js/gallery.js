@@ -3,7 +3,7 @@ import { pcache } from './gen'
 const $ = jQuery // eslint-disable-line no-undef
 const ds = drupalSettings // eslint-disable-line no-undef
 
-export function createGallery(id, ddbid) {
+export function createGallery(id, ddbid, shortName) {
 
   // DO I NEED TO HAVE SEPARATE FUNCTIONS FOR CREATE AND UPDATED GALLERY
   // FOR CONSISTENCY ON MAIN.JS?
@@ -12,27 +12,33 @@ export function createGallery(id, ddbid) {
   if (ddbid) {
 
     // Images are listed in the caption file, so fetch it
-    const captionRoot = ds.bsbi_atlas.dataRoot + 'bsbi/captions/'
+    const captionRoot = ds.bsbi_atlas.dataRoot + 'bsbi/captions2/'
     const captionFile = `${captionRoot}${ddbid.replace(/\./g, "_")}.csv?prevent-cache=${pcache}`
     
     d3.csv(captionFile)
       .then(function(d) {
-        // Filter out empty image strings
-        const dynamicEl = d[0].images.split(';').filter(i => i).map(img => {
-          //console.log(img.replace('{PIXELSIZE}', '192'))
+
+        //console.log('images caption file', d)
+        // Image captions
+        if (!d[0].imageCaptions) { // catch if imageCaptions column not yet added to CSV
+          d[0].imageCaptions = ''
+        }
+        const captions = d[0].imageCaptions ? d[0].imageCaptions.split(';').filter(i => i) : []
+        const dynamicEl = d[0].images.split(';').filter(i => i).map((img, indx) => {
+          // Copyright Rob Still/Chris Gibson
+          const caption = captions[indx] ? captions[indx] : 'All rights reserved'
           return {
+            alt: `Image of ${shortName} - ${caption}`,
             src: img.replace('{PIXELSIZE}', '1920'),
             thumb: img.replace('{PIXELSIZE}', '192'),
             subHtml: `
               <div class="lightGallery-captions">
                 <div style="background-color: black; opacity: 0.7">
-                <p style="margin: 0.3em">Copyright Rob Still/Chris Gibson</p>
+                <p style="margin: 0.3em">${caption}</p>
                 <div>
               </div>`
           }
         })
-
-        //console.log(dynamicEl)
 
         const lgContainer = document.getElementById(id)
         

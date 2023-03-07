@@ -3,11 +3,10 @@ import * as d3 from 'd3'
 const $=jQuery // eslint-disable-line no-undef
 let phen1, phen2, phen3, altlat
 let apparencyByLatData
+import { addSvgAccessibility } from './utils'
 import { pcache } from './gen'
 
 export function createPhenology(sel) {
-
-  //$('<h4>').appendTo($(sel)).text('Phenology')
 
   const $phenFlexParent = $('<div>').appendTo($(sel))
 
@@ -20,7 +19,28 @@ export function createPhenology(sel) {
   $phenSource.css('margin-bottom', '0.8em')
 
   const $p1 = $('<p>').appendTo($(sel))
-  $p1.text("Explanation of apparency and phenology charts. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque blandit dui vel mauris maximus interdum. Aliquam orci eros, venenatis vel purus nec, venenatis congue leo. Pellentesque rhoncus metus eros, tincidunt congue massa volutpat facilisis. Curabitur pellentesque turpis velit, quis ornare mauris ullamcorper a.")
+  $p1.html(`
+  <i>Apparency</i><br/>
+  This graphic combines the detectability and phenology of a species, together with recording intensity, 
+  and illustrates the frequency with which a species was recorded on a daily basis between 2000 and 2019, 
+  using data extracted from the BSBI database. These data were based on counts of unique taxon-tetrad 
+  occurrences (aggregating over finer spatial scales) on Julian days averaged across all 20 years and 
+  smoothed for presentation purposes. Days either side of New Year were excluded so that annual BSBI 
+  New Year Plant Hunt data did not unduly influence the figures on the graphs. The graphic on the right 
+  applies the same principle to latitudinal subdivisions (British data only).
+  `)
+
+  const $p2 = $('<p>').appendTo($(sel))
+  $p2.html(`
+  <i>Phenology</i><br/>
+  The ranges in flowering and leafing months are displayed below the apparency graph. Flowering months 
+  are filled in as an orange bar, whilst leafing duration is shown in green. For non-flowering plants 
+  (e.g. ferns, horsetails etc.), the “flowering” bar is equivalent to the months when spore-bearing 
+  structures are visible. The phenology of a species will not always correspond exactly with its apparency 
+  curve due to its detectability when not in flower or leaf; see, for example, the plots of <i>Fraxinus 
+  excelsior</i> or <i>Phragmites australis</i>. In addition, published sources for flowering and leafing may 
+  differ from the apparency diagram due to the extended detectability of a species due to climate change.
+  `)
 
   $phenFlexParent.attr('class', 'phenRow')
   const $phenFlexLeft = $('<div>').appendTo($phenFlexParent)
@@ -133,8 +153,6 @@ export function createPhenology(sel) {
 
 export function createEcology(sel) {
   
-  //$('<h4>').appendTo($(sel)).text('Altitude vs Latitude')
-
   const $altlatp = $('<div>').appendTo($(sel))
   $altlatp.css('position', 'relative')
 
@@ -150,7 +168,47 @@ export function createEcology(sel) {
 
   const $altlat = $('<div>').appendTo($altlatp)
   const $p2 = $('<p>').appendTo($(sel))
-  $p2.text("Explanation of latitude/altitude chart. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque blandit dui vel mauris maximus interdum. Aliquam orci eros, venenatis vel purus nec, venenatis congue leo. Pellentesque rhoncus metus eros, tincidunt congue massa volutpat facilisis. Curabitur pellentesque turpis velit, quis ornare mauris ullamcorper a.")
+  $p2.html(`
+  <i>Altitude diagram</i><br/>
+  Following Blockeel <i>et al</i>. (2014), this displays the distribution of a 
+  taxon within 50 km latitudinal by 100 m altitudinal bands in Britain. Note 
+  that the diagrams do not cover Ireland. These plots are based on data across 
+  all time periods, and show the proportion of all available tetrads in each 
+  latitude/altitude cell in which the taxon has been reported. Tetrads were 
+  assigned to cells based on their means as calculated from the digital terrain 
+  dataset produced by Intermap Technologies (2009). Percentage tetrad 
+  occupancies within cells were rounded to the nearest 0.1%.
+  `)
+  const $p3 = $('<p>').appendTo($(sel))
+  $p3.html(`
+  For many species there are discrepancies between the altitude diagram and the 
+  altitude range of the species given in the text on the Summary tab of this 
+  website. There are several reasons for this. The most important is that the 
+  altitudinal range in the text gives the precise (i.e. record precision 100 m 
+  or better) altitude at which the plant has been recorded, whereas the 
+  altitude diagram here gives the mean altitude of the tetrads within which 
+  it grows. The choice of the digital terrain model (DTM) used to calculate 
+  these mean altitudes, and the method of averaging, will both influence this 
+  disparity. There are also some altitude records cited in the text on the 
+  Summary tab that are not represented by records in the database. For some 
+  native species, the altitudinal range within the diagram falls outside the 
+  altitudinal ranges stated in the Summary tab text because it includes tetrads 
+  where a species has been introduced.
+  `)
+  let $ref 
+  $ref = $('<p>').appendTo($(sel))
+  $ref.addClass('bsbi-text-ref')
+  $ref.html(`
+  Blockeel, T.L., Bosanquet, S.D.S., Hill, M.O. and Preston, C.D. (eds) 2014. <i>Atlas of British & Irish Bryophytes,</i> 
+  2 vols. Pisces Publications, Newbury.
+  `)
+  $ref = $('<p>').appendTo($(sel))
+  $ref.addClass('bsbi-text-ref')
+  $ref.html(`
+  Intermap Technologies. 2009. <i>NEXTMap British Digital Terrain 50m resolution (DTM10) Model Data by Intermap.</i> 
+  NERC Earth Observation Data Centre. 
+  <a target= "_blank" href="https://catalogue.ceda.ac.uk/uuid/f5d41db1170f41819497d15dd8052ad2">https://catalogue.ceda.ac.uk/uuid/f5d41db1170f41819497d15dd8052ad2</a>
+  `)
   
   // Alt vs Lat visualisation
   $altlat.attr('id', 'bsbi-altlat-chart')
@@ -228,6 +286,9 @@ function latPhenNormalizeCheckbox($parent, phenChart) {
   $('.atlas-phen-normalize-checkbox').change(function() {
     const normalize = $(this).is(':checked')
     phenChart.setChartOpts({ytype: normalize ? 'normalized' : 'count'})
+    // Set the SVG accessibility
+    addSvgAccessibility('bsbi-altlat-chart', '>div>svg', 'Altitude/latitude diagram', `Distribution of ${shortName} by altitude and latitude`)
+
   })
 }
 
@@ -278,16 +339,16 @@ function latPhenDataTypeDropdown($parent) {
   $sel.selectpicker()
 }
 
-export function changePhenology(dataRoot, identifier) {
+export function changePhenology(dataRoot, identifier, shortName) {
    
   if (!identifier) return 
 
   const apparencyRoot = dataRoot + 'bsbi/apparency/'
-  const captionRoot = dataRoot + 'bsbi/captions/'
+  const captionRoot = dataRoot + 'bsbi/captions2/'
 
   // Apparency all
-  const fileAll = apparencyRoot + 'all/' + identifier.replace(/\./g, "_") + '.csv'
-  d3.csv(fileAll + '?prevent-cache=')
+  const fileAll = `${apparencyRoot}all/${identifier.replace(/\./g, "_")}.csv?prevent-cache=${pcache}`
+  d3.csv(fileAll)
     .then(function(data) {
       apparency(phen1, data)
       $('#bsbi-apparency-chart').css('opacity', 1)
@@ -299,10 +360,14 @@ export function changePhenology(dataRoot, identifier) {
       $('#bsbi-apparency-chart').css('opacity', 0.5)
       $('#bsbi-apparency-chart-no-data').show()
     })
+    .finally(function() {
+      // Set the SVG accessibility
+      addSvgAccessibility('bsbi-apparency-chart', '>div>svg', 'Apparency chart', `Apparency of ${shortName}`)
+    })
 
   // Apparency by latitude
-  const fileLat = apparencyRoot + 'byLat/' + identifier.replace(/\./g, "_") + '.csv'
-  d3.csv(fileLat + '?prevent-cache=')
+  const fileLat = `${apparencyRoot}byLat/${identifier.replace(/\./g, "_")}.csv?prevent-cache=${pcache}`
+  d3.csv(fileLat)
     .then(function(data) {
       apparencyByLatData = data // Saved so that apparencyByLat if 
                                 // data type dropdown used.
@@ -316,17 +381,33 @@ export function changePhenology(dataRoot, identifier) {
       $('#bsbi-apparency-by-lat-chart').css('opacity', 0.5)
       $('#bsbi-apparency-by-lat-chart-no-data').show()
     })
+    .finally(function() {
+      // Set the SVG accessibility
+      addSvgAccessibility('bsbi-apparency-by-lat-chart', '>div>svg', 'Apparency by latitude chart', `Apparency of ${shortName} by latitude`)
+    })
+    
 
   // Phenology
   const file = `${captionRoot}${identifier.replace(/\./g, "_")}.csv`
 
   d3.csv(file + `?prevent-cache=${pcache}`)
     .then(function(data) {
-      phenology(phen2, data, 'bsbi-phenology-source')
+      phenology(phen2, data, 'bsbi-phenology-source', shortName)
     })
+
+  // Hidden download function
+  window.bsbi_download_phen = function(asBmp) {
+    const filename = `${shortName.replace(' ','-')}-${identifier.replace('.','-')}`
+    const dataType = $('#atlas-lat-phen-data-type').val()
+    const asSvg = !asBmp
+
+    phen1.saveImage(asSvg,`${filename}-apparency`)
+    phen2.saveImage(asSvg,`${filename}-phenology`)
+    phen3.saveImage(asSvg,`${filename}-apparency-lat-${dataType}`)
+  }
 }
 
-export function changeEcology(dataRoot, identifier) {
+export function changeEcology(dataRoot, identifier, shortName) {
    
   if (!identifier) return 
 
@@ -334,20 +415,54 @@ export function changeEcology(dataRoot, identifier) {
 
   // Alt/Lat
   // Using pre-processed altlat data
-  const altlatdata = `${mapRoot}altlat/${identifier.replace(/\./g, "_")}.csv`
+  const altlatdata = `${mapRoot}altlat/${identifier.replace(/\./g, "_")}.csv?prevent-cache=${pcache}`
   d3.csv(altlatdata).then(function(data){
-    $('#bsbi-altlat-chart').css('opacity', 1)
-    $('#bsbi-altlat-chart-no-data').hide()
-    return altLat(altlat, data)
+    // In the data passed back, there may be cases where there is no
+    // data, e.g. tetrad data only exists for CI or Ireland (altlat CSV
+    // file will have been generated, but no data because only British
+    // mainland data contributes). We need to treat these here as 'no data'.
+    // Also there may be cases where there are data rows, but the percentage
+    // values are all zero (all very low and rounded to zero) - these should
+    // also be shown as 'no data'.
+
+    if (data.length === data.filter(d => Number(d.percent) === 0).length) {
+      noData()
+    } else {
+      $('#bsbi-altlat-chart').css('opacity', 1)
+      $('#bsbi-altlat-chart-no-data').hide()
+      return altLat(altlat, data)
+    }
+    // const dataMod = data.map(d => {
+    //   console.log(d.percent, Number(d.percent) ? d.percent : 0.1)
+    //   return {
+    //     distance: d.distance,
+    //     altitude: d.altitude,
+    //     percent: Number(d.percent) ? d.percent : 0.1
+    //   }
+    // })
   }).catch(e => {
     console.warn(`altlat chart failed for ${altlatdata}. Error message:`, e)
+    noData()
+  })
+
+  function noData() {
     altlat.setChartOpts({data: []})
     $('#bsbi-altlat-chart').css('opacity', 0.25)
     $('#bsbi-altlat-chart-no-data').show()
-  })
+  }
+
+  // Set the SVG accessibility
+  addSvgAccessibility('bsbi-altlat-chart', '>div>svg', 'Altitude/latitude chart', `Distribution of ${shortName} by altitude and latitude`)
+
+
+  // Hidden download function
+  window.bsbi_download_altlat = function(asBmp) {
+    const filename = `${shortName.replace(' ','-')}-${identifier.replace('.','-')}`
+    const asSvg = !asBmp
+    altlat.saveImage(asSvg,`${filename}-altlat`)
+  }
 }
 
-// For Oli's stuff October - reformatted 
 export function apparency(chart, data) {
   // Map text to numeric values and add taxon
   const numeric = data.map(d => {
@@ -365,7 +480,7 @@ export function apparency(chart, data) {
   })
 }
 
-export function phenology(chart, data, textId) {
+export function phenology(chart, data, textId, shortName) {
 
   // Chart
   const m2d = [1, 32, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 365]
@@ -483,8 +598,8 @@ export function phenology(chart, data, textId) {
   // if (overlapRange.length) {
   //   metrics.push({ prop: 'both', label: 'In leaf & flowering', colour: '#8da0cb', svg: svgBoth , svgScale: 1.4, legendOrder: 3})
   // }
- 
-  return chart.setChartOpts({
+
+  const ret =  chart.setChartOpts({
     data: [
       {
         taxon: 'taxon',
@@ -495,6 +610,11 @@ export function phenology(chart, data, textId) {
     ],
     metrics: metrics
   })
+
+  // Set the SVG accessibility
+  addSvgAccessibility('bsbi-phenology-chart', '>div>svg', 'Phenology chart', `Leaf and flower phenology of ${shortName}`)
+
+  return ret
 
   function tweakRef(ref) {
     const $tmp = $('<div>')
@@ -534,12 +654,13 @@ export function apparencyByLat(chart, data) {
 
   // Sort it - just in case
   const sorted = numeric.sort((a,b) => a.week > b.week)
-  // Update the apparency chart
+  // Update the apparency charts
   return chart.setChartOpts({
     data: sorted,
     metrics: metrics,
     spread: true
   })
+  
 }
 
 export function altLat(chart, data) {
