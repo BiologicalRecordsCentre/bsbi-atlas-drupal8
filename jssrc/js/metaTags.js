@@ -3,9 +3,9 @@ const $=jQuery // eslint-disable-line no-undef
 export function setBaseMetaTags() {
 
   addMetaTags('title', 'BSBI Online Plant Atlas 2020')
-  addMetaTags('authors', 'Stroh, P. A., Humphrey, T., Burkmar, R. J., Pescott, O. L., , Roy, D.B., and Walker, K. J.')
+  addMetaTags('authors', 'Stroh, P. A.; Humphrey, T. A.; Burkmar, R. J.; Pescott, O. L.; Roy, D.B.; Walker, K. J.')
   addMetaTags('author', 'Stroh, P. A.')
-  addMetaTags('author', 'Humphrey, T.')
+  addMetaTags('author', 'Humphrey, T. A.')
   addMetaTags('author', 'Burkmar, R. J.')
   addMetaTags('author', 'Pescott, O. L.')
   addMetaTags('author', 'Roy, D. B.')
@@ -61,10 +61,10 @@ export function addMetaTags(type, value, update) {
       addHeadTag("bepress_citation_date", value)
       break
     case 'url':
-      addHeadTag("citation_public_url", value)
-      addHeadTag("prism.url", value)
-      addHeadTag("eprints.official_url", value)
-      addHeadTag("bepress_citation_pdf_url", value)
+      addHeadTag("citation_public_url", value, update)
+      addHeadTag("prism.url", value, update)
+      addHeadTag("eprints.official_url", value, update)
+      // addHeadTag("bepress_citation_pdf_url", value, update)
   }
 }
 

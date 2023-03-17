@@ -22,6 +22,7 @@ export function main() {
   
       Taxon.setTaxa(taxa) // must be called before picker initialization
       const taxonPicker = new TaxonPickerField
+      taxonPicker.alwaysFireChangeEvent = true
       const taxonPickerContainer = document.getElementById(`atlas-taxon-selector-div-${idString}`)
       taxonPicker.addField(taxonPickerContainer)
       taxonPicker.setTaxonFromId(defaultDdbid)

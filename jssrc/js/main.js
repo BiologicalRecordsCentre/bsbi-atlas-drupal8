@@ -359,9 +359,14 @@ export function main() {
 
         const aParentids = d['hybridParentIds'].split(';')
         const aParents = d['hybridParents'].split(';')
-        const hybridMapping = (aParents.length === 2 && aParentids.length === 2)
-        taxaRef['hybrid-mapping'] = hybridMapping
-
+        //const hybridMapping = (aParents.length === 2 && aParentids.length === 2)
+        //taxaRef['hybrid-mapping'] = hybridMapping
+        taxaRef['hybrid-mapping'] = false
+        if (aParents.length === 2 && aParentids.length === 2) {
+          if (taxaList.find(t => t.ddbid === aParentids[0]) && taxaList.find(t => t.ddbid === aParentids[1]) ) {
+            taxaRef['hybrid-mapping'] = true
+          }
+        }
         const agg = trendAggs.find(a => a['mapped.ddb.id']===d['ddbid'])
         const trendExclude = encodeTrendExclusion(noTrend.find(t => t['taxonId']===d['ddbid']))
 
@@ -1111,6 +1116,7 @@ export function main() {
         const taxon = $('<p>').html(currentTaxon.name).text()
         //addMetaTags('title', d[0].taxonName + ' in BSBI Online Plant Atlas 2020', true)
         addMetaTags('title', taxon + ' in BSBI Online Plant Atlas 2020', true)
+        addMetaTags('url', location.origin + '/atlas/' + currentTaxon.identifier, true)
       })
   }
 

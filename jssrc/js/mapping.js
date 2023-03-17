@@ -106,7 +106,7 @@ export function setControlState() {
 
   // download map data button
   $('.atlas-download-map-data').show()
-  if (mapType === 'allclass' && resolution === 'hectad') {
+  if (mapType === 'allclass' && (displayedMapType === 'static' || resolution === 'hectad')) {
     $('.atlas-download-map-data input, .atlas-download-map-data button').attr('disabled', false)
   } else {
     $('.atlas-download-map-data input, .atlas-download-map-data button').attr('disabled', true)
@@ -574,6 +574,47 @@ function mapDownloadButton($parent, i) {
 
   let downloadType = 'csv'
 
+  // Modal to accept download terms
+  const $divModal = $('<div>').appendTo($('body'))
+  $divModal.addClass('atlas-download-modal')
+  $divModal.css('display', 'none')
+
+  const $divModalGrey = $('<div>').appendTo($('body'))
+  $divModalGrey.addClass('atlas-download-modal-grey')
+  $divModalGrey.css('display', 'none')
+
+  $('<p>').html(`
+    By downloading these data, you agree to adhere to the terms of the 
+    <a href="https://creativecommons.org/licenses/by/4.0/">CC-BY 4.0 licence</a>. 
+    Please familiarise yourself with its requirements. 
+    The recommended citation for these data is given on the right-hand 
+    side of this page under the taxon caption.
+  `).appendTo($divModal)
+
+  const $divButtons = $('<div>').appendTo($divModal)
+
+  const $buttonOkay = $('<button>').appendTo($divButtons)
+  $buttonOkay.addClass('btn btn-default atlas-download-modal-button')
+  $buttonOkay.text('Okay')
+  $buttonOkay.on('click', function(){
+    let displayedMap
+    if (displayedMapType === 'static') {
+      displayedMap = staticMap
+    } else {
+      displayedMap = slippyMap
+    }
+    displayedMap.downloadData(downloadType === 'geojson')
+    $divModal.hide()
+    $divModalGrey.hide()
+  })
+  const $buttonCancel = $('<button>').appendTo($divButtons)
+  $buttonCancel.addClass('btn btn-default atlas-download-modal-button')
+  $buttonCancel.text('Cancel')
+  $buttonCancel.on('click', function(){
+    $divModal.hide()
+    $divModalGrey.hide()
+  })
+
   // Overall control container
   const $container = $('<div>').appendTo($parent)
   $container.addClass('atlas-download-map-data')
@@ -583,13 +624,8 @@ function mapDownloadButton($parent, i) {
   $button.addClass('btn btn-default')
   $button.text('Download data')
   $button.on('click', function(){
-    let displayedMap
-    if (displayedMapType === 'static') {
-      displayedMap = staticMap
-    } else {
-      displayedMap = slippyMap
-    }
-    displayedMap.downloadData(downloadType === 'geojson')
+    $divModal.show()
+    $divModalGrey.show()
   })
 
   makeRadio('CSV', 'csv', true)

@@ -1175,10 +1175,10 @@
         break;
 
       case 'url':
-        addHeadTag("citation_public_url", value);
-        addHeadTag("prism.url", value);
-        addHeadTag("eprints.official_url", value);
-        addHeadTag("bepress_citation_pdf_url", value);
+        addHeadTag("citation_public_url", value, update);
+        addHeadTag("prism.url", value, update);
+        addHeadTag("eprints.official_url", value, update);
+      // addHeadTag("bepress_citation_pdf_url", value, update)
     }
   }
 
@@ -2992,7 +2992,7 @@
 
     $$3('.atlas-download-map-data').show();
 
-    if (mapType === 'allclass' && resolution === 'hectad') {
+    if (mapType === 'allclass' && (displayedMapType === 'static' || resolution === 'hectad')) {
       $$3('.atlas-download-map-data input, .atlas-download-map-data button').attr('disabled', false);
     } else {
       $$3('.atlas-download-map-data input, .atlas-download-map-data button').attr('disabled', true);
@@ -3407,15 +3407,20 @@
   }
 
   function mapDownloadButton($parent, i) {
-    var downloadType = 'csv'; // Overall control container
+    var downloadType = 'csv'; // Modal to accept download terms
 
-    var $container = $$3('<div>').appendTo($parent);
-    $container.addClass('atlas-download-map-data');
-    $container.hide();
-    var $button = $$3('<button>').appendTo($container);
-    $button.addClass('btn btn-default');
-    $button.text('Download data');
-    $button.on('click', function () {
+    var $divModal = $$3('<div>').appendTo($$3('body'));
+    $divModal.addClass('atlas-download-modal');
+    $divModal.css('display', 'none');
+    var $divModalGrey = $$3('<div>').appendTo($$3('body'));
+    $divModalGrey.addClass('atlas-download-modal-grey');
+    $divModalGrey.css('display', 'none');
+    $$3('<p>').html("\n    By downloading these data, you agree to adhere to the terms of the \n    <a href=\"https://creativecommons.org/licenses/by/4.0/\">CC-BY 4.0 licence</a>. \n    Please familiarise yourself with its requirements. \n    The recommended citation for these data is given on the right-hand \n    side of this page under the taxon caption.\n  ").appendTo($divModal);
+    var $divButtons = $$3('<div>').appendTo($divModal);
+    var $buttonOkay = $$3('<button>').appendTo($divButtons);
+    $buttonOkay.addClass('btn btn-default atlas-download-modal-button');
+    $buttonOkay.text('Okay');
+    $buttonOkay.on('click', function () {
       var displayedMap;
 
       if (displayedMapType === 'static') {
@@ -3425,6 +3430,26 @@
       }
 
       displayedMap.downloadData(downloadType === 'geojson');
+      $divModal.hide();
+      $divModalGrey.hide();
+    });
+    var $buttonCancel = $$3('<button>').appendTo($divButtons);
+    $buttonCancel.addClass('btn btn-default atlas-download-modal-button');
+    $buttonCancel.text('Cancel');
+    $buttonCancel.on('click', function () {
+      $divModal.hide();
+      $divModalGrey.hide();
+    }); // Overall control container
+
+    var $container = $$3('<div>').appendTo($parent);
+    $container.addClass('atlas-download-map-data');
+    $container.hide();
+    var $button = $$3('<button>').appendTo($container);
+    $button.addClass('btn btn-default');
+    $button.text('Download data');
+    $button.on('click', function () {
+      $divModal.show();
+      $divModalGrey.show();
     });
     makeRadio('CSV', 'csv', true);
     makeRadio('GJSON', 'geojson', false);
@@ -5639,9 +5664,21 @@
           taxaRef['is-hybrid'] = d['hybrid'];
           taxaRef['no-status'] = d['atlasNoStatus'];
           var aParentids = d['hybridParentIds'].split(';');
-          var aParents = d['hybridParents'].split(';');
-          var hybridMapping = aParents.length === 2 && aParentids.length === 2;
-          taxaRef['hybrid-mapping'] = hybridMapping;
+          var aParents = d['hybridParents'].split(';'); //const hybridMapping = (aParents.length === 2 && aParentids.length === 2)
+          //taxaRef['hybrid-mapping'] = hybridMapping
+
+          taxaRef['hybrid-mapping'] = false;
+
+          if (aParents.length === 2 && aParentids.length === 2) {
+            if (taxaList.find(function (t) {
+              return t.ddbid === aParentids[0];
+            }) && taxaList.find(function (t) {
+              return t.ddbid === aParentids[1];
+            })) {
+              taxaRef['hybrid-mapping'] = true;
+            }
+          }
+
           var agg = trendAggs.find(function (a) {
             return a['mapped.ddb.id'] === d['ddbid'];
           });
@@ -6368,6 +6405,7 @@
         var taxon = $('<p>').html(currentTaxon.name).text(); //addMetaTags('title', d[0].taxonName + ' in BSBI Online Plant Atlas 2020', true)
 
         addMetaTags('title', taxon + ' in BSBI Online Plant Atlas 2020', true);
+        addMetaTags('url', location.origin + '/atlas/' + currentTaxon.identifier, true);
       });
     }
 
