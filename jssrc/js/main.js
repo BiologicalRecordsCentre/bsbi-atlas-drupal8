@@ -1113,9 +1113,11 @@ export function main() {
         })
 
         // Update meta tags
-        const taxon = $('<p>').html(currentTaxon.name).text()
+        //const taxon = $('<p>').html(currentTaxon.formattedName).text()
+        //const taxon = currentTaxon.formattedName
+        const title = getCitation(currentTaxon, false, true)
         //addMetaTags('title', d[0].taxonName + ' in BSBI Online Plant Atlas 2020', true)
-        addMetaTags('title', taxon + ' in BSBI Online Plant Atlas 2020', true)
+        addMetaTags('title', title, true)
         addMetaTags('url', location.origin + '/atlas/' + currentTaxon.identifier, true)
       })
   }

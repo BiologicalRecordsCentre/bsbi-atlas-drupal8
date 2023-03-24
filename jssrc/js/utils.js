@@ -49,16 +49,65 @@ export function getCookie(cname) {
   return ""
 }
 
-export function getCitation(currentTaxon, forImageDownload) {
+export function getCitation(currentTaxon, forImageDownload, titleOnly) {
 
-  //const taxon =  currentTaxon.shortName.replace(/ x /g, ' × ')
-  //const taxon = $('<p>').html(currentTaxon.name).text()
-  const taxon = $('<p>').html(currentTaxon.formattedName).text()
+  // Extract taxon name and authority from formatted HTML
+
+  // Make a jQuery object from formattedname
+  const $taxonNameAndAuthority = $('<div>')
+  $taxonNameAndAuthority.html(currentTaxon.formattedName)
+
+  // Remove class taxon-qualifier from any tags
+  //$taxonNameAndAuthority.find('.taxon-qualifier').removeAttr('class')
+
+  // Get the taxon qualifier html
+  const taxonQualifierLatin = $taxonNameAndAuthority.find('b.taxon-qualifier').find('i.latin').html()
+  let taxonQualifier = $taxonNameAndAuthority.find('b.taxon-qualifier').html()
+  
+  // Get the taxon authority html
+  let taxonAuthority = $taxonNameAndAuthority.find('span.taxon-authority').html()
+
+  // Get the taxon name html
+  $taxonNameAndAuthority.find('b.taxon-qualifier').remove()
+  $taxonNameAndAuthority.find('span.taxon-authority').remove()
+  // Get taxon name replacing any nobreak spaces with a space
+  let taxonName = $taxonNameAndAuthority.find('span.taxon').html().replace(/\u00a0/g, ' ').replace(/&nbsp;/g, ' ')
+
+  taxonName = taxonName ? taxonName.trim() : ''
+  taxonAuthority = taxonAuthority ? ` ${taxonAuthority.trim()}` : ''
+  taxonQualifier = taxonQualifier ? ` <b>${taxonQualifier.trim()}</b>` : ''
+
+  // Taxon names can be split into several i tag sections, e.g. hybrid. We use the % symbol here because it never
+  // occurs in the nameFormatted property.
+  const taxonNameImageSplit = taxonName.replace(/<i>/g, '%<i>').replace(/<\/i>/g, '</i>%').split('%').filter(t => t.length).map(t => {
+    if (t.startsWith('<i>')) {
+      return `i#${t.replace('<i>', '').replace('</i>', '')}`
+    } else {
+      return `n#${t}`
+    }
+  })
+
+  let taxonQualifierImage
+  if (taxonQualifierLatin) {
+    taxonQualifierImage = `I#${taxonQualifierLatin.trim()}`
+  } else {
+    taxonQualifierImage = taxonQualifier ? `${taxonQualifier.trim().replace('<b>', 'b#').replace('</b>', '')}` : ''
+  }
+  const taxonAuthorityImage = taxonAuthority ? `n#${taxonAuthority.trim()}` : ''
 
   if (forImageDownload) {
-    return `<i>${taxon.replace(/\s/g, '</i> <i>')}</i> in <i>BSBI</i> <i>Online</i> <i>Atlas</i> <i>2020</i>, eds P.A. Stroh, T. A. Humphrey, R.J. Burkmar, O.L. Pescott, D.B. Roy, & K.J. Walker. ${location.origin}/atlas/${currentTaxon.identifier} [Accessed ${new Date().toLocaleDateString('en-GB')}]`
+    return [
+      ...taxonNameImageSplit,
+      taxonQualifierImage,
+      taxonAuthorityImage,
+      'n#in',
+      'i#BSBI Online Plant Atlas 2020,',
+      `n#eds P.A. Stroh, T. A. Humphrey, R.J. Burkmar, O.L. Pescott, D.B. Roy, & K.J. Walker. ${location.origin}/atlas/${currentTaxon.identifier} [Accessed ${new Date().toLocaleDateString('en-GB')}]`
+    ]
+  } else if (titleOnly) {
+    return `${taxonName}${taxonQualifier}${taxonAuthority} in <i>BSBI Online Plant Atlas 2020</i>`
   } else {
-    return `<i>${taxon}</i> in <i>BSBI Online Plant Atlas 2020</i>, eds P.A. Stroh, T. A. Humphrey, R.J. Burkmar, O.L. Pescott, D.B. Roy, & K.J. Walker. ${location.origin}/atlas/${currentTaxon.identifier} [Accessed ${new Date().toLocaleDateString('en-GB')}]`
+    return `${taxonName}${taxonQualifier}${taxonAuthority} in <i>BSBI Online Plant Atlas 2020</i>, eds P.A. Stroh, T. A. Humphrey, R.J. Burkmar, O.L. Pescott, D.B. Roy, & K.J. Walker. ${location.origin}/atlas/${currentTaxon.identifier} [Accessed ${new Date().toLocaleDateString('en-GB')}]`
   }
 }
 

@@ -532,7 +532,8 @@ function mapImageButton($parent, i) {
   $button.text('Download image')
   $button.on('click', function(){
     const info = {
-      text: getCitation(currentTaxon, true),
+      text: '',
+      textFormatted: getCitation(currentTaxon, true),
       margin: 10,
       fontSize: 10,
       //img: `${ds.bsbi_atlas.dataRoot}combined-logos.png`

@@ -1137,7 +1137,7 @@
 
     switch (type) {
       case 'title':
-        $$9('head title').html(value);
+        $$9('head title').html($$9('<div>').html(value).text());
         addHeadTag("citation_title", value, update);
         addHeadTag("dc.title", value, update);
         addHeadTag("dcterms.title", value, update);
@@ -1234,15 +1234,53 @@
 
     return "";
   }
-  function getCitation(currentTaxon, forImageDownload) {
-    //const taxon =  currentTaxon.shortName.replace(/ x /g, ' × ')
-    //const taxon = $('<p>').html(currentTaxon.name).text()
-    var taxon = $$8('<p>').html(currentTaxon.formattedName).text();
+  function getCitation(currentTaxon, forImageDownload, titleOnly) {
+    // Extract taxon name and authority from formatted HTML
+    // Make a jQuery object from formattedname
+    var $taxonNameAndAuthority = $$8('<div>');
+    $taxonNameAndAuthority.html(currentTaxon.formattedName); // Remove class taxon-qualifier from any tags
+    //$taxonNameAndAuthority.find('.taxon-qualifier').removeAttr('class')
+    // Get the taxon qualifier html
+
+    var taxonQualifierLatin = $taxonNameAndAuthority.find('b.taxon-qualifier').find('i.latin').html();
+    var taxonQualifier = $taxonNameAndAuthority.find('b.taxon-qualifier').html(); // Get the taxon authority html
+
+    var taxonAuthority = $taxonNameAndAuthority.find('span.taxon-authority').html(); // Get the taxon name html
+
+    $taxonNameAndAuthority.find('b.taxon-qualifier').remove();
+    $taxonNameAndAuthority.find('span.taxon-authority').remove(); // Get taxon name replacing any nobreak spaces with a space
+
+    var taxonName = $taxonNameAndAuthority.find('span.taxon').html().replace(/\u00a0/g, ' ').replace(/&nbsp;/g, ' ');
+    taxonName = taxonName ? taxonName.trim() : '';
+    taxonAuthority = taxonAuthority ? " ".concat(taxonAuthority.trim()) : '';
+    taxonQualifier = taxonQualifier ? " <b>".concat(taxonQualifier.trim(), "</b>") : ''; // Taxon names can be split into several i tag sections, e.g. hybrid. We use the % symbol here because it never
+    // occurs in the nameFormatted property.
+
+    var taxonNameImageSplit = taxonName.replace(/<i>/g, '%<i>').replace(/<\/i>/g, '</i>%').split('%').filter(function (t) {
+      return t.length;
+    }).map(function (t) {
+      if (t.startsWith('<i>')) {
+        return "i#".concat(t.replace('<i>', '').replace('</i>', ''));
+      } else {
+        return "n#".concat(t);
+      }
+    });
+    var taxonQualifierImage;
+
+    if (taxonQualifierLatin) {
+      taxonQualifierImage = "I#".concat(taxonQualifierLatin.trim());
+    } else {
+      taxonQualifierImage = taxonQualifier ? "".concat(taxonQualifier.trim().replace('<b>', 'b#').replace('</b>', '')) : '';
+    }
+
+    var taxonAuthorityImage = taxonAuthority ? "n#".concat(taxonAuthority.trim()) : '';
 
     if (forImageDownload) {
-      return "<i>".concat(taxon.replace(/\s/g, '</i> <i>'), "</i> in <i>BSBI</i> <i>Online</i> <i>Atlas</i> <i>2020</i>, eds P.A. Stroh, T. A. Humphrey, R.J. Burkmar, O.L. Pescott, D.B. Roy, & K.J. Walker. ").concat(location.origin, "/atlas/").concat(currentTaxon.identifier, " [Accessed ").concat(new Date().toLocaleDateString('en-GB'), "]");
+      return [].concat(_toConsumableArray(taxonNameImageSplit), [taxonQualifierImage, taxonAuthorityImage, 'n#in', 'i#BSBI Online Plant Atlas 2020,', "n#eds P.A. Stroh, T. A. Humphrey, R.J. Burkmar, O.L. Pescott, D.B. Roy, & K.J. Walker. ".concat(location.origin, "/atlas/").concat(currentTaxon.identifier, " [Accessed ").concat(new Date().toLocaleDateString('en-GB'), "]")]);
+    } else if (titleOnly) {
+      return "".concat(taxonName).concat(taxonQualifier).concat(taxonAuthority, " in <i>BSBI Online Plant Atlas 2020</i>");
     } else {
-      return "<i>".concat(taxon, "</i> in <i>BSBI Online Plant Atlas 2020</i>, eds P.A. Stroh, T. A. Humphrey, R.J. Burkmar, O.L. Pescott, D.B. Roy, & K.J. Walker. ").concat(location.origin, "/atlas/").concat(currentTaxon.identifier, " [Accessed ").concat(new Date().toLocaleDateString('en-GB'), "]");
+      return "".concat(taxonName).concat(taxonQualifier).concat(taxonAuthority, " in <i>BSBI Online Plant Atlas 2020</i>, eds P.A. Stroh, T. A. Humphrey, R.J. Burkmar, O.L. Pescott, D.B. Roy, & K.J. Walker. ").concat(location.origin, "/atlas/").concat(currentTaxon.identifier, " [Accessed ").concat(new Date().toLocaleDateString('en-GB'), "]");
     }
   }
   function addSvgAccessibility(id, subsel, title, desc) {
@@ -3371,7 +3409,8 @@
     $button.text('Download image');
     $button.on('click', function () {
       var info = {
-        text: getCitation(currentTaxon$1, true),
+        text: '',
+        textFormatted: getCitation(currentTaxon$1, true),
         margin: 10,
         fontSize: 10 //img: `${ds.bsbi_atlas.dataRoot}combined-logos.png`
 
@@ -6401,10 +6440,12 @@
         $('#bsbi-citation-copy-html').click(function () {
           copyToClipboard($('#bsbi-citation-text').html());
         }); // Update meta tags
+        //const taxon = $('<p>').html(currentTaxon.formattedName).text()
+        //const taxon = currentTaxon.formattedName
 
-        var taxon = $('<p>').html(currentTaxon.name).text(); //addMetaTags('title', d[0].taxonName + ' in BSBI Online Plant Atlas 2020', true)
+        var title = getCitation(currentTaxon, false, true); //addMetaTags('title', d[0].taxonName + ' in BSBI Online Plant Atlas 2020', true)
 
-        addMetaTags('title', taxon + ' in BSBI Online Plant Atlas 2020', true);
+        addMetaTags('title', title, true);
         addMetaTags('url', location.origin + '/atlas/' + currentTaxon.identifier, true);
       });
     }

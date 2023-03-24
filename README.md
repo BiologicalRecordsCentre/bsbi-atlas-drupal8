@@ -8,10 +8,10 @@ The mapping and charting elements of the Plant Atlas are provided by the BRC Atl
 #### Dependencies
 This module has a dependency on the BRC Visualise Drupal module (https://github.com/BiologicalRecordsCentre/brc-vis-drupal). The BRC Visualise Drupal module packages the BRC Atlas Javascript library and the BRC Charts Javascript library into a Drupal module.
 
-The BSBI Plant Atlas 2020 uses the Bootstrap 3 library to create number of GUI elements. This library is not packaged in the module as it is assumed that the website will use the a Bootstrap 2 theme.
+The BSBI Plant Atlas 2020 uses the Bootstrap 3 library to create number of GUI elements. This library is not packaged in the module as it is assumed that the website will use the a Bootstrap 3 theme.
 
 The taxon selector is provided by the BSBI Taxon Picker Javascript library: https://github.com/BSBI/Taxonpicker. A compiled distribution of this code is supplied with the BSBI Atlas Drupal module.
 
 The BSBI Plant Atlas 2020 is driven by BSBI data extracted from the BSBI's database as static CSV files for this project. They are not included in this repository.
 
-The image gallery on BSBI Plant Atlas 2020 is provided by the LightGallery opensource library https://www.lightgalleryjs.com/ which is packaged with the module.
+The image gallery on BSBI Plant Atlas 2020 is provided by the LightGallery opensource library https://www.lightgalleryjs.com/ which is packaged with the module. The images themselves are hosted on a BSBI server.

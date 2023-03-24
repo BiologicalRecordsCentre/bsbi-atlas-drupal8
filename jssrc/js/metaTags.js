@@ -27,7 +27,7 @@ export function addMetaTags(type, value, update) {
   // http://div.div1.com.au/div-thoughts/div-commentaries/66-div-commentary-metadata
   switch(type) {
     case 'title':
-      $('head title').html(value)
+      $('head title').html($('<div>').html(value).text())
       addHeadTag("citation_title", value, update)
       addHeadTag("dc.title", value, update)
       addHeadTag("dcterms.title", value, update)
