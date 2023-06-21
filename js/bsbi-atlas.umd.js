@@ -199,7 +199,7 @@
     throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
   }
 
-  var pcache = '20230222-2';
+  var pcache = '20230222-3';
 
   // access structure. All the data access functions
   // are members of this structure.
@@ -2779,7 +2779,7 @@
     $td = $$5('<td>').text('Wales Red List (2008)').appendTo($tr);
     $td = $$5('<td id="bsbi-conservation-threat-wa">').appendTo($tr);
     $td.css('text-align', 'center');
-    $td = $$5('<td>').appendTo($tr).append(genLink('https://www.plantlife.org.uk/uk/our-work/publications/vascular-plant-red-data-list-wales'));
+    $td = $$5('<td>').appendTo($tr).append(genLink('https://www.plantlife.org.uk/wp-content/uploads/2023/04/A-Vascular-Plant-Red-Data-List-for-Wales.pdf'));
     $tr = $$5('<tr>').appendTo($table);
     $td = $$5('<td>').text('Ireland Red List (2015)').appendTo($tr);
     $td = $$5('<td id="bsbi-conservation-threat-ir">').appendTo($tr);

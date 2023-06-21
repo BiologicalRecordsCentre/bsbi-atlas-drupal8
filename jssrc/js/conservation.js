@@ -43,7 +43,7 @@ export function createConservation(sel) {
   $td = $('<td>').text('Wales Red List (2008)').appendTo($tr)
   $td = $('<td id="bsbi-conservation-threat-wa">').appendTo($tr)
   $td.css('text-align', 'center')
-  $td = $('<td>').appendTo($tr).append(genLink('https://www.plantlife.org.uk/uk/our-work/publications/vascular-plant-red-data-list-wales'))
+  $td = $('<td>').appendTo($tr).append(genLink('https://www.plantlife.org.uk/wp-content/uploads/2023/04/A-Vascular-Plant-Red-Data-List-for-Wales.pdf'))
   $tr = $('<tr>').appendTo($table)
   $td = $('<td>').text('Ireland Red List (2015)').appendTo($tr)
   $td = $('<td id="bsbi-conservation-threat-ir">').appendTo($tr)
@@ -107,7 +107,7 @@ export function createConservation(sel) {
 }
 
 export function changeConservation(taxon) {
-  
+
   $('#bsbi-conservation-rarity-gb').text(taxon['csRareScarceGb2020'] ? taxon['csRareScarceGb2020'] : '-')
   $('#bsbi-conservation-rarity-ir').text(taxon['csRareScarceIr2020'] ? taxon['csRareScarceIr2020'] : '-')
 
