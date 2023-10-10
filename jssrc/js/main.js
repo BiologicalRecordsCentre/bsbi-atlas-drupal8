@@ -1,7 +1,7 @@
 import * as d3 from 'd3'
 import { bsbiDataAccess } from './dataAccessAtlas'
 import { addMetaTags } from './metaTags'
-import { createEcology, changeEcology, createPhenology, changePhenology, createPhenologyControls } from './ecology'
+import { createEcology, changeEcology, createPhenology, changePhenology, createPhenologyControls, createAltLatControls } from './ecology'
 import { createTrends, changeTrends, createTrendControls, setTrendsAggHtml, encodeTrendExclusion } from './trends'
 import { createConservation, changeConservation } from './conservation'
 import { createGallery } from './gallery'
@@ -10,7 +10,7 @@ import { mapSetCurrentTaxon, createMaps, changeMap, createMapControls, setContro
 import { downloadPage } from './download'
 import { updateTrendSummary2, trendSummary2, trendSave } from './trendSummary'
 import { trendExclusion } from './trends'
-import { pcache } from './gen'
+import { pcache } from './utils'
 import { TaxonPickerField, Taxon } from 'taxonpicker'
 import taxa from './atlasnames.json'
 
@@ -20,6 +20,7 @@ const ds = drupalSettings // eslint-disable-line no-undef
 //let develSummaryTrendColour = 'rgb(0,255,255)'
 
 export function main() {
+
 
   let taxaList = []
   const currentTaxon = {
@@ -43,12 +44,12 @@ export function main() {
     currentTaxon[k] = null
   })
   let taxonSelected // Function that will be set later
-  
+
   mapSetCurrentTaxon(currentTaxon)
 
   $(document).ready(function () {
 
-    addEventListener('popstate', event => { 
+    addEventListener('popstate', event => {
       //console.log('popstate', event.state.identifier)
       if (event.state && event.state.identifier && taxonSelected) {
         taxonSelected(event.state.identifier, true)
@@ -156,6 +157,7 @@ export function main() {
     // Other inits
     $('.bsbi-atlas-trend-controls').hide()
     $('.bsbi-atlas-phenology-controls').hide()
+    $('.bsbi-atlas-altlat-controls').hide()
 
     // Make the section tabs
     const $ul = $('<ul class="nav nav-tabs"></ul>').appendTo($('#bsbi-atlas-gui'))
@@ -184,7 +186,7 @@ export function main() {
     $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
 
       const target = $(e.target).attr("href") // activated tab
-      
+
       // Show/hide the map controls appropriately
       if (target === '#bsbi-atlas-section-summary') {
         $('.bsbi-atlas-map-controls').show()
@@ -206,8 +208,11 @@ export function main() {
       }
 
       if (target === '#bsbi-atlas-section-ecology') {
+        $('.bsbi-atlas-altlat-controls').show()
         // Regenerate graphics
         changeEcologyTab()
+      } else {
+        $('.bsbi-atlas-altlat-controls').hide()
       }
 
       if (target === '#bsbi-atlas-section-conservation') {
@@ -231,10 +236,11 @@ export function main() {
 
   function taxonSelectors() {
 
-    const selectorIds = [] 
+    const selectorIds = []
     const taxonPickers = []
     const taxaListRef = []
     const defaultDdbid = null
+    taxonSelectors = []
 
     $('.bsbi-atlas-taxon-selector').each(function() {
       selectorIds.push($(this).parent().attr('data-sel-id'))
@@ -290,6 +296,8 @@ export function main() {
 
       if (ddbid) {
 
+        sessionStorage.setItem('ddbid', ddbid)
+
         const matchTaxon = taxaListRef.find(t => t.value === ddbid)
         // Save ddbid to cookie
         setCookie('ddbid', ddbid, 30)
@@ -326,6 +334,13 @@ export function main() {
         // to be done once caption file is read. Do from changeCaption instead
         //changeConservationTab()
         createGallery('bsbi-gallery', currentTaxon.identifier, currentTaxon.shortName)
+
+        // Reset taxonPicker value if not equal to ddbid which
+        // which happen if back or forward button used.
+        taxonPickers.forEach((taxonPicker) => {
+          if (taxonPicker.value.taxonId !== ddbid)
+          taxonPicker.setTaxonFromId(ddbid)
+        })
       }
     }
 
@@ -413,10 +428,13 @@ export function main() {
       updateBsbiDataAccess('sensitiveTetrad', sensitiveTetrad)
 
       // If identifier passed in URL, set the value and add to history
+      // else get from sessionStorage if set
       // else get from cookie if set
       let ddbid
       if (ds.bsbi_atlas.identifier) {
         ddbid = ds.bsbi_atlas.identifier
+      } else if (sessionStorage.getItem('ddbid')) {
+        ddbid = sessionStorage.getItem('ddbid')
       } else if (getCookie('ddbid')) {
         ddbid = getCookie('ddbid')
       } else {
@@ -443,7 +461,7 @@ export function main() {
     // $sel.addClass('atlas-taxon-selector-sel')
 
     // // Next bit is need to resize the control to give space for link button when
-    // // control panel is very compressed. In this context, width seems to be a 
+    // // control panel is very compressed. In this context, width seems to be a
     // // minimum width.
     // $sel.on('rendered.bs.select', function () {
     //   $('.dropdown.bootstrap-select.atlas-taxon-selector-sel').css("width", "100px")
@@ -531,7 +549,7 @@ export function main() {
 
     //     //console.log(e, clickedIndex, newValue, oldValue)
     //     //console.log('Identifier:', $(this).val())
-        
+
     //     // Because more than one selector can be present on page
     //     // (one for mobile and one for larger devices), if this rountine
     //     // is reached by $sel.selectpicker() then it will be invoked more
@@ -570,7 +588,7 @@ export function main() {
     //       changeEcologyTab()
     //       changeTrendsTab()
     //       // Don't call changeConservationTab from here because it needs
-    //       // to be done once caption file is read. Do from changeCaption 
+    //       // to be done once caption file is read. Do from changeCaption
     //       // instead
     //       //changeConservationTab()
     //       createGallery('bsbi-gallery', currentTaxon.identifier, currentTaxon.shortName)
@@ -582,7 +600,7 @@ export function main() {
     //   // if (ds.bsbi_atlas.identifier) {
     //   //   $sel.selectpicker('val', ds.bsbi_atlas.identifier)
     //   //   window.history.pushState({identifier: ds.bsbi_atlas.identifier}, `BSBI Atlas - ${ds.bsbi_atlas.identifier}`, `/atlas/${currentTaxon.identifier}`)
-    //   // } 
+    //   // }
     //   let ddbid
     //   if (ds.bsbi_atlas.identifier) {
     //     ddbid = ds.bsbi_atlas.identifier
@@ -593,7 +611,7 @@ export function main() {
     //     $sel.selectpicker('val', ddbid)
     //     window.history.pushState({identifier: ddbid}, `BSBI Atlas - ${ddbid}`, `/atlas/${currentTaxon.identifier}`)
     //   }
-  
+
     //   // Get list of hybrid taxa which can be mapped with their parents
     //   const hybridTaxa = taxaList.filter(t => t['hybridParentIds'].split(';').length === 2).map(t => {
 
@@ -667,7 +685,7 @@ export function main() {
     $taxon.css('font-size', '1.3em')
     $right.append('<hr/>')
     $right.append('<div id="bsbi-caption"></div>')
-    
+
     createMaps("#bsbiMapDiv")
     createMapControls('.bsbi-atlas-map-controls')
     setControlState()
@@ -701,6 +719,7 @@ export function main() {
     $sect.append('<div id="bsbi-altitude"></div>')
 
     createEcology("#bsbi-altitude")
+    createAltLatControls('.bsbi-atlas-altlat-controls')
   }
 
   function sectionGallery(id) {
@@ -734,11 +753,11 @@ export function main() {
   }
 
   function changePhenologyTab() {
-    changePhenology(ds.bsbi_atlas.dataRoot, currentTaxon.identifier, currentTaxon.shortName)
+    changePhenology(ds.bsbi_atlas.dataRoot, currentTaxon)
   }
 
   function changeEcologyTab() {
-    changeEcology(ds.bsbi_atlas.dataRoot, currentTaxon.identifier, currentTaxon.shortName)
+    changeEcology(ds.bsbi_atlas.dataRoot, currentTaxon)
   }
 
   function changeConservationTab() {
@@ -766,7 +785,7 @@ export function main() {
     const trendIrShort = `${trendRootShort}/Ireland/${stIdentifier.replace(/\./g, "_")}.csv?prevent-cache=${pcache}`
     const trendCountsLong = `${trendCountRoot}/${ltIdentifier.replace(/\./g, "_")}.csv?prevent-cache=${pcache}`
     const trendCountsShort = `${trendCountRoot}/${stIdentifier.replace(/\./g, "_")}.csv?prevent-cache=${pcache}`
-    
+
     const $trends = $('#trend-summaries')
     $trends.html('')
     //$trends.css('font-weight', 'bold')
@@ -791,7 +810,7 @@ export function main() {
     if (currentTaxon.longTrendAgg && !longExclude) {
       $('<div id="trend-sum-ir-long-note" style="font-size: 0.8em">').appendTo($trends)
     }
-    
+
     const $trendHeaderShort = $('<div>').text('Post-1987 effort-adjusted 10 km trends').appendTo($trends)
     $trendHeaderShort.css('margin', '0.4em 0 0.2em 0')
 
@@ -806,13 +825,13 @@ export function main() {
     // Set the SVG accessibility
     addSvgAccessibility('trend-sum-gb-short', '>svg', 'British short-term trend summary', `Short-term trend summary in Britain for ${currentTaxon.shortName}`)
     addSvgAccessibility('trend-sum-ir-short', '>svg', 'Irish short-term trend summary', `Short-term trend summary in Ireland for ${currentTaxon.shortName}`)
-    
+
 
     const shortExclude = trendExclusion(currentTaxon.trendExclude, 'br', 'short') && trendExclusion(currentTaxon.trendExclude, 'ir', 'short')
     if (currentTaxon.shortTrendAgg && !shortExclude) {
       $('<div id="trend-sum-ir-short-note" style="font-size: 0.8em">').appendTo($trends)
     }
-    
+
     const pTrendGbLong = d3.csv(trendGbLong)
     const pTrendIrLong = d3.csv(trendIrLong)
     const pTrendGbShort = d3.csv(trendGbShort)
@@ -828,18 +847,18 @@ export function main() {
       const dTrendCountsLong=d[4]
       const dTrendCountsShort=d[5]
 
-      if (dTrendCountsLong.status === 'fulfilled' && 
-          Number(dTrendCountsLong.value[0].GbLong) >= 16 && 
-          dTrendGbLong.status === 'fulfilled' && 
+      if (dTrendCountsLong.status === 'fulfilled' &&
+          Number(dTrendCountsLong.value[0].GbLong) >= 16 &&
+          dTrendGbLong.status === 'fulfilled' &&
           !trendExclusion(currentTaxon.trendExclude, 'br', 'long')) {
         updateTrendSummary2('trend-sum-gb-long', dTrendGbLong.value[0])
         setTrendsAggHtml(currentTaxon, 'long', $('#trend-sum-ir-long-note')) // Will only update if div created above
       } else {
         updateTrendSummary2('trend-sum-gb-long', null)
       }
-      if (dTrendCountsLong.status === 'fulfilled' && 
-          Number(dTrendCountsLong.value[0].IrLong) >= 7 && 
-          dTrendIrLong.status === 'fulfilled' && 
+      if (dTrendCountsLong.status === 'fulfilled' &&
+          Number(dTrendCountsLong.value[0].IrLong) >= 7 &&
+          dTrendIrLong.status === 'fulfilled' &&
           !trendExclusion(currentTaxon.trendExclude, 'ir', 'long')) {
         updateTrendSummary2('trend-sum-ir-long', dTrendIrLong.value[0])
         setTrendsAggHtml(currentTaxon, 'long', $('#trend-sum-ir-long-note')) // Will only update if div created above
@@ -848,18 +867,18 @@ export function main() {
       }
 
 
-      if (dTrendCountsShort.status === 'fulfilled' && 
-          Number(dTrendCountsShort.value[0].GbShort) >= 16 && 
-          dTrendGbShort.status === 'fulfilled' && 
+      if (dTrendCountsShort.status === 'fulfilled' &&
+          Number(dTrendCountsShort.value[0].GbShort) >= 16 &&
+          dTrendGbShort.status === 'fulfilled' &&
           !trendExclusion(currentTaxon.trendExclude, 'br', 'short')) {
         updateTrendSummary2('trend-sum-gb-short', dTrendGbShort.value[0])
         setTrendsAggHtml(currentTaxon, 'short', $('#trend-sum-ir-short-note')) // Will only update if div created above
       } else {
         updateTrendSummary2('trend-sum-gb-short', null)
       }
-      if (dTrendCountsShort.status === 'fulfilled' && 
-          Number(dTrendCountsShort.value[0].IrShort) >= 7 && 
-          dTrendIrShort.status === 'fulfilled' && 
+      if (dTrendCountsShort.status === 'fulfilled' &&
+          Number(dTrendCountsShort.value[0].IrShort) >= 7 &&
+          dTrendIrShort.status === 'fulfilled' &&
           !trendExclusion(currentTaxon.trendExclude, 'ir', 'short')) {
         updateTrendSummary2('trend-sum-ir-short', dTrendIrShort.value[0])
         setTrendsAggHtml(currentTaxon, 'short', $('#trend-sum-ir-short-note')) // Will only update if div created above
@@ -890,7 +909,7 @@ export function main() {
       .then(function(d) {
 
         //console.log('caption file', d)
-        
+
         // Set taxon name
         const tName = getFormattedTaxonName(d[0].vernacular, d[0].formattedName)
         $('.bsbi-selected-taxon-name').html(`${tName}`)
@@ -940,7 +959,7 @@ export function main() {
         //   })
         // }
 
-        // Taxa covered 
+        // Taxa covered
         if (d[0].captionedChildSummaries) {
           $caption.append('<div class="sect-subhead">Taxa covered <span id="bsbi-taxa-covered-toggle">[show]</span></div>')
           const $divChildSummaries = $('<div>').appendTo($caption)
@@ -962,7 +981,7 @@ export function main() {
             }
           })
         }
-        
+
         // Trends
         if (d[0].atlasSpeciesTrends) {
           $caption.append('<div class="sect-subhead">Trends</div>')
@@ -995,7 +1014,7 @@ export function main() {
         //   const $li=$('<li>').appendTo($ulStatus)
         //   $li.html(`${k}: ${d[0][k]}`)
         // })
-        
+
         // Parent taxa (for hybrids)
         if (d[0].hybridParents) {
 

@@ -39,8 +39,8 @@
     display: none;
   }
 
-  #bsbi-atlas-section-summary .bsbi-selected-taxon-name { 
-    page-break-before: always; 
+  #bsbi-atlas-section-summary .bsbi-selected-taxon-name {
+    page-break-before: always;
   }
   a[href]:after {
     content: none !important;
@@ -55,6 +55,10 @@
   }
 
   .bsbi-atlas-phenology-controls {
+    display: none !important;
+  }
+
+  .bsbi-atlas-altlat-controls {
     display: none !important;
   }
 

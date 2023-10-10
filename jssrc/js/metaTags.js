@@ -18,9 +18,9 @@ export function addMetaTags(type, value, update) {
 
   const addHeadTag = (name, content, update) => {
     if (update) {
-      $('meta[name="' + name + '"').attr('content', content) 
+      $('meta[name="' + name + '"]').attr('content', content)
     } else {
-      $('head').append('<meta name="' + name + '" content="' + content + '" />') 
+      $('head').append('<meta name="' + name + '" content="' + content + '" />')
     }
   }
 

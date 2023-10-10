@@ -199,7 +199,203 @@
     throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
   }
 
+  var $$9 = jQuery; // eslint-disable-line no-undef
+
   var pcache = '20230222-3';
+  function copyToClipboard(textToCopy) {
+    // https://stackoverflow.com/questions/51805395/navigator-clipboard-is-undefined
+    // navigator clipboard api needs a secure context (https)
+    // return a promise
+    if (navigator.clipboard && window.isSecureContext) {
+      // navigator clipboard api method'
+      return navigator.clipboard.writeText(textToCopy);
+    } else {
+      // text area method
+      var textArea = document.createElement("textarea");
+      textArea.value = textToCopy; // make the textarea out of viewport
+
+      textArea.style.position = "fixed";
+      textArea.style.left = "-999999px";
+      textArea.style.top = "-999999px";
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      return new Promise(function (res, rej) {
+        // here the magic happens
+        document.execCommand('copy') ? res() : rej();
+        textArea.remove();
+      });
+    }
+  }
+  function setCookie(cname, cvalue, exdays) {
+    var d = new Date();
+    d.setTime(d.getTime() + exdays * 24 * 60 * 60 * 1000);
+    var expires = "expires=" + d.toUTCString();
+    document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+  }
+  function getCookie(cname) {
+    var name = cname + "=";
+    var decodedCookie = decodeURIComponent(document.cookie);
+    var ca = decodedCookie.split(';');
+
+    for (var i = 0; i < ca.length; i++) {
+      var c = ca[i];
+
+      while (c.charAt(0) == ' ') {
+        c = c.substring(1);
+      }
+
+      if (c.indexOf(name) == 0) {
+        return c.substring(name.length, c.length);
+      }
+    }
+
+    return "";
+  }
+  function getCitation(currentTaxon, forImageDownload, titleOnly) {
+    // Extract taxon name and authority from formatted HTML
+    // Make a jQuery object from formattedname
+    var $taxonNameAndAuthority = $$9('<div>');
+    $taxonNameAndAuthority.html(currentTaxon.formattedName); // Remove class taxon-qualifier from any tags
+    //$taxonNameAndAuthority.find('.taxon-qualifier').removeAttr('class')
+    // Get the taxon qualifier html
+
+    var taxonQualifierLatin = $taxonNameAndAuthority.find('b.taxon-qualifier').find('i.latin').html();
+    var taxonQualifier = $taxonNameAndAuthority.find('b.taxon-qualifier').html(); // Get the taxon authority html
+
+    var taxonAuthority = $taxonNameAndAuthority.find('span.taxon-authority').html(); // Get the taxon name html
+
+    $taxonNameAndAuthority.find('b.taxon-qualifier').remove();
+    $taxonNameAndAuthority.find('span.taxon-authority').remove(); // Get taxon name replacing any nobreak spaces with a space
+
+    var taxonName = $taxonNameAndAuthority.find('span.taxon').html().replace(/\u00a0/g, ' ').replace(/&nbsp;/g, ' ');
+    taxonName = taxonName ? taxonName.trim() : '';
+    taxonAuthority = taxonAuthority ? " ".concat(taxonAuthority.trim()) : '';
+    taxonQualifier = taxonQualifier ? " <b>".concat(taxonQualifier.trim(), "</b>") : ''; // Taxon names can be split into several i tag sections, e.g. hybrid. We use the % symbol here because it never
+    // occurs in the nameFormatted property.
+
+    var taxonNameImageSplit = taxonName.replace(/<i>/g, '%<i>').replace(/<\/i>/g, '</i>%').split('%').filter(function (t) {
+      return t.length;
+    }).map(function (t) {
+      if (t.startsWith('<i>')) {
+        return "i#".concat(t.replace('<i>', '').replace('</i>', ''));
+      } else {
+        return "n#".concat(t);
+      }
+    });
+    var taxonQualifierImage;
+
+    if (taxonQualifierLatin) {
+      taxonQualifierImage = "I#".concat(taxonQualifierLatin.trim());
+    } else {
+      taxonQualifierImage = taxonQualifier ? "".concat(taxonQualifier.trim().replace('<b>', 'b#').replace('</b>', '')) : '';
+    }
+
+    var taxonAuthorityImage = taxonAuthority ? "n#".concat(taxonAuthority.trim()) : '';
+
+    if (forImageDownload) {
+      return [].concat(_toConsumableArray(taxonNameImageSplit), [taxonQualifierImage, taxonAuthorityImage, 'n#in', 'i#BSBI Online Plant Atlas 2020,', "n#eds P.A. Stroh, T. A. Humphrey, R.J. Burkmar, O.L. Pescott, D.B. Roy, & K.J. Walker. ".concat(location.origin, "/atlas/").concat(currentTaxon.identifier, " [Accessed ").concat(new Date().toLocaleDateString('en-GB'), "]")]);
+    } else if (titleOnly) {
+      return "".concat(taxonName).concat(taxonQualifier).concat(taxonAuthority, " in <i>BSBI Online Plant Atlas 2020</i>");
+    } else {
+      return "".concat(taxonName).concat(taxonQualifier).concat(taxonAuthority, " in <i>BSBI Online Plant Atlas 2020</i>, eds P.A. Stroh, T. A. Humphrey, R.J. Burkmar, O.L. Pescott, D.B. Roy, & K.J. Walker. ").concat(location.origin, "/atlas/").concat(currentTaxon.identifier, " [Accessed ").concat(new Date().toLocaleDateString('en-GB'), "]");
+    }
+  }
+  function addSvgAccessibility(id, subsel, title, desc) {
+    var $svg = $$9("#".concat(id).concat(subsel));
+    var $title = $$9("#".concat(id).concat(subsel, " > title"));
+    var $desc = $$9("#".concat(id).concat(subsel, " > desc"));
+
+    if ($title.length) {
+      $title.text(title);
+    } else {
+      $$9('<title>').attr('id', "".concat(id, "-svg-title")).text(title).appendTo($svg);
+    }
+
+    if ($desc.length) {
+      $desc.text(desc);
+    } else {
+      $$9('<desc>').attr('id', "".concat(id, "-svg-desc")).text(desc).appendTo($svg);
+    }
+
+    $svg.attr('aria-labelledby', "".concat(id, "-svg-title ").concat(id, "-svg-desc"));
+  }
+  function downloadImageButton(id, $parent, downloadCallback, types) {
+    $parent.each(function (i) {
+      // We loop through the selection so that we can use the
+      // index value to differentiate the equivalent controls
+      // from different blocks. This is vital for radio controls
+      // otherwise value can only be selected in one block and
+      // therefore initialisation may be wrong.
+      var $div = $$9('<div>').appendTo($$9(this));
+      downloadImageButton_i(id, $div, downloadCallback, types, i);
+    });
+  }
+  function downloadImageButton_i(id, $parent, downloadCallback, types, i) {
+    var imageType = 'png';
+    var chartType = null; // Overall control container
+
+    var $container = $$9('<div>').appendTo($parent);
+    var $hr = $$9('<hr>').appendTo($container);
+    $hr.css('margin', '2em 0 1em 0'); // Image type selector if types array is not emtpy
+
+    if (types.length > 0) {
+      chartType = types[0].val;
+      var $sel = $$9('<select>').appendTo($container);
+      $sel.addClass('selectpicker');
+      $sel.attr('data-width', '100%');
+      $sel.on('changed.bs.select', function () {
+        chartType = $$9(this).val();
+      });
+      types.forEach(function (b) {
+        var $opt = b.selected ? $$9('<option>') : $$9('<option>');
+        $opt.attr('value', b.val);
+        $opt.html(b.caption).appendTo($sel);
+      });
+      $sel.val(chartType); // This seems to be necessary if interface regenerated,
+      // e.g. changing from tabbed to non-tabbed display.
+
+      $sel.selectpicker();
+    } // Download button
+
+
+    var $button = $$9('<button>').appendTo($container);
+    $button.addClass('btn btn-default');
+    $button.text('Download');
+    $button.on('click', function () {
+      //staticMap.saveMap(imageType === 'svg', info, 'atlas-image')
+      downloadCallback(imageType === 'svg', chartType);
+    }); // Image type radion button
+
+    makeRadio('PNG', 'png', true);
+    makeRadio('SVG', 'svg', false);
+
+    function makeRadio(label, val, checked) {
+      var $div = $$9('<div>').appendTo($container);
+      $div.css('display', 'inline-block');
+      $div.css('margin-left', '0.5em');
+      $div.attr('class', 'radio');
+      var $label = $$9('<label>').appendTo($div);
+      $label.css('padding-left', '0');
+      var $radio = $$9('<input>').appendTo($label);
+      var $span = $$9('<span>').appendTo($label);
+      $span.text(label);
+      $span.css('padding-left', '20px');
+      $radio.attr('type', 'radio');
+      $radio.attr('name', 'img-download-' + id + '-' + i);
+      $radio.attr('class', 'img-download-' + id + '-' + val);
+      $radio.attr('value', val);
+      $radio.css('margin-left', 0);
+
+      if (checked) {
+        $radio.prop('checked', true); //$('.img-download-' + id + '-' + val).prop('checked', true)
+      }
+
+      $radio.change(function () {
+        imageType = val;
+      });
+    }
+  }
 
   // access structure. All the data access functions
   // are members of this structure.
@@ -1124,20 +1320,20 @@
     });
   };
 
-  var $$9 = jQuery; // eslint-disable-line no-undef
+  var $$8 = jQuery; // eslint-disable-line no-undef
   function addMetaTags(type, value, update) {
     var addHeadTag = function addHeadTag(name, content, update) {
       if (update) {
-        $$9('meta[name="' + name + '"').attr('content', content);
+        $$8('meta[name="' + name + '"]').attr('content', content);
       } else {
-        $$9('head').append('<meta name="' + name + '" content="' + content + '" />');
+        $$8('head').append('<meta name="' + name + '" content="' + content + '" />');
       }
     }; // http://div.div1.com.au/div-thoughts/div-commentaries/66-div-commentary-metadata
 
 
     switch (type) {
       case 'title':
-        $$9('head title').html($$9('<div>').html(value).text());
+        $$8('head title').html($$8('<div>').html(value).text());
         addHeadTag("citation_title", value, update);
         addHeadTag("dc.title", value, update);
         addHeadTag("dcterms.title", value, update);
@@ -1182,131 +1378,11 @@
     }
   }
 
-  var $$8 = jQuery; // eslint-disable-line no-undef
-
-  function copyToClipboard(textToCopy) {
-    // https://stackoverflow.com/questions/51805395/navigator-clipboard-is-undefined
-    // navigator clipboard api needs a secure context (https)
-    // return a promise
-    if (navigator.clipboard && window.isSecureContext) {
-      // navigator clipboard api method'
-      return navigator.clipboard.writeText(textToCopy);
-    } else {
-      // text area method
-      var textArea = document.createElement("textarea");
-      textArea.value = textToCopy; // make the textarea out of viewport
-
-      textArea.style.position = "fixed";
-      textArea.style.left = "-999999px";
-      textArea.style.top = "-999999px";
-      document.body.appendChild(textArea);
-      textArea.focus();
-      textArea.select();
-      return new Promise(function (res, rej) {
-        // here the magic happens
-        document.execCommand('copy') ? res() : rej();
-        textArea.remove();
-      });
-    }
-  }
-  function setCookie(cname, cvalue, exdays) {
-    var d = new Date();
-    d.setTime(d.getTime() + exdays * 24 * 60 * 60 * 1000);
-    var expires = "expires=" + d.toUTCString();
-    document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
-  }
-  function getCookie(cname) {
-    var name = cname + "=";
-    var decodedCookie = decodeURIComponent(document.cookie);
-    var ca = decodedCookie.split(';');
-
-    for (var i = 0; i < ca.length; i++) {
-      var c = ca[i];
-
-      while (c.charAt(0) == ' ') {
-        c = c.substring(1);
-      }
-
-      if (c.indexOf(name) == 0) {
-        return c.substring(name.length, c.length);
-      }
-    }
-
-    return "";
-  }
-  function getCitation(currentTaxon, forImageDownload, titleOnly) {
-    // Extract taxon name and authority from formatted HTML
-    // Make a jQuery object from formattedname
-    var $taxonNameAndAuthority = $$8('<div>');
-    $taxonNameAndAuthority.html(currentTaxon.formattedName); // Remove class taxon-qualifier from any tags
-    //$taxonNameAndAuthority.find('.taxon-qualifier').removeAttr('class')
-    // Get the taxon qualifier html
-
-    var taxonQualifierLatin = $taxonNameAndAuthority.find('b.taxon-qualifier').find('i.latin').html();
-    var taxonQualifier = $taxonNameAndAuthority.find('b.taxon-qualifier').html(); // Get the taxon authority html
-
-    var taxonAuthority = $taxonNameAndAuthority.find('span.taxon-authority').html(); // Get the taxon name html
-
-    $taxonNameAndAuthority.find('b.taxon-qualifier').remove();
-    $taxonNameAndAuthority.find('span.taxon-authority').remove(); // Get taxon name replacing any nobreak spaces with a space
-
-    var taxonName = $taxonNameAndAuthority.find('span.taxon').html().replace(/\u00a0/g, ' ').replace(/&nbsp;/g, ' ');
-    taxonName = taxonName ? taxonName.trim() : '';
-    taxonAuthority = taxonAuthority ? " ".concat(taxonAuthority.trim()) : '';
-    taxonQualifier = taxonQualifier ? " <b>".concat(taxonQualifier.trim(), "</b>") : ''; // Taxon names can be split into several i tag sections, e.g. hybrid. We use the % symbol here because it never
-    // occurs in the nameFormatted property.
-
-    var taxonNameImageSplit = taxonName.replace(/<i>/g, '%<i>').replace(/<\/i>/g, '</i>%').split('%').filter(function (t) {
-      return t.length;
-    }).map(function (t) {
-      if (t.startsWith('<i>')) {
-        return "i#".concat(t.replace('<i>', '').replace('</i>', ''));
-      } else {
-        return "n#".concat(t);
-      }
-    });
-    var taxonQualifierImage;
-
-    if (taxonQualifierLatin) {
-      taxonQualifierImage = "I#".concat(taxonQualifierLatin.trim());
-    } else {
-      taxonQualifierImage = taxonQualifier ? "".concat(taxonQualifier.trim().replace('<b>', 'b#').replace('</b>', '')) : '';
-    }
-
-    var taxonAuthorityImage = taxonAuthority ? "n#".concat(taxonAuthority.trim()) : '';
-
-    if (forImageDownload) {
-      return [].concat(_toConsumableArray(taxonNameImageSplit), [taxonQualifierImage, taxonAuthorityImage, 'n#in', 'i#BSBI Online Plant Atlas 2020,', "n#eds P.A. Stroh, T. A. Humphrey, R.J. Burkmar, O.L. Pescott, D.B. Roy, & K.J. Walker. ".concat(location.origin, "/atlas/").concat(currentTaxon.identifier, " [Accessed ").concat(new Date().toLocaleDateString('en-GB'), "]")]);
-    } else if (titleOnly) {
-      return "".concat(taxonName).concat(taxonQualifier).concat(taxonAuthority, " in <i>BSBI Online Plant Atlas 2020</i>");
-    } else {
-      return "".concat(taxonName).concat(taxonQualifier).concat(taxonAuthority, " in <i>BSBI Online Plant Atlas 2020</i>, eds P.A. Stroh, T. A. Humphrey, R.J. Burkmar, O.L. Pescott, D.B. Roy, & K.J. Walker. ").concat(location.origin, "/atlas/").concat(currentTaxon.identifier, " [Accessed ").concat(new Date().toLocaleDateString('en-GB'), "]");
-    }
-  }
-  function addSvgAccessibility(id, subsel, title, desc) {
-    var $svg = $$8("#".concat(id).concat(subsel));
-    var $title = $$8("#".concat(id).concat(subsel, " > title"));
-    var $desc = $$8("#".concat(id).concat(subsel, " > desc"));
-
-    if ($title.length) {
-      $title.text(title);
-    } else {
-      $$8('<title>').attr('id', "".concat(id, "-svg-title")).text(title).appendTo($svg);
-    }
-
-    if ($desc.length) {
-      $desc.text(desc);
-    } else {
-      $$8('<desc>').attr('id', "".concat(id, "-svg-desc")).text(desc).appendTo($svg);
-    }
-
-    $svg.attr('aria-labelledby', "".concat(id, "-svg-title ").concat(id, "-svg-desc"));
-  }
-
   var $$7 = jQuery; // eslint-disable-line no-undef
 
   var phen1$1, phen2$1, phen3, altlat$1;
   var apparencyByLatData;
+  var currentTaxon$3;
   function createPhenology(sel) {
     var $phenFlexParent = $$7('<div>').appendTo($$7(sel)); //const $phenSource = $('<div>').appendTo($phenFlexLeft)
 
@@ -1317,9 +1393,9 @@
 
     $phenSource.css('margin-bottom', '0.8em');
     var $p1 = $$7('<p>').appendTo($$7(sel));
-    $p1.html("\n  <i>Apparency</i><br/>\n  This graphic combines the detectability and phenology of a species, together with recording intensity, \n  and illustrates the frequency with which a species was recorded on a daily basis between 2000 and 2019, \n  using data extracted from the BSBI database. These data were based on counts of unique taxon-tetrad \n  occurrences (aggregating over finer spatial scales) on Julian days averaged across all 20 years and \n  smoothed for presentation purposes. Days either side of New Year were excluded so that annual BSBI \n  New Year Plant Hunt data did not unduly influence the figures on the graphs. The graphic on the right \n  applies the same principle to latitudinal subdivisions (British data only).\n  ");
+    $p1.html("\n  <i>Apparency</i><br/>\n  This graphic combines the detectability and phenology of a species, together with recording intensity,\n  and illustrates the frequency with which a species was recorded on a daily basis between 2000 and 2019,\n  using data extracted from the BSBI database. These data were based on counts of unique taxon-tetrad\n  occurrences (aggregating over finer spatial scales) on Julian days averaged across all 20 years and\n  smoothed for presentation purposes. Days either side of New Year were excluded so that annual BSBI\n  New Year Plant Hunt data did not unduly influence the figures on the graphs. The graphic on the right\n  applies the same principle to latitudinal subdivisions (British data only).\n  ");
     var $p2 = $$7('<p>').appendTo($$7(sel));
-    $p2.html("\n  <i>Phenology</i><br/>\n  The ranges in flowering and leafing months are displayed below the apparency graph. Flowering months \n  are filled in as an orange bar, whilst leafing duration is shown in green. For non-flowering plants \n  (e.g. ferns, horsetails etc.), the \u201Cflowering\u201D bar is equivalent to the months when spore-bearing \n  structures are visible. The phenology of a species will not always correspond exactly with its apparency \n  curve due to its detectability when not in flower or leaf; see, for example, the plots of <i>Fraxinus \n  excelsior</i> or <i>Phragmites australis</i>. In addition, published sources for flowering and leafing may \n  differ from the apparency diagram due to the extended detectability of a species due to climate change.\n  ");
+    $p2.html("\n  <i>Phenology</i><br/>\n  The ranges in flowering and leafing months are displayed below the apparency graph. Flowering months\n  are filled in as an orange bar, whilst leafing duration is shown in green. For non-flowering plants\n  (e.g. ferns, horsetails etc.), the \u201Cflowering\u201D bar is equivalent to the months when spore-bearing\n  structures are visible. The phenology of a species will not always correspond exactly with its apparency\n  curve due to its detectability when not in flower or leaf; see, for example, the plots of <i>Fraxinus\n  excelsior</i> or <i>Phragmites australis</i>. In addition, published sources for flowering and leafing may\n  differ from the apparency diagram due to the extended detectability of a species due to climate change.\n  ");
     $phenFlexParent.attr('class', 'phenRow');
     var $phenFlexLeft = $$7('<div>').appendTo($phenFlexParent);
     $phenFlexLeft.attr('class', 'phenColumn');
@@ -1357,7 +1433,10 @@
       showLegend: false,
       interactivity: 'none',
       font: 'Arial',
-      monthFontSize: 11
+      monthFontSize: 11,
+      margin: {
+        left: 10
+      }
     });
     var $phenology = $$7('<div>').appendTo($phenFlexLeft);
     $phenology.attr('id', 'bsbi-phenology-chart').css('max-width', '400px');
@@ -1369,14 +1448,17 @@
       width: 400,
       height: 25,
       split: true,
-      headPad: 35,
-      chartPad: 35,
+      headPad: 10,
+      chartPad: 10,
       perRow: 1,
       expand: true,
       showTaxonLabel: false,
       interactivity: 'none',
       font: 'Arial',
-      monthFontSize: 11
+      monthFontSize: 11,
+      margin: {
+        left: 0
+      }
     });
     var $divp3 = $$7('<div>').appendTo($phenFlexRight);
     $divp3.css('position', 'relative');
@@ -1399,7 +1481,7 @@
       metrics: [],
       lines: ['white', 'white', '#dddddd', 'white', 'white', '#dddddd', 'white', 'white', '#dddddd', 'white', 'white', '#dddddd'],
       width: 400,
-      height: 410,
+      height: 420,
       spread: true,
       perRow: 1,
       expand: true,
@@ -1416,8 +1498,8 @@
       axisLabelFontSize: 12,
       font: 'Arial',
       monthFontSize: 12
-    }); //latPhenNormalizeCheckbox($phenFlexRight, phen3) 
-    //latPhenDataTypeDropdown($phenFlexRight) 
+    }); //latPhenNormalizeCheckbox($phenFlexRight, phen3)
+    //latPhenDataTypeDropdown($phenFlexRight)
     // Website style is overriding some charts style, so reset it
 
     $$7('.brc-chart-phen1').css('overflow', 'visible'); // Chart line width - not currently a chart option
@@ -1438,16 +1520,16 @@
     $altlatNoText.text('No data available for chart');
     var $altlat = $$7('<div>').appendTo($altlatp);
     var $p2 = $$7('<p>').appendTo($$7(sel));
-    $p2.html("\n  <i>Altitude diagram</i><br/>\n  Following Blockeel <i>et al</i>. (2014), this displays the distribution of a \n  taxon within 50 km latitudinal by 100 m altitudinal bands in Britain. Note \n  that the diagrams do not cover Ireland. These plots are based on data across \n  all time periods, and show the proportion of all available tetrads in each \n  latitude/altitude cell in which the taxon has been reported. Tetrads were \n  assigned to cells based on their means as calculated from the digital terrain \n  dataset produced by Intermap Technologies (2009). Percentage tetrad \n  occupancies within cells were rounded to the nearest 0.1%.\n  ");
+    $p2.html("\n  <i>Altitude diagram</i><br/>\n  Following Blockeel <i>et al</i>. (2014), this displays the distribution of a\n  taxon within 50 km latitudinal by 100 m altitudinal bands in Britain. Note\n  that the diagrams do not cover Ireland. These plots are based on data across\n  all time periods, and show the proportion of all available tetrads in each\n  latitude/altitude cell in which the taxon has been reported. Tetrads were\n  assigned to cells based on their means as calculated from the digital terrain\n  dataset produced by Intermap Technologies (2009). Percentage tetrad\n  occupancies within cells were rounded to the nearest 0.1%.\n  ");
     var $p3 = $$7('<p>').appendTo($$7(sel));
-    $p3.html("\n  For many species there are discrepancies between the altitude diagram and the \n  altitude range of the species given in the text on the Summary tab of this \n  website. There are several reasons for this. The most important is that the \n  altitudinal range in the text gives the precise (i.e. record precision 100 m \n  or better) altitude at which the plant has been recorded, whereas the \n  altitude diagram here gives the mean altitude of the tetrads within which \n  it grows. The choice of the digital terrain model (DTM) used to calculate \n  these mean altitudes, and the method of averaging, will both influence this \n  disparity. There are also some altitude records cited in the text on the \n  Summary tab that are not represented by records in the database. For some \n  native species, the altitudinal range within the diagram falls outside the \n  altitudinal ranges stated in the Summary tab text because it includes tetrads \n  where a species has been introduced.\n  ");
+    $p3.html("\n  For many species there are discrepancies between the altitude diagram and the\n  altitude range of the species given in the text on the Summary tab of this\n  website. There are several reasons for this. The most important is that the\n  altitudinal range in the text gives the precise (i.e. record precision 100 m\n  or better) altitude at which the plant has been recorded, whereas the\n  altitude diagram here gives the mean altitude of the tetrads within which\n  it grows. The choice of the digital terrain model (DTM) used to calculate\n  these mean altitudes, and the method of averaging, will both influence this\n  disparity. There are also some altitude records cited in the text on the\n  Summary tab that are not represented by records in the database. For some\n  native species, the altitudinal range within the diagram falls outside the\n  altitudinal ranges stated in the Summary tab text because it includes tetrads\n  where a species has been introduced.\n  ");
     var $ref;
     $ref = $$7('<p>').appendTo($$7(sel));
     $ref.addClass('bsbi-text-ref');
-    $ref.html("\n  Blockeel, T.L., Bosanquet, S.D.S., Hill, M.O. and Preston, C.D. (eds) 2014. <i>Atlas of British & Irish Bryophytes,</i> \n  2 vols. Pisces Publications, Newbury.\n  ");
+    $ref.html("\n  Blockeel, T.L., Bosanquet, S.D.S., Hill, M.O. and Preston, C.D. (eds) 2014. <i>Atlas of British & Irish Bryophytes,</i>\n  2 vols. Pisces Publications, Newbury.\n  ");
     $ref = $$7('<p>').appendTo($$7(sel));
     $ref.addClass('bsbi-text-ref');
-    $ref.html("\n  Intermap Technologies. 2009. <i>NEXTMap British Digital Terrain 50m resolution (DTM10) Model Data by Intermap.</i> \n  NERC Earth Observation Data Centre. \n  <a target= \"_blank\" href=\"https://catalogue.ceda.ac.uk/uuid/f5d41db1170f41819497d15dd8052ad2\">https://catalogue.ceda.ac.uk/uuid/f5d41db1170f41819497d15dd8052ad2</a>\n  "); // Alt vs Lat visualisation
+    $ref.html("\n  Intermap Technologies. 2009. <i>NEXTMap British Digital Terrain 50m resolution (DTM10) Model Data by Intermap.</i>\n  NERC Earth Observation Data Centre.\n  <a target= \"_blank\" href=\"https://catalogue.ceda.ac.uk/uuid/f5d41db1170f41819497d15dd8052ad2\">https://catalogue.ceda.ac.uk/uuid/f5d41db1170f41819497d15dd8052ad2</a>\n  "); // Alt vs Lat visualisation
 
     $altlat.attr('id', 'bsbi-altlat-chart');
     $altlat.css('max-width', '600px');
@@ -1507,6 +1589,68 @@
 
   function createPhenologyControls(selector) {
     latPhenDataTypeDropdown($$7(selector));
+    downloadImageButton('phen', $$7(selector), downloadCallbackPhenology, [{
+      val: 'apparency',
+      caption: 'Overall apparency'
+    }, {
+      val: 'apparency-lat',
+      caption: 'Apparency by latitude'
+    }, {
+      val: 'phenology',
+      caption: 'Phenology'
+    }]);
+  }
+
+  function downloadCallbackPhenology(asSvg, chartType) {
+    var info = {
+      text: '',
+      textFormatted: getCitation(currentTaxon$3, true),
+      margin: 10,
+      fontSize: 10 //img: `${ds.bsbi_atlas.dataRoot}combined-logos.png`
+
+    };
+    var chartObj;
+    var filename = "".concat(currentTaxon$3.shortName.replace(/[^a-z0-9]/gi, '_').toLowerCase(), "-").concat(chartType);
+    var dataType = $$7('#atlas-lat-phen-data-type').val();
+
+    if (chartType === 'apparency') {
+      chartObj = phen1$1;
+    } else if (chartType === 'apparency-lat') {
+      chartObj = phen3;
+      filename = "".concat(filename, "-").concat(dataType);
+    } else if (chartType === 'phenology') {
+      chartObj = phen2$1;
+    } // Temporarily change the background colour of the charts to white
+    // so that they display nicely over black backgrounds, e.g. Twitter (X)
+    // when full-size image viewed.
+
+
+    $$7('svg').css('background-color', 'white');
+    chartObj.saveImage(asSvg, filename, info).then(function () {
+      $$7('svg').css('background-color', 'inherit');
+    });
+  }
+
+  function createAltLatControls(selector) {
+    downloadImageButton('altlat', $$7(selector), downloadCallbackAltlat, []);
+  }
+
+  function downloadCallbackAltlat(asSvg) {
+    var info = {
+      text: '',
+      textFormatted: getCitation(currentTaxon$3, true),
+      margin: 10,
+      fontSize: 10 //img: `${ds.bsbi_atlas.dataRoot}combined-logos.png`
+
+    };
+    var filename = "".concat(currentTaxon$3.shortName.replace(/[^a-z0-9]/gi, '_').toLowerCase(), "-altlat"); // Temporarily change the background colour of the charts to white
+    // so that they display nicely over black backgrounds, e.g. Twitter (X)
+    // when full-size image viewed.
+
+    $$7('svg').css('background-color', 'white');
+    altlat$1.saveImage(asSvg, filename, info).then(function () {
+      $$7('svg').css('background-color', 'inherit');
+    });
   }
 
   function latPhenDataTypeDropdown($parent) {
@@ -1543,12 +1687,16 @@
     $sel.selectpicker();
   }
 
-  function changePhenology(dataRoot, identifier, shortName) {
-    if (!identifier) return;
+  function changePhenology(dataRoot, taxon) {
+    if (taxon) {
+      currentTaxon$3 = taxon;
+    }
+
+    if (!currentTaxon$3.identifier) return;
     var apparencyRoot = dataRoot + 'bsbi/apparency/';
     var captionRoot = dataRoot + 'bsbi/captions2/'; // Apparency all
 
-    var fileAll = "".concat(apparencyRoot, "all/").concat(identifier.replace(/\./g, "_"), ".csv?prevent-cache=").concat(pcache);
+    var fileAll = "".concat(apparencyRoot, "all/").concat(currentTaxon$3.identifier.replace(/\./g, "_"), ".csv?prevent-cache=").concat(pcache);
     d3__namespace.csv(fileAll).then(function (data) {
       apparency(phen1$1, data);
       $$7('#bsbi-apparency-chart').css('opacity', 1);
@@ -1562,12 +1710,12 @@
       $$7('#bsbi-apparency-chart-no-data').show();
     })["finally"](function () {
       // Set the SVG accessibility
-      addSvgAccessibility('bsbi-apparency-chart', '>div>svg', 'Apparency chart', "Apparency of ".concat(shortName));
+      addSvgAccessibility('bsbi-apparency-chart', '>div>svg', 'Apparency chart', "Apparency of ".concat(currentTaxon$3.shortName));
     }); // Apparency by latitude
 
-    var fileLat = "".concat(apparencyRoot, "byLat/").concat(identifier.replace(/\./g, "_"), ".csv?prevent-cache=").concat(pcache);
+    var fileLat = "".concat(apparencyRoot, "byLat/").concat(currentTaxon$3.identifier.replace(/\./g, "_"), ".csv?prevent-cache=").concat(pcache);
     d3__namespace.csv(fileLat).then(function (data) {
-      apparencyByLatData = data; // Saved so that apparencyByLat if 
+      apparencyByLatData = data; // Saved so that apparencyByLat if
       // data type dropdown used.
 
       apparencyByLat(phen3, apparencyByLatData);
@@ -1584,16 +1732,16 @@
       $$7('#bsbi-apparency-by-lat-chart-no-data').show();
     })["finally"](function () {
       // Set the SVG accessibility
-      addSvgAccessibility('bsbi-apparency-by-lat-chart', '>div>svg', 'Apparency by latitude chart', "Apparency of ".concat(shortName, " by latitude"));
+      addSvgAccessibility('bsbi-apparency-by-lat-chart', '>div>svg', 'Apparency by latitude chart', "Apparency of ".concat(currentTaxon$3.shortName, " by latitude"));
     }); // Phenology
 
-    var file = "".concat(captionRoot).concat(identifier.replace(/\./g, "_"), ".csv");
+    var file = "".concat(captionRoot).concat(currentTaxon$3.identifier.replace(/\./g, "_"), ".csv");
     d3__namespace.csv(file + "?prevent-cache=".concat(pcache)).then(function (data) {
-      phenology(phen2$1, data, 'bsbi-phenology-source', shortName);
+      phenology(phen2$1, data, 'bsbi-phenology-source', currentTaxon$3.shortName);
     }); // Hidden download function
 
     window.bsbi_download_phen = function (asBmp) {
-      var filename = "".concat(shortName.replace(' ', '-'), "-").concat(identifier.replace('.', '-'));
+      var filename = "".concat(currentTaxon$3.shortName.replace(' ', '-'), "-").concat(currentTaxon$3.identifier.replace('.', '-'));
       var dataType = $$7('#atlas-lat-phen-data-type').val();
       var asSvg = !asBmp;
       phen1$1.saveImage(asSvg, "".concat(filename, "-apparency"));
@@ -1601,12 +1749,16 @@
       phen3.saveImage(asSvg, "".concat(filename, "-apparency-lat-").concat(dataType));
     };
   }
-  function changeEcology(dataRoot, identifier, shortName) {
-    if (!identifier) return;
+  function changeEcology(dataRoot, taxon) {
+    if (taxon) {
+      currentTaxon$3 = taxon;
+    }
+
+    if (!currentTaxon$3.identifier) return;
     var mapRoot = dataRoot + 'bsbi/maps/'; // Alt/Lat
     // Using pre-processed altlat data
 
-    var altlatdata = "".concat(mapRoot, "altlat/").concat(identifier.replace(/\./g, "_"), ".csv?prevent-cache=").concat(pcache);
+    var altlatdata = "".concat(mapRoot, "altlat/").concat(currentTaxon$3.identifier.replace(/\./g, "_"), ".csv?prevent-cache=").concat(pcache);
     d3__namespace.csv(altlatdata).then(function (data) {
       // In the data passed back, there may be cases where there is no
       // data, e.g. tetrad data only exists for CI or Ireland (altlat CSV
@@ -1646,10 +1798,10 @@
     } // Set the SVG accessibility
 
 
-    addSvgAccessibility('bsbi-altlat-chart', '>div>svg', 'Altitude/latitude chart', "Distribution of ".concat(shortName, " by altitude and latitude")); // Hidden download function
+    addSvgAccessibility('bsbi-altlat-chart', '>div>svg', 'Altitude/latitude chart', "Distribution of ".concat(currentTaxon$3.shortName, " by altitude and latitude")); // Hidden download function
 
     window.bsbi_download_altlat = function (asBmp) {
-      var filename = "".concat(shortName.replace(' ', '-'), "-").concat(identifier.replace('.', '-'));
+      var filename = "".concat(currentTaxon$3.shortName.replace(' ', '-'), "-").concat(currentTaxon$3.identifier.replace('.', '-'));
       var asSvg = !asBmp;
       altlat$1.saveImage(asSvg, "".concat(filename, "-altlat"));
     };
@@ -1822,7 +1974,7 @@
       metrics: metrics
     }); // Set the SVG accessibility
 
-    addSvgAccessibility('bsbi-phenology-chart', '>div>svg', 'Phenology chart', "Leaf and flower phenology of ".concat(shortName));
+    addSvgAccessibility('bsbi-phenology-chart', '>div>svg', 'Phenology chart', "Leaf and flower phenology of ".concat(currentTaxon$3.shortName));
     return ret;
 
     function tweakRef(ref) {
@@ -1953,37 +2105,37 @@
     var $trends2 = $$6('<div>').appendTo($$6(sel));
     $trends2.attr('class', 'phenRow');
     var $p1 = $$6('<p>').appendTo($$6(sel));
-    $p1.html("\n  <i>Trends, \u201Ceffort\u201D adjustments and residual bias</i><br/>\n  The trends above are ultimately based on the FREquency SCAling LOcal (\u201CFrescalo\u201D) approach of Hill (2012). \n  The method was designed to adjust for locally variable recording effort across time periods, and has been \n  used on many distribution datasets. Here, we apply Frescalo to vascular plant data gridded at the 10 km \n  scale across the following time periods: 1930\u201369; 1987\u201399; 2000\u201309; and 2010\u201319. These are a subset of \n  the \u201Cdate-classes\u201D used by the BSBI to organise their data, and roughly designate multi-year periods within \n  which specific national recording projects occurred. Readers should keep in mind that Frescalo only adjusts \n  for variable overall recording effort between times and places, and not for systematic biases in the relative \n  attention paid to species. There is a strong argument for creating formal \u201Crisk-of-bias\u201D assessments for \n  every modelled trend presented here; unfortunately we have not had the resources to achieve this fully to \n  date, although it remains a longer-term aim. See Chapters 6 and 7 of Stroh <i>et al.</i> (2023) and the references \n  below for more information.\n  ");
+    $p1.html("\n  <i>Trends, \u201Ceffort\u201D adjustments and residual bias</i><br/>\n  The trends above are ultimately based on the FREquency SCAling LOcal (\u201CFrescalo\u201D) approach of Hill (2012).\n  The method was designed to adjust for locally variable recording effort across time periods, and has been\n  used on many distribution datasets. Here, we apply Frescalo to vascular plant data gridded at the 10 km\n  scale across the following time periods: 1930\u201369; 1987\u201399; 2000\u201309; and 2010\u201319. These are a subset of\n  the \u201Cdate-classes\u201D used by the BSBI to organise their data, and roughly designate multi-year periods within\n  which specific national recording projects occurred. Readers should keep in mind that Frescalo only adjusts\n  for variable overall recording effort between times and places, and not for systematic biases in the relative\n  attention paid to species. There is a strong argument for creating formal \u201Crisk-of-bias\u201D assessments for\n  every modelled trend presented here; unfortunately we have not had the resources to achieve this fully to\n  date, although it remains a longer-term aim. See Chapters 6 and 7 of Stroh <i>et al.</i> (2023) and the references\n  below for more information.\n  ");
     var $p2 = $$6('<p>').appendTo($$6(sel));
-    $p2.html("\n  <i>Figure 1. Smoothed time trend.</i><br/>\n  The filled white circles and black bars are the Frescalo-estimated means and standard deviations of a \n  species\u2019 relative frequency in each time period, plotted at the median of the relevant BSBI date-class. \n  The smoothed trend is estimated by fitting 100 generalised additive models to data resampled from the \n  Frescalo means and standard deviations; the blue line is the median of these model fits, whist the grey \n  ribbon is its 90% uncertainty interval.\n  ");
+    $p2.html("\n  <i>Figure 1. Smoothed time trend.</i><br/>\n  The filled white circles and black bars are the Frescalo-estimated means and standard deviations of a\n  species\u2019 relative frequency in each time period, plotted at the median of the relevant BSBI date-class.\n  The smoothed trend is estimated by fitting 100 generalised additive models to data resampled from the\n  Frescalo means and standard deviations; the blue line is the median of these model fits, whist the grey\n  ribbon is its 90% uncertainty interval.\n  ");
     var $p3 = $$6('<p>').appendTo($$6(sel));
-    $p3.html("\n  <i>Figure 2. 100 compatible linear trends.</i><br/>\n  The filled white circles and black bars are as for Figure 1. The transparent blue lines represent a random \n  selection of 100 trends that are compatible with these estimates (technically a \u201Cline ensemble\u201D). \n  See Pescott <i>et al.</i> (2022) and Stroh <i>et al.</i> (2023) for more information.\n  ");
+    $p3.html("\n  <i>Figure 2. 100 compatible linear trends.</i><br/>\n  The filled white circles and black bars are as for Figure 1. The transparent blue lines represent a random\n  selection of 100 trends that are compatible with these estimates (technically a \u201Cline ensemble\u201D).\n  See Pescott <i>et al.</i> (2022) and Stroh <i>et al.</i> (2023) for more information.\n  ");
     var $p4 = $$6('<p>').appendTo($$6(sel));
-    $p4.html("\n  <i>Figure 3. Distribution of linear slope estimates.</i><br/>\n  The solid blue line is the distribution of the 100 slope estimates from Figure 2 (the solid grey line is the \n  density across all species for comparison). The broken vertical grey lines represent the classes erected \n  by us for summarising this linear trend information and its uncertainty.\n  ");
+    $p4.html("\n  <i>Figure 3. Distribution of linear slope estimates.</i><br/>\n  The solid blue line is the distribution of the 100 slope estimates from Figure 2 (the solid grey line is the\n  density across all species for comparison). The broken vertical grey lines represent the classes erected\n  by us for summarising this linear trend information and its uncertainty.\n  ");
     var $p5 = $$6('<p>').appendTo($$6(sel));
-    $p5.html("\n  <i>Figure 4. Classification of slope estimates.</i><br/>\n  This bar chart is a simple count of how many of the 100 trend line slopes (Figs 2 and 3) fall into the five \n  size classes illustrated in Figure 3. This method of summarising variation in species\u2019 estimated linear \n  trends is behind the summary \u201Cstrips\u201D presented on the Summary tab. These are also used for the species\u2019 \n  accounts in Stroh <i>et al.</i> (2023).\n  ");
+    $p5.html("\n  <i>Figure 4. Classification of slope estimates.</i><br/>\n  This bar chart is a simple count of how many of the 100 trend line slopes (Figs 2 and 3) fall into the five\n  size classes illustrated in Figure 3. This method of summarising variation in species\u2019 estimated linear\n  trends is behind the summary \u201Cstrips\u201D presented on the Summary tab. These are also used for the species\u2019\n  accounts in Stroh <i>et al.</i> (2023).\n  ");
     var $refHead = $$6('<p>').appendTo($$6(sel));
     $refHead.css('margin-bottom', '0');
     $refHead.html("<i>Further information</i>");
     var $ref;
     $ref = $$6('<p>').appendTo($$6(sel));
     $ref.addClass('bsbi-text-ref');
-    $ref.html("\n  Boyd, R.J., Powney, G.D., Burns, F., Danet, A., Duchenne, F., Grainger, M.J., Jarvis, S.G., Martin, G., Nilsen, E.B., \n  Porcher, E., Stewart, G.B., Wilson, O.J. and Pescott, O.L. 2022. ROBITT: A tool for assessing the risk-of-bias in \n  studies of temporal trends in ecology. <i>Methods in Ecology and Evolution</i> 13, 1497-1507. \n  <a target= \"_blank\" href=\"https://doi.org/10.1111/2041-210X.13857\">https://doi.org/10.1111/2041-210X.13857</a>\n  ");
+    $ref.html("\n  Boyd, R.J., Powney, G.D., Burns, F., Danet, A., Duchenne, F., Grainger, M.J., Jarvis, S.G., Martin, G., Nilsen, E.B.,\n  Porcher, E., Stewart, G.B., Wilson, O.J. and Pescott, O.L. 2022. ROBITT: A tool for assessing the risk-of-bias in\n  studies of temporal trends in ecology. <i>Methods in Ecology and Evolution</i> 13, 1497-1507.\n  <a target= \"_blank\" href=\"https://doi.org/10.1111/2041-210X.13857\">https://doi.org/10.1111/2041-210X.13857</a>\n  ");
     $ref = $$6('<p>').appendTo($$6(sel));
     $ref.addClass('bsbi-text-ref');
-    $ref.html("\n  Hill, M.O. 2012. Local frequency as a key to interpreting species occurrence data when recording effort is not known. \n  <i>Methods in Ecology and Evolution</i> 3, 195\u2013205. \n  <a target= \"_blank\" href=\"https://doi.org/10.1111/j.2041-210X.2011.00146.x\">https://doi.org/10.1111/j.2041-210X.2011.00146.x</a>\n  ");
+    $ref.html("\n  Hill, M.O. 2012. Local frequency as a key to interpreting species occurrence data when recording effort is not known.\n  <i>Methods in Ecology and Evolution</i> 3, 195\u2013205.\n  <a target= \"_blank\" href=\"https://doi.org/10.1111/j.2041-210X.2011.00146.x\">https://doi.org/10.1111/j.2041-210X.2011.00146.x</a>\n  ");
     $ref = $$6('<p>').appendTo($$6(sel));
     $ref.addClass('bsbi-text-ref');
-    $ref.html("\n  Pescott, O.L., Humphrey, T.A., Stroh, P.A. and Walker, K.J. 2019. Temporal changes in distributions and the species \n  atlas: How can British and Irish plant data shoulder the inferential burden? <i>British & Irish Botany</i> 1, 250\u2013282. \n  <a target= \"_blank\" href=\"https://doi.org/10.33928/bib.2019.01.250\">https://doi.org/10.33928/bib.2019.01.250</a>\n  ");
+    $ref.html("\n  Pescott, O.L., Humphrey, T.A., Stroh, P.A. and Walker, K.J. 2019. Temporal changes in distributions and the species\n  atlas: How can British and Irish plant data shoulder the inferential burden? <i>British & Irish Botany</i> 1, 250\u2013282.\n  <a target= \"_blank\" href=\"https://doi.org/10.33928/bib.2019.01.250\">https://doi.org/10.33928/bib.2019.01.250</a>\n  ");
     $ref = $$6('<p>').appendTo($$6(sel));
     $ref.addClass('bsbi-text-ref');
-    $ref.html("\n  Pescott, O.L., Stroh, P.A., Humphrey, T.A. and Walker, K.J. 2022. Simple methods for improving the communication \n  of uncertainty in species\u2019 temporal trends. <i>Ecological Indicators</i>, 141, 109117. \n  <a target= \"_blank\" href=\"https://doi.org/10.1016/j.ecolind.2022.109117\">https://doi.org/10.1016/j.ecolind.2022.109117</a>\n  ");
+    $ref.html("\n  Pescott, O.L., Stroh, P.A., Humphrey, T.A. and Walker, K.J. 2022. Simple methods for improving the communication\n  of uncertainty in species\u2019 temporal trends. <i>Ecological Indicators</i>, 141, 109117.\n  <a target= \"_blank\" href=\"https://doi.org/10.1016/j.ecolind.2022.109117\">https://doi.org/10.1016/j.ecolind.2022.109117</a>\n  ");
     $ref = $$6('<p>').appendTo($$6(sel));
     $ref.addClass('bsbi-text-ref');
-    $ref.html("\n  Preston, C.D., Pearman, D.A., Dines, T.D. (Eds.) 2002. <i>New Atlas of the British and Irish Flora</i>. Oxford University \n  Press, Oxford, England.\n  ");
+    $ref.html("\n  Preston, C.D., Pearman, D.A., Dines, T.D. (Eds.) 2002. <i>New Atlas of the British and Irish Flora</i>. Oxford University\n  Press, Oxford, England.\n  ");
     $ref = $$6('<p>').appendTo($$6(sel));
     $ref.addClass('bsbi-text-ref');
-    $ref.html("\n  Stroh, P.A., Walker, K.J., Humphrey, T.A., Pescott, O.L. and Burkmar, R.J. (eds). 2023. <i>Plant Atlas 2020. \n  Mapping changes in the distribution of the British and Irish flora.</i> 2 volumes. Botanical Society of Britain \n  and Ireland, Durham & Princeton University Press, Princeton.\n  ");
+    $ref.html("\n  Stroh, P.A., Walker, K.J., Humphrey, T.A., Pescott, O.L. and Burkmar, R.J. (eds). 2023. <i>Plant Atlas 2020.\n  Mapping changes in the distribution of the British and Irish flora.</i> 2 volumes. Botanical Society of Britain\n  and Ireland, Durham & Princeton University Press, Princeton.\n  ");
     var $gam = $$6('<div>').appendTo($trends1);
     $gam.attr('id', 'bsbi-gam-chart').attr('class', 'phenColumn').css('max-width', '400px').css('position', 'relative').text('Figure 1. Smoothed time trend.');
     gam$1 = brccharts.yearly({
@@ -1994,7 +2146,7 @@
         left: 50,
         right: 0,
         top: 5,
-        bottom: 55
+        bottom: 10
       },
       expand: true,
       perRow: 1,
@@ -2032,7 +2184,7 @@
         left: 50,
         right: 0,
         top: 5,
-        bottom: 55
+        bottom: 10
       },
       expand: true,
       perRow: 1,
@@ -2075,7 +2227,7 @@
         left: 50,
         right: 10,
         top: 10,
-        bottom: 45
+        bottom: 40
       },
       expand: true,
       axisLeft: 'on',
@@ -2108,7 +2260,7 @@
         left: 50,
         right: 10,
         top: 10,
-        bottom: 85
+        bottom: 90
       },
       expand: true,
       axisLeft: 'tick',
@@ -2122,7 +2274,8 @@
         dx: '-1em',
         dy: '0.2em',
         transform: 'rotate(-55)'
-      }
+      },
+      tooltip: true
     });
     $barNoData = $$6('<div>').appendTo($bar);
     $barNoData.text('No trend available for this combination').css('position', 'absolute').css('margin', '3em').css('top', '0px').css('left', '50px').css('display', 'none');
@@ -2189,7 +2342,7 @@
           $$6('#bsbiTrendsAggNote').html('');
         }
 
-        $gamNoData.hide(); // If termType is short, add extra points to start of array to make 
+        $gamNoData.hide(); // If termType is short, add extra points to start of array to make
         // for smooth transitions between long and short term trends
 
         if (termType === 'short') {
@@ -2478,6 +2631,68 @@
     termSelector(trendControlRow(selector));
     scalingSelector(trendControlRow(selector));
     scalingSelector2(trendControlRow(selector));
+    downloadImageButton('trend', trendControlRow(selector), downloadCallback, [{
+      val: 'fig1',
+      caption: 'Fig 1 - smoothed time trend'
+    }, {
+      val: 'fig2',
+      caption: 'Fig 2 - compatible linear trends'
+    }, {
+      val: 'fig3',
+      caption: 'Fig 3 - distribution of linear slope estimates'
+    }, {
+      val: 'fig4',
+      caption: 'Fig 4 - classification of slope estimates'
+    }]);
+
+    function downloadCallback(asSvg, chartType) {
+      var region, regionTypeText;
+
+      if (regionType === 'Northern') {
+        region = 'northern_ireland';
+        regionTypeText = 'Northern Ireland';
+      } else if (regionType === 'Republic') {
+        region = 'republic_of_ireland';
+        regionTypeText = 'Republic of Ireland';
+      } else {
+        region = regionType.toLowerCase();
+        regionTypeText = "".concat(region.substring(0, 1).toUpperCase()).concat(region.substring(1));
+      }
+
+      var citation = getCitation(currentTaxon$2, true); // Add full stop to citation
+
+      citation[citation.length - 1] = citation[citation.length - 1] + '.'; // Add region and term type to info text
+
+      citation.push("n#Data are for ".concat(termType, "-term trend, ").concat(regionTypeText, "."));
+      var info = {
+        text: '',
+        textFormatted: citation,
+        margin: 10,
+        fontSize: 10 //img: `${ds.bsbi_atlas.dataRoot}combined-logos.png`
+
+      };
+      var taxon = currentTaxon$2.shortName.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+      var filename = "".concat(taxon, "-").concat(region, "-").concat(termType, "-").concat(chartType);
+      var chartObj;
+
+      if (chartType === 'fig1') {
+        chartObj = gam$1;
+      } else if (chartType === 'fig2') {
+        chartObj = linmod;
+      } else if (chartType === 'fig3') {
+        chartObj = density;
+      } else if (chartType === 'fig4') {
+        chartObj = bar;
+      } // Temporarily change the background colour of the charts to white
+      // so that they display nicely over black backgrounds, e.g. Twitter (X)
+      // when full-size image viewed.
+
+
+      $$6('svg').css('background-color', 'white');
+      chartObj.saveImage(asSvg, filename, info).then(function () {
+        $$6('svg').css('background-color', 'inherit');
+      });
+    }
 
     window.downloadTrends = function (asSvg) {
       var region;
@@ -2730,7 +2945,7 @@
   function trendExclusion(trendExcludeAttr, country, term) {
     var regionIndex = regions.indexOf(country);
     var termIndexAdjust = term === 'short' ? 0 : 7;
-    var i = regionIndex + termIndexAdjust; // console.log(trendExcludeAttr, country, term, regionIndex, termIndexAdjust) 
+    var i = regionIndex + termIndexAdjust; // console.log(trendExcludeAttr, country, term, regionIndex, termIndexAdjust)
 
     return trendExcludeAttr.substr(i, 1) === '1';
   }
@@ -3398,12 +3613,12 @@
 
     var $container = $$3('<div>').appendTo($parent);
     $container.addClass('atlas-save-map-image');
-    $container.hide();
-    var $svg = $$3('<svg>').appendTo($container);
-    var $t = $$3('<text>').appendTo($svg);
-    $t.attr('x', '10');
-    $t.attr('y', '20');
-    $$3('<br>').appendTo($container);
+    $container.hide(); // const $svg = $('<svg>').appendTo($container)
+    // const $t = $('<text>').appendTo($svg)
+    // $t.attr('x', '10')
+    // $t.attr('y', '20')
+    // $('<br>').appendTo($container)
+
     var $button = $$3('<button>').appendTo($container);
     $button.addClass('btn btn-default');
     $button.text('Download image');
@@ -3415,7 +3630,8 @@
         fontSize: 10 //img: `${ds.bsbi_atlas.dataRoot}combined-logos.png`
 
       };
-      staticMap.saveMap(imageType === 'svg', info, 'atlas-image');
+      var filename = "".concat(currentTaxon$1.shortName.replace(/[^a-z0-9]/gi, '_').toLowerCase(), "-map");
+      staticMap.saveMap(imageType === 'svg', info, filename);
     });
     makeRadio('PNG', 'png', true);
     makeRadio('SVG', 'svg', false);
@@ -3454,7 +3670,7 @@
     var $divModalGrey = $$3('<div>').appendTo($$3('body'));
     $divModalGrey.addClass('atlas-download-modal-grey');
     $divModalGrey.css('display', 'none');
-    $$3('<p>').html("\n    By downloading these data, you agree to adhere to the terms of the \n    <a href=\"https://creativecommons.org/licenses/by/4.0/\">CC-BY 4.0 licence</a>. \n    Please familiarise yourself with its requirements. \n    The recommended citation for these data is given on the right-hand \n    side of this page under the taxon caption.\n  ").appendTo($divModal);
+    $$3('<p>').html("\n    By downloading these data, you agree to adhere to the terms of the\n    <a href=\"https://creativecommons.org/licenses/by/4.0/\">CC-BY 4.0 licence</a>.\n    Please familiarise yourself with its requirements.\n    The recommended citation for these data is given on the right-hand\n    side of this page under the taxon caption.\n  ").appendTo($divModal);
     var $divButtons = $$3('<div>').appendTo($divModal);
     var $buttonOkay = $$3('<button>').appendTo($divButtons);
     $buttonOkay.addClass('btn btn-default atlas-download-modal-button');
@@ -3740,7 +3956,7 @@
     transOptsSel.BI2.bounds.xmin = -230000, //CI inset
     // Init
     bsbiDataAccess.bsbiDataRoot = ds$2.bsbi_atlas.dataRoot + 'bsbi/maps/';
-    bsbiDataAccess.showStatus = false; // Data access 
+    bsbiDataAccess.showStatus = false; // Data access
 
     var mapTypesSel = {
       'status_29': bsbiDataAccess.status_29,
@@ -5517,7 +5733,8 @@
       $('#bsbi-atlas-gui').html(null); // Other inits
 
       $('.bsbi-atlas-trend-controls').hide();
-      $('.bsbi-atlas-phenology-controls').hide(); // Make the section tabs
+      $('.bsbi-atlas-phenology-controls').hide();
+      $('.bsbi-atlas-altlat-controls').hide(); // Make the section tabs
 
       var $ul = $('<ul class="nav nav-tabs"></ul>').appendTo($('#bsbi-atlas-gui'));
       sections.forEach(function (s) {
@@ -5563,8 +5780,11 @@
         }
 
         if (target === '#bsbi-atlas-section-ecology') {
-          // Regenerate graphics
+          $('.bsbi-atlas-altlat-controls').show(); // Regenerate graphics
+
           changeEcologyTab();
+        } else {
+          $('.bsbi-atlas-altlat-controls').hide();
         }
 
         if (target === '#bsbi-atlas-section-conservation') {
@@ -5591,6 +5811,7 @@
       var taxonPickers = [];
       var taxaListRef = [];
       var defaultDdbid = null;
+      taxonSelectors = [];
       $('.bsbi-atlas-taxon-selector').each(function () {
         selectorIds.push($(this).parent().attr('data-sel-id'));
       });
@@ -5636,6 +5857,7 @@
 
       taxonSelected = function taxonSelected(ddbid, noHistory) {
         if (ddbid) {
+          sessionStorage.setItem('ddbid', ddbid);
           var matchTaxon = taxaListRef.find(function (t) {
             return t.value === ddbid;
           }); // Save ddbid to cookie
@@ -5674,7 +5896,12 @@
           // to be done once caption file is read. Do from changeCaption instead
           //changeConservationTab()
 
-          createGallery('bsbi-gallery', currentTaxon.identifier, currentTaxon.shortName);
+          createGallery('bsbi-gallery', currentTaxon.identifier, currentTaxon.shortName); // Reset taxonPicker value if not equal to ddbid which
+          // which happen if back or forward button used.
+
+          taxonPickers.forEach(function (taxonPicker) {
+            if (taxonPicker.value.taxonId !== ddbid) taxonPicker.setTaxonFromId(ddbid);
+          });
         }
       };
 
@@ -5778,12 +6005,15 @@
           return t['ddbid'];
         });
         updateBsbiDataAccess('sensitiveTetrad', sensitiveTetrad); // If identifier passed in URL, set the value and add to history
+        // else get from sessionStorage if set
         // else get from cookie if set
 
         var ddbid;
 
         if (ds.bsbi_atlas.identifier) {
           ddbid = ds.bsbi_atlas.identifier;
+        } else if (sessionStorage.getItem('ddbid')) {
+          ddbid = sessionStorage.getItem('ddbid');
         } else if (getCookie('ddbid')) {
           ddbid = getCookie('ddbid');
         } else {
@@ -5808,7 +6038,7 @@
       // const $sel = $('<select>').appendTo($container)
       // $sel.addClass('atlas-taxon-selector-sel')
       // // Next bit is need to resize the control to give space for link button when
-      // // control panel is very compressed. In this context, width seems to be a 
+      // // control panel is very compressed. In this context, width seems to be a
       // // minimum width.
       // $sel.on('rendered.bs.select', function () {
       //   $('.dropdown.bootstrap-select.atlas-taxon-selector-sel').css("width", "100px")
@@ -5919,7 +6149,7 @@
       //       changeEcologyTab()
       //       changeTrendsTab()
       //       // Don't call changeConservationTab from here because it needs
-      //       // to be done once caption file is read. Do from changeCaption 
+      //       // to be done once caption file is read. Do from changeCaption
       //       // instead
       //       //changeConservationTab()
       //       createGallery('bsbi-gallery', currentTaxon.identifier, currentTaxon.shortName)
@@ -5930,7 +6160,7 @@
       //   // if (ds.bsbi_atlas.identifier) {
       //   //   $sel.selectpicker('val', ds.bsbi_atlas.identifier)
       //   //   window.history.pushState({identifier: ds.bsbi_atlas.identifier}, `BSBI Atlas - ${ds.bsbi_atlas.identifier}`, `/atlas/${currentTaxon.identifier}`)
-      //   // } 
+      //   // }
       //   let ddbid
       //   if (ds.bsbi_atlas.identifier) {
       //     ddbid = ds.bsbi_atlas.identifier
@@ -6032,6 +6262,7 @@
       var $sect = $('#bsbi-atlas-section-' + id);
       $sect.append('<div id="bsbi-altitude"></div>');
       createEcology("#bsbi-altitude");
+      createAltLatControls('.bsbi-atlas-altlat-controls');
     }
 
     function sectionGallery(id) {
@@ -6061,11 +6292,11 @@
     }
 
     function changePhenologyTab() {
-      changePhenology(ds.bsbi_atlas.dataRoot, currentTaxon.identifier, currentTaxon.shortName);
+      changePhenology(ds.bsbi_atlas.dataRoot, currentTaxon);
     }
 
     function changeEcologyTab() {
-      changeEcology(ds.bsbi_atlas.dataRoot, currentTaxon.identifier, currentTaxon.shortName);
+      changeEcology(ds.bsbi_atlas.dataRoot, currentTaxon);
     }
 
     function changeConservationTab() {
@@ -6232,7 +6463,7 @@
         //     }
         //   })
         // }
-        // Taxa covered 
+        // Taxa covered
 
 
         if (d[0].captionedChildSummaries) {

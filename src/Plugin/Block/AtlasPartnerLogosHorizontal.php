@@ -25,7 +25,7 @@ class AtlasPartnerLogosHorizontal extends BlockBase {
 
     $bsbi = $base_path . drupal_get_path('module', 'bsbi_atlas') . '/images/BSBI-logo.gif';
     $ceh = $base_path . drupal_get_path('module', 'bsbi_atlas') . '/images/UKCEH-logo.png';
-    $brc = $base_path . drupal_get_path('module', 'bsbi_atlas') . '/images/BRC-logo.png';
+    $brc = $base_path . drupal_get_path('module', 'bsbi_atlas') . '/images/BRC-logo-3.png';
 
     $html = '<img alt="Botanical Society of Britain & Ireland logo" src="' . $bsbi . '" class="partner-logo-horizontal" />';
     $html .= '<img alt="UK Centre for Ecology & Hydrology logo" src="' . $ceh . '" class="partner-logo-horizontal" />';

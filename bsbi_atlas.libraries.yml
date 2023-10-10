@@ -14,7 +14,7 @@ bsbiatlas:
     js/lightgallery.umd.js: {}
     js/lg-thumbnail.umd.js: {}
     js/lg-zoom.umd.js: {}
-    
+
   dependencies:
     - core/jquery
     - core/drupal

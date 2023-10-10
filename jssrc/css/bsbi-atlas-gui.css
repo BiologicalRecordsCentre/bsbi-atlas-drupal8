@@ -64,6 +64,16 @@
 
 .bsbi-atlas-taxon-selector {
     margin-bottom: 1em;
+    position: relative;
+    z-index: 50000;
+}
+
+/* .bootstrap-select {
+  z-index: 50000;
+} */
+
+.dropdown-menu.open {
+  z-index: 50000 !important;
 }
 
 .atlas-map-control-row, .atlas-trend-control-row {
@@ -73,7 +83,7 @@
 .slidecontainer {
     width: 100%; /* Width of the outside container */
   }
-  
+
   /* The slider itself */
   .slider {
     -webkit-appearance: none;  /* Override default CSS styles */
@@ -86,27 +96,27 @@
     -webkit-transition: .2s; /* 0.2 seconds transition on hover */
     transition: opacity .2s;
   }
-  
+
   /* Mouse-over effects */
   .slider:hover {
     opacity: 1; /* Fully shown on mouse-over */
   }
-  
+
   /* The slider handle (use -webkit- (Chrome, Opera, Safari, Edge) and -moz- (Firefox) to override default look) */
   .slider::-webkit-slider-thumb {
     -webkit-appearance: none; /* Override default look */
     appearance: none;
     width: 16px; /* Set a specific slider handle width */
     height: 25px; /* Slider handle height */
-    background: rgb(51,122,183); 
+    background: rgb(51,122,183);
     border-radius: 3px;
     cursor: pointer; /* Cursor on hover */
   }
-  
+
   .slider::-moz-range-thumb {
     width: 16px; /* Set a specific slider handle width */
     height: 25px; /* Slider handle height */
-    background: rgb(51,122,183); 
+    background: rgb(51,122,183);
     border-radius: 3px;
     cursor: pointer; /* Cursor on hover */
   }
@@ -332,6 +342,8 @@ div.sect-subhead {
 }
 .bsbi-atlas-taxon-selector-standalone {
   margin-bottom: 1em;
+  position: relative;
+  z-index: 50000;
 }
 
 

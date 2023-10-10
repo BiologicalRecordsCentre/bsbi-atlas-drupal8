@@ -1,5 +1,7 @@
 const $ = jQuery // eslint-disable-line no-undef
 
+export const pcache = '20230222-3'
+
 export function copyToClipboard(textToCopy) {
   // https://stackoverflow.com/questions/51805395/navigator-clipboard-is-undefined
   // navigator clipboard api needs a secure context (https)
@@ -32,7 +34,7 @@ export function setCookie(cname, cvalue, exdays) {
   const expires = "expires="+ d.toUTCString()
   document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/"
 }
-  
+
 export function getCookie(cname) {
   const name = cname + "="
   const decodedCookie = decodeURIComponent(document.cookie)
@@ -63,7 +65,7 @@ export function getCitation(currentTaxon, forImageDownload, titleOnly) {
   // Get the taxon qualifier html
   const taxonQualifierLatin = $taxonNameAndAuthority.find('b.taxon-qualifier').find('i.latin').html()
   let taxonQualifier = $taxonNameAndAuthority.find('b.taxon-qualifier').html()
-  
+
   // Get the taxon authority html
   let taxonAuthority = $taxonNameAndAuthority.find('span.taxon-authority').html()
 
@@ -128,4 +130,91 @@ export function addSvgAccessibility(id, subsel, title, desc) {
     $('<desc>').attr('id', `${id}-svg-desc`).text(desc).appendTo($svg)
   }
   $svg.attr('aria-labelledby', `${id}-svg-title ${id}-svg-desc`)
+}
+
+export function downloadImageButton (id, $parent, downloadCallback, types) {
+  $parent.each(function(i) {
+    // We loop through the selection so that we can use the
+    // index value to differentiate the equivalent controls
+    // from different blocks. This is vital for radio controls
+    // otherwise value can only be selected in one block and
+    // therefore initialisation may be wrong.
+    const $div = $('<div>').appendTo($(this))
+    downloadImageButton_i(id, $div, downloadCallback, types, i)
+  })
+}
+
+export function downloadImageButton_i(id, $parent, downloadCallback, types, i) {
+
+  let imageType = 'png'
+  let chartType = null
+
+  // Overall control container
+  const $container = $('<div>').appendTo($parent)
+  const $hr = $('<hr>').appendTo($container)
+  $hr.css('margin', '2em 0 1em 0')
+
+  // Image type selector if types array is not emtpy
+  if (types.length > 0) {
+
+    chartType = types[0].val
+
+    const $sel = $('<select>').appendTo($container)
+    $sel.addClass('selectpicker')
+    $sel.attr('data-width', '100%')
+    $sel.on('changed.bs.select', function () {
+      chartType = $(this).val()
+    })
+
+    types.forEach(function(b){
+      const $opt = b.selected  ? $('<option>') : $('<option>')
+      $opt.attr('value', b.val)
+      $opt.html(b.caption).appendTo($sel)
+    })
+
+    $sel.val(chartType)
+
+    // This seems to be necessary if interface regenerated,
+    // e.g. changing from tabbed to non-tabbed display.
+    $sel.selectpicker()
+  }
+
+  // Download button
+  const $button = $('<button>').appendTo($container)
+  $button.addClass('btn btn-default')
+  $button.text('Download')
+  $button.on('click', function(){
+    //staticMap.saveMap(imageType === 'svg', info, 'atlas-image')
+    downloadCallback(imageType === 'svg', chartType)
+  })
+
+  // Image type radion button
+  makeRadio('PNG', 'png', true, i)
+  makeRadio('SVG', 'svg', false, i)
+
+  function makeRadio(label, val, checked) {
+
+    const $div = $('<div>').appendTo($container)
+    $div.css('display', 'inline-block')
+    $div.css('margin-left', '0.5em')
+    $div.attr('class', 'radio')
+    const $label = $('<label>').appendTo($div)
+    $label.css('padding-left', '0')
+    const $radio = $('<input>').appendTo($label)
+    const $span = $('<span>').appendTo($label)
+    $span.text(label)
+    $span.css('padding-left', '20px')
+    $radio.attr('type', 'radio')
+    $radio.attr('name', 'img-download-' + id + '-' + i)
+    $radio.attr('class', 'img-download-' + id + '-' + val)
+    $radio.attr('value', val)
+    $radio.css('margin-left', 0)
+    if (checked) {
+      $radio.prop('checked', true)
+      //$('.img-download-' + id + '-' + val).prop('checked', true)
+    }
+    $radio.change(function () {
+      imageType = val
+    })
+  }
 }

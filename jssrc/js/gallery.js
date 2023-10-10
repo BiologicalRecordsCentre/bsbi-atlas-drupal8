@@ -1,4 +1,4 @@
-import { pcache } from './gen'
+import { pcache } from './utils'
 
 const $ = jQuery // eslint-disable-line no-undef
 const ds = drupalSettings // eslint-disable-line no-undef

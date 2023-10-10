@@ -2,7 +2,7 @@ import { createMaps, getStaticMap, changeMap, mapSetCurrentTaxon } from './mappi
 import { bsbiDataAccess } from './dataAccessAtlas'
 import { apparency, phenology, altLat } from './ecology'
 import { updateTrendSummary2, trendSummary2, trendSave } from './trendSummary'
-import { pcache } from './gen'
+import { pcache } from './utils'
 import { getCookie } from './utils'
 import { encodeTrendExclusion, trendExclusion } from './trends'
 

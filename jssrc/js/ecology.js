@@ -1,10 +1,13 @@
 import * as d3 from 'd3'
+import { downloadImageButton, getCitation } from './utils'
 
 const $=jQuery // eslint-disable-line no-undef
 let phen1, phen2, phen3, altlat
 let apparencyByLatData
 import { addSvgAccessibility } from './utils'
-import { pcache } from './gen'
+import { pcache } from './utils'
+
+let currentTaxon
 
 export function createPhenology(sel) {
 
@@ -21,24 +24,24 @@ export function createPhenology(sel) {
   const $p1 = $('<p>').appendTo($(sel))
   $p1.html(`
   <i>Apparency</i><br/>
-  This graphic combines the detectability and phenology of a species, together with recording intensity, 
-  and illustrates the frequency with which a species was recorded on a daily basis between 2000 and 2019, 
-  using data extracted from the BSBI database. These data were based on counts of unique taxon-tetrad 
-  occurrences (aggregating over finer spatial scales) on Julian days averaged across all 20 years and 
-  smoothed for presentation purposes. Days either side of New Year were excluded so that annual BSBI 
-  New Year Plant Hunt data did not unduly influence the figures on the graphs. The graphic on the right 
+  This graphic combines the detectability and phenology of a species, together with recording intensity,
+  and illustrates the frequency with which a species was recorded on a daily basis between 2000 and 2019,
+  using data extracted from the BSBI database. These data were based on counts of unique taxon-tetrad
+  occurrences (aggregating over finer spatial scales) on Julian days averaged across all 20 years and
+  smoothed for presentation purposes. Days either side of New Year were excluded so that annual BSBI
+  New Year Plant Hunt data did not unduly influence the figures on the graphs. The graphic on the right
   applies the same principle to latitudinal subdivisions (British data only).
   `)
 
   const $p2 = $('<p>').appendTo($(sel))
   $p2.html(`
   <i>Phenology</i><br/>
-  The ranges in flowering and leafing months are displayed below the apparency graph. Flowering months 
-  are filled in as an orange bar, whilst leafing duration is shown in green. For non-flowering plants 
-  (e.g. ferns, horsetails etc.), the “flowering” bar is equivalent to the months when spore-bearing 
-  structures are visible. The phenology of a species will not always correspond exactly with its apparency 
-  curve due to its detectability when not in flower or leaf; see, for example, the plots of <i>Fraxinus 
-  excelsior</i> or <i>Phragmites australis</i>. In addition, published sources for flowering and leafing may 
+  The ranges in flowering and leafing months are displayed below the apparency graph. Flowering months
+  are filled in as an orange bar, whilst leafing duration is shown in green. For non-flowering plants
+  (e.g. ferns, horsetails etc.), the “flowering” bar is equivalent to the months when spore-bearing
+  structures are visible. The phenology of a species will not always correspond exactly with its apparency
+  curve due to its detectability when not in flower or leaf; see, for example, the plots of <i>Fraxinus
+  excelsior</i> or <i>Phragmites australis</i>. In addition, published sources for flowering and leafing may
   differ from the apparency diagram due to the extended detectability of a species due to climate change.
   `)
 
@@ -50,7 +53,7 @@ export function createPhenology(sel) {
 
   const $divp1 = $('<div>').appendTo($phenFlexLeft)
   $divp1.css('position', 'relative')
-  
+
   const $apparency = $('<div>').appendTo($divp1)
   $apparency.attr('id', 'bsbi-apparency-chart').css('max-width', '400px')
 
@@ -78,9 +81,10 @@ export function createPhenology(sel) {
     showLegend: false,
     interactivity: 'none',
     font: 'Arial',
-    monthFontSize: 11
+    monthFontSize: 11,
+    margin: {left: 10},
   })
-  
+
   const $phenology = $('<div>').appendTo($phenFlexLeft)
   $phenology.attr('id', 'bsbi-phenology-chart').css('max-width', '400px')
 
@@ -92,14 +96,15 @@ export function createPhenology(sel) {
     width: 400,
     height: 25,
     split: true,
-    headPad: 35,
-    chartPad: 35,
+    headPad: 10,
+    chartPad: 10,
     perRow: 1,
     expand: true,
     showTaxonLabel: false,
     interactivity: 'none',
     font: 'Arial',
-    monthFontSize: 11
+    monthFontSize: 11,
+    margin: {left: 0}
   })
 
   const $divp3 = $('<div>').appendTo($phenFlexRight)
@@ -127,7 +132,7 @@ export function createPhenology(sel) {
     metrics: [],
     lines: ['white', 'white', '#dddddd', 'white', 'white', '#dddddd', 'white', 'white', '#dddddd', 'white', 'white', '#dddddd'],
     width: 400,
-    height: 410,
+    height: 420,
     spread: true,
     perRow: 1,
     expand: true,
@@ -141,8 +146,8 @@ export function createPhenology(sel) {
     monthFontSize: 12
   })
 
-  //latPhenNormalizeCheckbox($phenFlexRight, phen3) 
-  //latPhenDataTypeDropdown($phenFlexRight) 
+  //latPhenNormalizeCheckbox($phenFlexRight, phen3)
+  //latPhenDataTypeDropdown($phenFlexRight)
 
   // Website style is overriding some charts style, so reset it
   $('.brc-chart-phen1').css('overflow', 'visible')
@@ -152,7 +157,7 @@ export function createPhenology(sel) {
 }
 
 export function createEcology(sel) {
-  
+
   const $altlatp = $('<div>').appendTo($(sel))
   $altlatp.css('position', 'relative')
 
@@ -170,46 +175,46 @@ export function createEcology(sel) {
   const $p2 = $('<p>').appendTo($(sel))
   $p2.html(`
   <i>Altitude diagram</i><br/>
-  Following Blockeel <i>et al</i>. (2014), this displays the distribution of a 
-  taxon within 50 km latitudinal by 100 m altitudinal bands in Britain. Note 
-  that the diagrams do not cover Ireland. These plots are based on data across 
-  all time periods, and show the proportion of all available tetrads in each 
-  latitude/altitude cell in which the taxon has been reported. Tetrads were 
-  assigned to cells based on their means as calculated from the digital terrain 
-  dataset produced by Intermap Technologies (2009). Percentage tetrad 
+  Following Blockeel <i>et al</i>. (2014), this displays the distribution of a
+  taxon within 50 km latitudinal by 100 m altitudinal bands in Britain. Note
+  that the diagrams do not cover Ireland. These plots are based on data across
+  all time periods, and show the proportion of all available tetrads in each
+  latitude/altitude cell in which the taxon has been reported. Tetrads were
+  assigned to cells based on their means as calculated from the digital terrain
+  dataset produced by Intermap Technologies (2009). Percentage tetrad
   occupancies within cells were rounded to the nearest 0.1%.
   `)
   const $p3 = $('<p>').appendTo($(sel))
   $p3.html(`
-  For many species there are discrepancies between the altitude diagram and the 
-  altitude range of the species given in the text on the Summary tab of this 
-  website. There are several reasons for this. The most important is that the 
-  altitudinal range in the text gives the precise (i.e. record precision 100 m 
-  or better) altitude at which the plant has been recorded, whereas the 
-  altitude diagram here gives the mean altitude of the tetrads within which 
-  it grows. The choice of the digital terrain model (DTM) used to calculate 
-  these mean altitudes, and the method of averaging, will both influence this 
-  disparity. There are also some altitude records cited in the text on the 
-  Summary tab that are not represented by records in the database. For some 
-  native species, the altitudinal range within the diagram falls outside the 
-  altitudinal ranges stated in the Summary tab text because it includes tetrads 
+  For many species there are discrepancies between the altitude diagram and the
+  altitude range of the species given in the text on the Summary tab of this
+  website. There are several reasons for this. The most important is that the
+  altitudinal range in the text gives the precise (i.e. record precision 100 m
+  or better) altitude at which the plant has been recorded, whereas the
+  altitude diagram here gives the mean altitude of the tetrads within which
+  it grows. The choice of the digital terrain model (DTM) used to calculate
+  these mean altitudes, and the method of averaging, will both influence this
+  disparity. There are also some altitude records cited in the text on the
+  Summary tab that are not represented by records in the database. For some
+  native species, the altitudinal range within the diagram falls outside the
+  altitudinal ranges stated in the Summary tab text because it includes tetrads
   where a species has been introduced.
   `)
-  let $ref 
+  let $ref
   $ref = $('<p>').appendTo($(sel))
   $ref.addClass('bsbi-text-ref')
   $ref.html(`
-  Blockeel, T.L., Bosanquet, S.D.S., Hill, M.O. and Preston, C.D. (eds) 2014. <i>Atlas of British & Irish Bryophytes,</i> 
+  Blockeel, T.L., Bosanquet, S.D.S., Hill, M.O. and Preston, C.D. (eds) 2014. <i>Atlas of British & Irish Bryophytes,</i>
   2 vols. Pisces Publications, Newbury.
   `)
   $ref = $('<p>').appendTo($(sel))
   $ref.addClass('bsbi-text-ref')
   $ref.html(`
-  Intermap Technologies. 2009. <i>NEXTMap British Digital Terrain 50m resolution (DTM10) Model Data by Intermap.</i> 
-  NERC Earth Observation Data Centre. 
+  Intermap Technologies. 2009. <i>NEXTMap British Digital Terrain 50m resolution (DTM10) Model Data by Intermap.</i>
+  NERC Earth Observation Data Centre.
   <a target= "_blank" href="https://catalogue.ceda.ac.uk/uuid/f5d41db1170f41819497d15dd8052ad2">https://catalogue.ceda.ac.uk/uuid/f5d41db1170f41819497d15dd8052ad2</a>
   `)
-  
+
   // Alt vs Lat visualisation
   $altlat.attr('id', 'bsbi-altlat-chart')
   $altlat.css('max-width', '600px')
@@ -287,13 +292,71 @@ function latPhenNormalizeCheckbox($parent, phenChart) {
     const normalize = $(this).is(':checked')
     phenChart.setChartOpts({ytype: normalize ? 'normalized' : 'count'})
     // Set the SVG accessibility
-    addSvgAccessibility('bsbi-altlat-chart', '>div>svg', 'Altitude/latitude diagram', `Distribution of ${shortName} by altitude and latitude`)
+    addSvgAccessibility('bsbi-altlat-chart', '>div>svg', 'Altitude/latitude diagram', `Distribution of ${currentTaxon.shortName} by altitude and latitude`)
 
   })
 }
 
 export function createPhenologyControls(selector) {
   latPhenDataTypeDropdown($(selector))
+
+  downloadImageButton('phen', $(selector), downloadCallbackPhenology, [
+    {val: 'apparency', caption: 'Overall apparency'},
+    {val: 'apparency-lat', caption: 'Apparency by latitude'},
+    {val: 'phenology', caption: 'Phenology'},
+  ])
+}
+
+function downloadCallbackPhenology(asSvg, chartType) {
+  const info = {
+    text: '',
+    textFormatted: getCitation(currentTaxon, true),
+    margin: 10,
+    fontSize: 10,
+    //img: `${ds.bsbi_atlas.dataRoot}combined-logos.png`
+  }
+
+  let chartObj
+  let filename = `${currentTaxon.shortName.replace(/[^a-z0-9]/gi, '_').toLowerCase()}-${chartType}`
+
+  const dataType = $('#atlas-lat-phen-data-type').val()
+
+  if (chartType === 'apparency') {
+    chartObj = phen1
+  } else if (chartType === 'apparency-lat') {
+    chartObj = phen3
+    filename = `${filename}-${dataType}`
+  } else if (chartType === 'phenology') {
+    chartObj = phen2
+  }
+
+  // Temporarily change the background colour of the charts to white
+  // so that they display nicely over black backgrounds, e.g. Twitter (X)
+  // when full-size image viewed.
+  $('svg').css('background-color', 'white')
+  chartObj.saveImage(asSvg, filename, info).then(() => {$('svg').css('background-color','inherit')})
+}
+
+export function createAltLatControls(selector) {
+
+  downloadImageButton('altlat', $(selector), downloadCallbackAltlat, [])
+}
+
+function downloadCallbackAltlat(asSvg) {
+  const info = {
+    text: '',
+    textFormatted: getCitation(currentTaxon, true),
+    margin: 10,
+    fontSize: 10,
+    //img: `${ds.bsbi_atlas.dataRoot}combined-logos.png`
+  }
+  const filename = `${currentTaxon.shortName.replace(/[^a-z0-9]/gi, '_').toLowerCase()}-altlat`
+
+  // Temporarily change the background colour of the charts to white
+  // so that they display nicely over black backgrounds, e.g. Twitter (X)
+  // when full-size image viewed.
+  $('svg').css('background-color', 'white')
+  altlat.saveImage(asSvg, filename, info).then(() => {$('svg').css('background-color','inherit')})
 }
 
 function latPhenDataTypeDropdown($parent) {
@@ -331,7 +394,7 @@ function latPhenDataTypeDropdown($parent) {
     $opt.attr('value', t.val)
     $opt.html(t.caption).appendTo($sel)
   })
- 
+
   $sel.val('count')
 
   // This seems to be necessary if interface regenerated,
@@ -339,15 +402,18 @@ function latPhenDataTypeDropdown($parent) {
   $sel.selectpicker()
 }
 
-export function changePhenology(dataRoot, identifier, shortName) {
-   
-  if (!identifier) return 
+export function changePhenology(dataRoot, taxon) {
+
+  if (taxon) {
+    currentTaxon = taxon
+  }
+  if (!currentTaxon.identifier) return
 
   const apparencyRoot = dataRoot + 'bsbi/apparency/'
   const captionRoot = dataRoot + 'bsbi/captions2/'
 
   // Apparency all
-  const fileAll = `${apparencyRoot}all/${identifier.replace(/\./g, "_")}.csv?prevent-cache=${pcache}`
+  const fileAll = `${apparencyRoot}all/${currentTaxon.identifier.replace(/\./g, "_")}.csv?prevent-cache=${pcache}`
   d3.csv(fileAll)
     .then(function(data) {
       apparency(phen1, data)
@@ -362,14 +428,14 @@ export function changePhenology(dataRoot, identifier, shortName) {
     })
     .finally(function() {
       // Set the SVG accessibility
-      addSvgAccessibility('bsbi-apparency-chart', '>div>svg', 'Apparency chart', `Apparency of ${shortName}`)
+      addSvgAccessibility('bsbi-apparency-chart', '>div>svg', 'Apparency chart', `Apparency of ${currentTaxon.shortName}`)
     })
 
   // Apparency by latitude
-  const fileLat = `${apparencyRoot}byLat/${identifier.replace(/\./g, "_")}.csv?prevent-cache=${pcache}`
+  const fileLat = `${apparencyRoot}byLat/${currentTaxon.identifier.replace(/\./g, "_")}.csv?prevent-cache=${pcache}`
   d3.csv(fileLat)
     .then(function(data) {
-      apparencyByLatData = data // Saved so that apparencyByLat if 
+      apparencyByLatData = data // Saved so that apparencyByLat if
                                 // data type dropdown used.
       apparencyByLat(phen3, apparencyByLatData)
       $('#bsbi-apparency-by-lat-chart').css('opacity', 1)
@@ -383,21 +449,21 @@ export function changePhenology(dataRoot, identifier, shortName) {
     })
     .finally(function() {
       // Set the SVG accessibility
-      addSvgAccessibility('bsbi-apparency-by-lat-chart', '>div>svg', 'Apparency by latitude chart', `Apparency of ${shortName} by latitude`)
+      addSvgAccessibility('bsbi-apparency-by-lat-chart', '>div>svg', 'Apparency by latitude chart', `Apparency of ${currentTaxon.shortName} by latitude`)
     })
-    
+
 
   // Phenology
-  const file = `${captionRoot}${identifier.replace(/\./g, "_")}.csv`
+  const file = `${captionRoot}${currentTaxon.identifier.replace(/\./g, "_")}.csv`
 
   d3.csv(file + `?prevent-cache=${pcache}`)
     .then(function(data) {
-      phenology(phen2, data, 'bsbi-phenology-source', shortName)
+      phenology(phen2, data, 'bsbi-phenology-source', currentTaxon.shortName)
     })
 
   // Hidden download function
   window.bsbi_download_phen = function(asBmp) {
-    const filename = `${shortName.replace(' ','-')}-${identifier.replace('.','-')}`
+    const filename = `${currentTaxon.shortName.replace(' ','-')}-${currentTaxon.identifier.replace('.','-')}`
     const dataType = $('#atlas-lat-phen-data-type').val()
     const asSvg = !asBmp
 
@@ -407,15 +473,18 @@ export function changePhenology(dataRoot, identifier, shortName) {
   }
 }
 
-export function changeEcology(dataRoot, identifier, shortName) {
-   
-  if (!identifier) return 
+export function changeEcology(dataRoot, taxon) {
+
+  if (taxon) {
+    currentTaxon = taxon
+  }
+  if (!currentTaxon.identifier) return
 
   const mapRoot = dataRoot + 'bsbi/maps/'
 
   // Alt/Lat
   // Using pre-processed altlat data
-  const altlatdata = `${mapRoot}altlat/${identifier.replace(/\./g, "_")}.csv?prevent-cache=${pcache}`
+  const altlatdata = `${mapRoot}altlat/${currentTaxon.identifier.replace(/\./g, "_")}.csv?prevent-cache=${pcache}`
   d3.csv(altlatdata).then(function(data){
     // In the data passed back, there may be cases where there is no
     // data, e.g. tetrad data only exists for CI or Ireland (altlat CSV
@@ -452,12 +521,12 @@ export function changeEcology(dataRoot, identifier, shortName) {
   }
 
   // Set the SVG accessibility
-  addSvgAccessibility('bsbi-altlat-chart', '>div>svg', 'Altitude/latitude chart', `Distribution of ${shortName} by altitude and latitude`)
+  addSvgAccessibility('bsbi-altlat-chart', '>div>svg', 'Altitude/latitude chart', `Distribution of ${currentTaxon.shortName} by altitude and latitude`)
 
 
   // Hidden download function
   window.bsbi_download_altlat = function(asBmp) {
-    const filename = `${shortName.replace(' ','-')}-${identifier.replace('.','-')}`
+    const filename = `${currentTaxon.shortName.replace(' ','-')}-${currentTaxon.identifier.replace('.','-')}`
     const asSvg = !asBmp
     altlat.saveImage(asSvg,`${filename}-altlat`)
   }
@@ -506,7 +575,7 @@ export function phenology(chart, data, textId, shortName) {
   }
 
   //console.log('ls le', ls, le)
-  
+
   // Work out area of overlap between flowering and leafing
   let flowerRange = []
   let leafRange = []
@@ -556,9 +625,9 @@ export function phenology(chart, data, textId, shortName) {
 
   const svgLeaf="m12941 19084-175-112-108 54c-59 30-112 54-117 54s-97-112-203-250l-193-250h-150-151l-177-188c-97-104-186-197-197-207-19-17-23-16-139 49-66 36-124 66-128 65-6 0-219-276-359-464-10-14-30-7-149 53l-138 70-26-32c-15-17-103-124-195-238-92-115-171-208-175-208s-61 25-127 55l-119 55-90-92c-50-51-149-155-220-230l-130-138-112 100c-61 55-115 100-120 100-4 0-123-122-263-269-140-148-260-270-266-270-5-1-65 39-131 88l-122 90-233-207c-129-114-264-233-300-265l-66-58-138 80-139 80-139-147c-77-81-181-189-231-240l-91-94-161 80-160 81-169-201c-93-110-176-209-184-219-15-19-19-18-174 26-87 25-162 42-167 39s-79-90-164-194c-140-171-158-188-178-181-12 5-73 30-134 56-62 26-116 45-121 43-5-1-105-104-222-226-192-202-216-223-239-218-14 3-82 23-151 44l-126 38-249-262c-138-145-252-263-255-263s-45 55-95 124c-49 68-92 121-96 117s-98-138-209-299l-201-292-138 69-139 69-223-336c-123-184-227-339-230-344s-83-20-177-33c-95-12-174-25-176-27s-52-107-111-234c-59-126-111-233-114-237-4-4-62 8-130 27-69 19-125 34-127 32-1-1-57-139-125-307-67-168-124-307-125-309-2-2-69-14-150-27-80-12-147-24-149-26-3-2-30-125-60-273-31-149-58-272-60-274-3-2-68 2-146 8-77 7-144 10-147 6-3-3-16-132-28-286s-23-281-25-283-79-18-171-36l-168-34-2-380-3-381-193-79c-139-57-192-84-192-95 0-9 29-149 65-310s65-295 63-296c-2-2-86-43-188-91s-188-90-192-93 45-170 108-371l114-365-67-65c-38-36-110-104-162-152l-93-86 136-329c75-181 136-332 136-337 0-4-58-90-128-190-71-99-132-187-136-194-6-10 62-142 290-561 15-26 21-48 16-55-5-6-66-82-135-170-70-87-127-162-127-166 0-5 108-183 239-396l240-387-90-99c-49-54-89-102-89-107s111-164 246-353c136-188 253-353 261-365 13-20 10-32-43-149-55-124-56-128-38-143 11-9 182-159 381-334l361-317-5-43c-3-23-13-105-24-182-10-77-16-141-15-143 4-3 510-150 857-248 15-4 13-20-18-141-18-74-32-137-31-139 2-1 138-21 303-42 279-37 309-43 431-86 238-83 552-155 824-188 141-17 699-17 840 0 648 79 1266 287 1860 624 111 64 378 237 494 320 46 34 67 44 62 32-4-11-35-107-68-214-397-1294-750-2359-915-2764-72-178-107-247-165-332-72-104-110-172-148-269-56-142-97-325-73-325 29 0 420 94 429 104 6 6 46 128 89 271 42 143 142 478 222 745 79 267 202 679 273 915 71 237 185 621 255 855s151 506 181 604c30 99 54 185 54 193 0 27 18 12 35-30 31-80 204-397 305-558 282-454 581-807 1323-1564l245-250 114 113c62 61 116 112 120 112s118-122 253-270c136-149 250-270 254-270 3 0 40 68 81 151s78 152 82 155c3 2 122-66 263-152 180-110 259-153 264-145 5 7 18 57 30 112l22 99h515c283 0 514 1 514 3s-20 52-44 112l-44 110 479 3c310 1 479 6 479 12s-14 58-31 116-30 106-28 108c2 1 179 26 392 56 214 30 392 57 398 60 5 4-4 44-21 95-16 49-30 94-30 100 0 7 112 32 288 64 158 29 296 55 307 58 20 4 20 7 9 141-7 75-12 138-11 138 5 5 558 214 564 214 5 0 14 4 21 9 13 8 10 15-74 227-3 5 144 82 326 169 181 88 330 164 330 170s-30 84-66 174c-53 134-63 166-52 176 7 7 105 85 218 175s210 168 217 174c9 8-1 46-42 164-30 84-55 157-55 162s101 91 225 190 225 183 225 186-56 66-124 140l-125 135 194 217c107 119 195 219 194 222 0 3-45 41-100 85-54 44-111 90-125 101l-26 21 145 289c80 159 147 294 148 299 1 6-25 25-57 44-33 18-78 44-101 57l-41 24 124 226c69 124 124 229 122 234-2 4-42 42-90 84l-87 76 28 63c15 34 72 158 126 276l98 214-39 36c-21 20-68 61-103 93l-64 56 136 261c76 144 137 263 137 265 0 3-57 23-127 46-71 24-132 46-136 50-4 3 33 128 82 276s88 270 86 272-45-6-95-18c-51-11-95-19-98-16-5 6-4 13 77 405 28 135 49 246 47 248-1 2-36-11-76-27-39-17-74-30-76-27-2 2 1 111 6 243 5 131 10 284 10 339v100l-87-10c-49-6-89-8-90-5s29 140 66 305 67 301 66 303c-2 2-53-22-114-52-91-46-111-53-111-39 0 10 9 144 20 298s20 297 20 317v37l-72-20c-40-11-81-22-90-25-17-5-18 16-18 350 0 278-3 356-12 356-7 0-53-9-102-20s-91-19-92-17c-1 1-17 106-35 232-18 127-35 233-38 237-3 3-39-7-79-24s-74-29-76-27c-3 2-15 155-27 339s-23 336-25 338c-1 2-45-15-98-39-53-23-99-39-102-36s-17 167-30 364c-12 197-23 359-24 361 0 1-43-32-96-73s-99-75-103-75-26 141-50 313c-23 171-44 319-47 328-4 14-14 14-102-6-53-12-100-20-103-16-4 3-31 143-60 309-30 167-57 309-61 315-4 7-30 0-77-21-39-18-73-32-76-32s-5 149-5 330c0 182-3 330-6 330s-49-29-101-65c-53-36-97-64-98-63-2 2-8 154-15 338-6 184-13 337-15 338-2 2-40-24-85-57-44-34-84-61-89-61-4 0-7 10-5 23 2 12 11 139 19 282s18 291 21 329l6 69-126-5c-114-5-126-4-122 11 8 27 126 657 126 673 0 10-37 25-115 48-104 30-114 35-110 54 3 12 16 71 30 131 102 438 125 539 125 551 0 10-24 14-99 16l-98 3 112 248 113 248-27 10c-14 6-61 22-104 35l-77 25 52 97c28 53 75 142 105 196 29 55 52 100 51 101-2 1-42 17-90 35-49 18-88 38-88 45s11 86 25 175c14 90 24 166 23 170-2 4-81-43-177-106z"
   const svgFlower="M1048.256,633.499c212.849-356.854,285.555-335.845-191.845-590.438C384.889,283.217,484.493,353.496,664.566,633.499 c-310.065-285.921-239.639-396.021-620.823,0c64.157,504.336,28.591,448.084,502.257,364.911 c-416.078,181.718-421.368,113.233-191.845,590.438c503.843,103.322,428.181,97.12,502.257-364.911 c69.825,407.236,10.978,486.041,502.257,364.911c233.666-457.592,211.268-427.46-191.845-590.438 c452.881,101.063,461.097,199.985,502.257-364.911C1305.872,228.612,1381.606,318.787,1048.256,633.499z M856.411,1100.523 c-114.579,0-207.463-92.884-207.463-207.463s92.884-207.463,207.463-207.463c114.578,0,207.463,92.884,207.463,207.463 S970.989,1100.523,856.411,1100.523z"
-  
+
   // const svgBoth="M 10482.56 6334.99 c 2128.49 -3568.54 2855.55 -3358.45 -1918.45 -5904.38 C 3848.89 2832.17 4844.93 3534.96 6645.66 6334.99 c -3100.65 -2859.21 -2396.39 -3960.21 -6208.23 0 c 641.57 5043.36 285.91 4480.84 5022.57 3649.11 c -4160.78 1817.18 -4213.68 1132.33 -1918.45 5904.38 c 5038.43 1033.22 4281.81 971.2 5022.57 -3649.11 c 698.25 4072.36 109.78 4860.41 5022.57 3649.11 c 2336.66 -4575.92 2112.68 -4274.6 -1918.45 -5904.38 c 4528.81 1010.63 4610.97 1999.85 5022.57 -3649.11 C 13058.72 2286.12 13816.06 3187.87 10482.56 6334.99 z M 8564.11 11005.23 c -1145.79 0 -2074.63 -928.84 -2074.63 -2074.63 s 928.84 -2074.63 2074.63 -2074.63 c 1145.78 0 2074.63 928.84 2074.63 2074.63 S 9709.89 11005.23 8564.11 11005.23 z m-2000 7000-175-112-108 54c-59 30-112 54-117 54s-97-112-203-250l-193-250h-150-151l-177-188c-97-104-186-197-197-207-19-17-23-16-139 49-66 36-124 66-128 65-6 0-219-276-359-464-10-14-30-7-149 53l-138 70-26-32c-15-17-103-124-195-238-92-115-171-208-175-208s-61 25-127 55l-119 55-90-92c-50-51-149-155-220-230l-130-138-112 100c-61 55-115 100-120 100-4 0-123-122-263-269-140-148-260-270-266-270-5-1-65 39-131 88l-122 90-233-207c-129-114-264-233-300-265l-66-58-138 80-139 80-139-147c-77-81-181-189-231-240l-91-94-161 80-160 81-169-201c-93-110-176-209-184-219-15-19-19-18-174 26-87 25-162 42-167 39s-79-90-164-194c-140-171-158-188-178-181-12 5-73 30-134 56-62 26-116 45-121 43-5-1-105-104-222-226-192-202-216-223-239-218-14 3-82 23-151 44l-126 38-249-262c-138-145-252-263-255-263s-45 55-95 124c-49 68-92 121-96 117s-98-138-209-299l-201-292-138 69-139 69-223-336c-123-184-227-339-230-344s-83-20-177-33c-95-12-174-25-176-27s-52-107-111-234c-59-126-111-233-114-237-4-4-62 8-130 27-69 19-125 34-127 32-1-1-57-139-125-307-67-168-124-307-125-309-2-2-69-14-150-27-80-12-147-24-149-26-3-2-30-125-60-273-31-149-58-272-60-274-3-2-68 2-146 8-77 7-144 10-147 6-3-3-16-132-28-286s-23-281-25-283-79-18-171-36l-168-34-2-380-3-381-193-79c-139-57-192-84-192-95 0-9 29-149 65-310s65-295 63-296c-2-2-86-43-188-91s-188-90-192-93 45-170 108-371l114-365-67-65c-38-36-110-104-162-152l-93-86 136-329c75-181 136-332 136-337 0-4-58-90-128-190-71-99-132-187-136-194-6-10 62-142 290-561 15-26 21-48 16-55-5-6-66-82-135-170-70-87-127-162-127-166 0-5 108-183 239-396l240-387-90-99c-49-54-89-102-89-107s111-164 246-353c136-188 253-353 261-365 13-20 10-32-43-149-55-124-56-128-38-143 11-9 182-159 381-334l361-317-5-43c-3-23-13-105-24-182-10-77-16-141-15-143 4-3 510-150 857-248 15-4 13-20-18-141-18-74-32-137-31-139 2-1 138-21 303-42 279-37 309-43 431-86 238-83 552-155 824-188 141-17 699-17 840 0 648 79 1266 287 1860 624 111 64 378 237 494 320 46 34 67 44 62 32-4-11-35-107-68-214-397-1294-750-2359-915-2764-72-178-107-247-165-332-72-104-110-172-148-269-56-142-97-325-73-325 29 0 420 94 429 104 6 6 46 128 89 271 42 143 142 478 222 745 79 267 202 679 273 915 71 237 185 621 255 855s151 506 181 604c30 99 54 185 54 193 0 27 18 12 35-30 31-80 204-397 305-558 282-454 581-807 1323-1564l245-250 114 113c62 61 116 112 120 112s118-122 253-270c136-149 250-270 254-270 3 0 40 68 81 151s78 152 82 155c3 2 122-66 263-152 180-110 259-153 264-145 5 7 18 57 30 112l22 99h515c283 0 514 1 514 3s-20 52-44 112l-44 110 479 3c310 1 479 6 479 12s-14 58-31 116-30 106-28 108c2 1 179 26 392 56 214 30 392 57 398 60 5 4-4 44-21 95-16 49-30 94-30 100 0 7 112 32 288 64 158 29 296 55 307 58 20 4 20 7 9 141-7 75-12 138-11 138 5 5 558 214 564 214 5 0 14 4 21 9 13 8 10 15-74 227-3 5 144 82 326 169 181 88 330 164 330 170s-30 84-66 174c-53 134-63 166-52 176 7 7 105 85 218 175s210 168 217 174c9 8-1 46-42 164-30 84-55 157-55 162s101 91 225 190 225 183 225 186-56 66-124 140l-125 135 194 217c107 119 195 219 194 222 0 3-45 41-100 85-54 44-111 90-125 101l-26 21 145 289c80 159 147 294 148 299 1 6-25 25-57 44-33 18-78 44-101 57l-41 24 124 226c69 124 124 229 122 234-2 4-42 42-90 84l-87 76 28 63c15 34 72 158 126 276l98 214-39 36c-21 20-68 61-103 93l-64 56 136 261c76 144 137 263 137 265 0 3-57 23-127 46-71 24-132 46-136 50-4 3 33 128 82 276s88 270 86 272-45-6-95-18c-51-11-95-19-98-16-5 6-4 13 77 405 28 135 49 246 47 248-1 2-36-11-76-27-39-17-74-30-76-27-2 2 1 111 6 243 5 131 10 284 10 339v100l-87-10c-49-6-89-8-90-5s29 140 66 305 67 301 66 303c-2 2-53-22-114-52-91-46-111-53-111-39 0 10 9 144 20 298s20 297 20 317v37l-72-20c-40-11-81-22-90-25-17-5-18 16-18 350 0 278-3 356-12 356-7 0-53-9-102-20s-91-19-92-17c-1 1-17 106-35 232-18 127-35 233-38 237-3 3-39-7-79-24s-74-29-76-27c-3 2-15 155-27 339s-23 336-25 338c-1 2-45-15-98-39-53-23-99-39-102-36s-17 167-30 364c-12 197-23 359-24 361 0 1-43-32-96-73s-99-75-103-75-26 141-50 313c-23 171-44 319-47 328-4 14-14 14-102-6-53-12-100-20-103-16-4 3-31 143-60 309-30 167-57 309-61 315-4 7-30 0-77-21-39-18-73-32-76-32s-5 149-5 330c0 182-3 330-6 330s-49-29-101-65c-53-36-97-64-98-63-2 2-8 154-15 338-6 184-13 337-15 338-2 2-40-24-85-57-44-34-84-61-89-61-4 0-7 10-5 23 2 12 11 139 19 282s18 291 21 329l6 69-126-5c-114-5-126-4-122 11 8 27 126 657 126 673 0 10-37 25-115 48-104 30-114 35-110 54 3 12 16 71 30 131 102 438 125 539 125 551 0 10-24 14-99 16l-98 3 112 248 113 248-27 10c-14 6-61 22-104 35l-77 25 52 97c28 53 75 142 105 196 29 55 52 100 51 101-2 1-42 17-90 35-49 18-88 38-88 45s11 86 25 175c14 90 24 166 23 170-2 4-81-43-177-106z"
-  
+
   // Source
   if (textId) {
     const flowerText = tweakRef(data[0].phenFlowerRef)
@@ -612,7 +681,7 @@ export function phenology(chart, data, textId, shortName) {
   })
 
   // Set the SVG accessibility
-  addSvgAccessibility('bsbi-phenology-chart', '>div>svg', 'Phenology chart', `Leaf and flower phenology of ${shortName}`)
+  addSvgAccessibility('bsbi-phenology-chart', '>div>svg', 'Phenology chart', `Leaf and flower phenology of ${currentTaxon.shortName}`)
 
   return ret
 
@@ -623,7 +692,7 @@ export function phenology(chart, data, textId, shortName) {
     // Replace 'Poland, J. personal observation' with 'John Poland, personal observation'
     const $span1 = $tmp.children('span').eq(0)
     const $span2 = $tmp.children('span').eq(1)
-    if ($span1 && $span2 
+    if ($span1 && $span2
       && $span1.text() === 'Poland, J.'
       && $span2.text() === 'personal observation') {
       $span1.text('John Poland,')
@@ -660,7 +729,7 @@ export function apparencyByLat(chart, data) {
     metrics: metrics,
     spread: true
   })
-  
+
 }
 
 export function altLat(chart, data) {

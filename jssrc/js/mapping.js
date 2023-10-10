@@ -4,7 +4,7 @@ import { setCookie, getCookie, getCitation, addSvgAccessibility} from './utils'
 const $ = jQuery // eslint-disable-line no-undef
 const ds = drupalSettings // eslint-disable-line no-undef
 
-let currentTaxon 
+let currentTaxon
 let gridStyle = getCookie('gridstyle') ? getCookie('gridstyle') : 'none'
 let backdrop = getCookie('backdrop') ? getCookie('backdrop') : 'colour_elevation'
 let slippyMap, staticMap
@@ -221,7 +221,7 @@ export function setControlState() {
   }
 
   // Enable/disable the hybrid map type option as appropriate
-  const $hybridopts = $('.atlas-map-type-selector option[value="hybrid"]') 
+  const $hybridopts = $('.atlas-map-type-selector option[value="hybrid"]')
   if (isHybrid) {
     $hybridopts.show()
   } else {
@@ -270,7 +270,7 @@ function gridStyleSelector($parent) {
     $opt.attr('value', s.val)
     $opt.html(s.caption).appendTo($sel)
   })
- 
+
   $sel.val(gridStyle)
 
   // This seems to be necessary if interface regenerated,
@@ -284,7 +284,7 @@ function gridStyleSelector($parent) {
 
 //   function makeRadio(label, val, checked) {
 //     //$('<div class="radio"><label><input type="radio" name="atlas-grid-type" value="'+ val + '" ' + checked + '>' + label + '</label></div>').appendTo($container)
-  
+
 //     const $div = $('<div>').appendTo($container)
 //     $div.attr('class', 'radio')
 //     const $label = $('<label>').appendTo($div)
@@ -366,7 +366,7 @@ function boundarySelector($parent) {
     $opt.attr('value', b.val)
     $opt.html(b.caption).appendTo($sel)
   })
- 
+
   $sel.val(boundaryType)
 
   // This seems to be necessary if interface regenerated,
@@ -390,7 +390,7 @@ function mapInterfaceToggle($parent) {
   $slippyLabel.append("Zoomable")
 
   // Busy indicator
-  const $loader = $('<div id="atlas-loader" style="display: none">').appendTo($container) 
+  const $loader = $('<div id="atlas-loader" style="display: none">').appendTo($container)
   $('<div class="atlas-loader">').appendTo($loader)
 
   $('input[type=radio][name="mapType"]').change(function() {
@@ -521,11 +521,11 @@ function mapImageButton($parent, i) {
   $container.addClass('atlas-save-map-image')
   $container.hide()
 
-  const $svg = $('<svg>').appendTo($container)
-  const $t = $('<text>').appendTo($svg)
-  $t.attr('x', '10')
-  $t.attr('y', '20')
-  $('<br>').appendTo($container)
+  // const $svg = $('<svg>').appendTo($container)
+  // const $t = $('<text>').appendTo($svg)
+  // $t.attr('x', '10')
+  // $t.attr('y', '20')
+  // $('<br>').appendTo($container)
 
   const $button = $('<button>').appendTo($container)
   $button.addClass('btn btn-default')
@@ -538,7 +538,8 @@ function mapImageButton($parent, i) {
       fontSize: 10,
       //img: `${ds.bsbi_atlas.dataRoot}combined-logos.png`
     }
-    staticMap.saveMap(imageType === 'svg', info, 'atlas-image')
+    const filename = `${currentTaxon.shortName.replace(/[^a-z0-9]/gi, '_').toLowerCase()}-map`
+    staticMap.saveMap(imageType === 'svg', info, filename)
   })
 
   makeRadio('PNG', 'png', true)
@@ -585,10 +586,10 @@ function mapDownloadButton($parent, i) {
   $divModalGrey.css('display', 'none')
 
   $('<p>').html(`
-    By downloading these data, you agree to adhere to the terms of the 
-    <a href="https://creativecommons.org/licenses/by/4.0/">CC-BY 4.0 licence</a>. 
-    Please familiarise yourself with its requirements. 
-    The recommended citation for these data is given on the right-hand 
+    By downloading these data, you agree to adhere to the terms of the
+    <a href="https://creativecommons.org/licenses/by/4.0/">CC-BY 4.0 licence</a>.
+    Please familiarise yourself with its requirements.
+    The recommended citation for these data is given on the right-hand
     side of this page under the taxon caption.
   `).appendTo($divModal)
 
@@ -663,7 +664,7 @@ function opacitySlider($parent) {
 
   const initOpacity = 70
   $('#atlas-leaflet-svg').css('opacity', initOpacity/100)
-  
+
   // Overall control container
   const $container = $('<div>').appendTo($parent)
   $container.addClass('atlas-opacity-slider-control')
@@ -705,7 +706,7 @@ function statusCheckbox($parent) {
 }
 
 function statusControl($parent) {
-  
+
   // Overall control container
   const $container = $('<div>').appendTo($parent)
   $container.addClass('atlas-period-slider-control')
@@ -782,12 +783,12 @@ function resolutionControl($parent, i) {
     $radio.attr('value', val)
     $radio.css('margin-left', 0)
     if (checked) $radio.prop('checked', true)
-    
+
 
     $radio.change(function () {
 
       resolution = $(this).val()
-  
+
       // Update controls mirrored in other blocks
       $('.bsbi-resolution-' + resolution).prop("checked", true)
       setControlState()
@@ -863,7 +864,7 @@ function insetSelector($parent) {
   const $sel = $('<select>').appendTo($parent)
   $sel.addClass('selectpicker')
   $sel.addClass('atlas-inset-control')
-  
+
   //$sel.addClass('atlas-backdrop-selector')
   $sel.attr('data-width', '100%')
   $sel.on('changed.bs.select', function () {
@@ -887,8 +888,8 @@ function insetSelector($parent) {
   $sel.selectpicker()
 }
 
-function insetRadios($parent, i) { 
-  
+function insetRadios($parent, i) {
+
   // Overall control container
   const $container = $('<div>').appendTo($parent)
   //$container.attr('id', 'atlas-inset-control')
@@ -951,7 +952,7 @@ export function createMaps(selector) {
   //console.log('bounds', transOptsSel.BI4)
   //{xmin: 337373, ymin: -92599, xmax: 427671, ymax: -6678}
 
-  
+
   transOptsSel.BI1.bounds.xmin = -230000,  //No insets
   transOptsSel.BI2.bounds.xmin = -230000,  //CI inset
 
@@ -959,7 +960,7 @@ export function createMaps(selector) {
   bsbiDataAccess.bsbiDataRoot = ds.bsbi_atlas.dataRoot + 'bsbi/maps/'
   bsbiDataAccess.showStatus = false
 
-  // Data access 
+  // Data access
   const mapTypesSel = {
     'status_29': bsbiDataAccess.status_29,
     'status_30_69': bsbiDataAccess.status_30_69,
