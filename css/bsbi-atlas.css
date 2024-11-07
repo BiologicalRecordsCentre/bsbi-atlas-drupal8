@@ -190,7 +190,7 @@ taxon {
 }
 
 .legendDiv {
-  font-size: 14px;
+  font-size: 14px !important;
 }
 
 .dropdown-menu {
@@ -378,7 +378,8 @@ div.sect-subhead {
   background: rgba(0, 0, 0, 0.5);
   backdrop-filter: blur(3px);
   z-index: 10000;
-}@media print {
+}
+@media print {
   .nav-tabs {
     display: none;
   }

@@ -168,6 +168,13 @@ export function setControlState() {
     $('.atlas-opacity-slider-control').hide()
   }
 
+  // show WMS legend checkbox
+  if (displayedMapType === 'slippy') {
+    $('.atlas-wms-legend-checkbox-control').show()
+  } else {
+    $('.atlas-wms-legend-checkbox-control').hide()
+  }
+  
   // status checkbox enabled and checked value
   const disableStatus = currentTaxon.noStatus || currentTaxon.isHybrid
   const isHybrid = currentTaxon.hybridMapping
@@ -687,6 +694,28 @@ function opacitySlider($parent) {
   })
 }
 
+function wmsLegendCheckbox($parent) {
+  // Overall control container
+  const $container = $('<div>').appendTo($parent)
+  $container.addClass('atlas-wms-legend-checkbox-control')
+
+  // WMS legend on/off toggle
+  const $checDiv = $('<div class="checkbox">').appendTo($container)
+  //$checDiv.css('margin-top', '4.3em')
+
+  $('<label><input type="checkbox" checked class="atlas-wms-legend-checkbox"/><span>Show background map legend</span></label>').appendTo($checDiv)
+
+  $('.atlas-wms-legend-checkbox').change(function(e) {
+    // Update controls mirrored in other blocks
+    $('.atlas-wms-legend-checkbox').prop("checked", $(this).is(':checked'))
+    if ($(this).is(':checked')) {
+      $('#wms-layer-legend').show()
+    } else {
+      $('#wms-layer-legend').hide()
+    }
+  })
+}
+
 function statusCheckbox($parent) {
   // Overall control container
   const $container = $('<div>').appendTo($parent)
@@ -975,63 +1004,26 @@ export function createMaps(selector) {
   }
 
   // Basemaps
-  const basemapConfigs = [
-    {
-      name: 'Open Street Map',
-      type: 'tileLayer',
-      selected: true,
-      url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-      opts: {
-        maxZoom: 19,
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+  console.log(ds.bsbi_atlas.dataMaps)
+  let basemapConfigs
+  try {
+    basemapConfigs = JSON.parse(ds.bsbi_atlas.dataMaps)
+  } catch (e) {
+    console.error('There was an error parsing the JSON map definitions from the BSBI atlas configuration.')
+    console.log('Error message: ', e)
+    basemapConfigs = [
+      {
+        name: 'Open Street Map',
+        type: 'tileLayer',
+        selected: true,
+        url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+        opts: {
+          maxZoom: 19,
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }
       }
-    },
-    {
-      name: 'Stamen Black & White',
-      type: 'tileLayer',
-      selected: false,
-      url: 'https://stamen-tiles-{s}.a.ssl.fastly.net/toner-lite/{z}/{x}/{y}{r}.{ext}',
-      opts: {
-        attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-        subdomains: 'abcd',
-        minZoom: 0,
-        maxZoom: 20,
-        ext: 'png'
-      }
-    },
-    {
-      name: 'Open Topo Map',
-      type: 'tileLayer',
-      selected: false,
-      url: 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
-      opts: {
-        maxZoom: 17,
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)'
-      }
-    },
-    {
-      name: 'GEBCO 2020 Elevation',
-      type: 'wms',
-      selected: false,
-      url: 'https://www.gebco.net/data_and_products/gebco_web_services/2020/mapserv?',
-      opts: {
-        layers: 'GEBCO_2020_Grid_2',
-        maxZoom: 17,
-        attribution: 'Imagery reproduced from the GEBCO_2020 Grid, GEBCO Compilation Group (2020) GEBCO 2020 Grid (doi:10.5285/a29c5465-b138-234d-e053-6c86abc040b9)'
-      }
-    },
-    {
-      name: 'Copernicus elevation aspect',
-      type: 'wms',
-      selected: false,
-      url: 'https://copernicus.discomap.eea.europa.eu/arcgis/services/Elevation/Aspect/MapServer/WMSServer?',
-      opts: {
-        layers: 'image',
-        maxZoom: 17,
-        attribution: '&copy; European Commission'
-      }
-    }
-  ]
+    ]
+  }
 
   // Map height
   const height = 650
@@ -1085,6 +1077,30 @@ export function createMaps(selector) {
     showCountries: boundaryType === 'country'
   })
   $('#slippyAtlasMain').hide()
+
+  // Display WMS legend if available when Leaflet background
+  // is changed.
+  // Make background transparent? 
+  // No Geoserver option to do it, but could do it in code?
+  // https://gamedev.stackexchange.com/questions/19257/how-do-i-make-magenta-in-my-png-transparent-in-html5-canvas-js
+  $(".leaflet-control-layers-selector").change( function () {
+    $('#wms-layer-legend').remove()
+    const layerName = $(this).parent().text()
+    const mapConfig = basemapConfigs.find(mc => mc.name.trim() === layerName.trim())
+    if (mapConfig.legend) {
+      const img = $('<img>').appendTo($('.leaflet-top.leaflet-left'))
+      img.attr('id', 'wms-layer-legend')
+      img.addClass('leaflet-control')
+      img.addClass('leaflet-touch')
+      img.addClass('leaflet-bar')
+      if ($('.atlas-wms-legend-checkbox').prop('checked')) {
+        $('#wms-layer-legend').show()
+      } else {
+        $('#wms-layer-legend').hide()
+      }
+      img.attr('src', mapConfig.legend)
+    }
+  })
 
   $(window).resize(function() {
     // Get current width of map div
@@ -1196,7 +1212,7 @@ export function createMapControls(selector) {
   insetSelector(mapControlRow(selector))
   gridStyleSelector(mapControlRow(selector))
   boundarySelector(mapControlRow(selector))
-
+  wmsLegendCheckbox(mapControlRow(selector))
   opacitySlider(mapControlRow(selector))
 
   $(selector).each(function(i) {

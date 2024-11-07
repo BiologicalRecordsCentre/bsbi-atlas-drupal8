@@ -1,9 +1,11 @@
 import * as d3 from 'd3'
-import { downloadImageButton, getCitation } from './utils'
+import { setCookie, getCookie, downloadImageButton, getCitation } from './utils'
 
 const $=jQuery // eslint-disable-line no-undef
 let phen1, phen2, phen3, altlat
 let apparencyByLatData
+let apparencyByLatScaling = getCookie('apparency-by-lat-scaling') ? getCookie('apparency-by-lat-scaling') : 'count'
+
 import { addSvgAccessibility } from './utils'
 import { pcache } from './utils'
 
@@ -384,6 +386,10 @@ function latPhenDataTypeDropdown($parent) {
   $sel.addClass('selectpicker')
   $sel.attr('data-width', '100%')
   $sel.on('changed.bs.select', function () {
+
+    apparencyByLatScaling = $(this).val()
+    setCookie('apparency-by-lat-scaling', apparencyByLatScaling, 30)
+
     if (apparencyByLatData.length) {
       apparencyByLat(phen3, apparencyByLatData)
     }
@@ -395,7 +401,7 @@ function latPhenDataTypeDropdown($parent) {
     $opt.html(t.caption).appendTo($sel)
   })
 
-  $sel.val('count')
+  $sel.val(apparencyByLatScaling)
 
   // This seems to be necessary if interface regenerated,
   // e.g. changing from tabbed to non-tabbed display.
@@ -554,10 +560,16 @@ export function phenology(chart, data, textId, shortName) {
   // Chart
   const m2d = [1, 32, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 365]
 
+
   const fs = data[0].phenFlowerStart
-  const fe = data[0].phenFlowerEnd
+  let fe = data[0].phenFlowerEnd
   const ls = data[0].phenLeafStart
-  const le = data[0].phenLeafEnd
+  let le = data[0].phenLeafEnd
+
+  // Flower end and leaf end can be blank, in which
+  // case the should be set to the same value as start
+  fe = fe ? fe : fs
+  le = le ? le : ls
 
   let flowerStart = m2d[Number(fs)-1]
   let flowerEnd = m2d[Number(fe)]
@@ -704,10 +716,10 @@ export function phenology(chart, data, textId, shortName) {
 
 export function apparencyByLat(chart, data) {
   // Map text to numeric values and add taxon
-  const dataType = $('#atlas-lat-phen-data-type').val()
-  //console.log('dataType', dataType)
+  //const dataType = $('#atlas-lat-phen-data-type').val()
+  console.log('apparencyByLatScaling', apparencyByLatScaling)
 
-  const numeric = data.filter(d => d.type === dataType).map(d => {
+  const numeric = data.filter(d => d.type === apparencyByLatScaling).map(d => {
     const nd = {taxon: 'taxon'}
     Object.keys(d).forEach(function(k){
       nd[k] = Number(d[k])

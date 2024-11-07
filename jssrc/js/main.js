@@ -12,7 +12,7 @@ import { updateTrendSummary2, trendSummary2, trendSave } from './trendSummary'
 import { trendExclusion } from './trends'
 import { pcache } from './utils'
 import { TaxonPickerField, Taxon } from 'taxonpicker'
-import taxa from './atlasnames.json'
+import taxa from './atlasnames.js'
 
 const $ = jQuery // eslint-disable-line no-undef
 const ds = drupalSettings // eslint-disable-line no-undef
@@ -236,19 +236,20 @@ export function main() {
 
   function taxonSelectors() {
 
-    const selectorIds = []
+    // const selectorIds = []
     const taxonPickers = []
     const taxaListRef = []
     const defaultDdbid = null
     taxonSelectors = []
 
-    $('.bsbi-atlas-taxon-selector').each(function() {
-      selectorIds.push($(this).parent().attr('data-sel-id'))
-    })
+    // $('.bsbi-atlas-taxon-selector').each(function() {
+    //   selectorIds.push($(this).parent().attr('data-sel-id'))
+    // })
 
     $('.bsbi-atlas-taxon-selector').each(function() {
 
-      const idString = $(this).parent().attr('data-sel-id')
+      //const idString = $(this).parent().attr('data-sel-id')
+      const idString = Math.floor(Math.random() * 100000)
 
       const $selFlexParent = $('<div>').appendTo($(this))
       $selFlexParent.addClass('bsbi-atlas-taxon-selector-flex-parent')

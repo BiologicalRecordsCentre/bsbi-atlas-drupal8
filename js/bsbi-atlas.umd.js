@@ -1382,6 +1382,7 @@
 
   var phen1$1, phen2$1, phen3, altlat$1;
   var apparencyByLatData;
+  var apparencyByLatScaling = getCookie('apparency-by-lat-scaling') ? getCookie('apparency-by-lat-scaling') : 'count';
   var currentTaxon$3;
   function createPhenology(sel) {
     var $phenFlexParent = $$7('<div>').appendTo($$7(sel)); //const $phenSource = $('<div>').appendTo($phenFlexLeft)
@@ -1672,6 +1673,9 @@
     $sel.addClass('selectpicker');
     $sel.attr('data-width', '100%');
     $sel.on('changed.bs.select', function () {
+      apparencyByLatScaling = $$7(this).val();
+      setCookie('apparency-by-lat-scaling', apparencyByLatScaling, 30);
+
       if (apparencyByLatData.length) {
         apparencyByLat(phen3, apparencyByLatData);
       }
@@ -1681,7 +1685,7 @@
       $opt.attr('value', t.val);
       $opt.html(t.caption).appendTo($sel);
     });
-    $sel.val('count'); // This seems to be necessary if interface regenerated,
+    $sel.val(apparencyByLatScaling); // This seems to be necessary if interface regenerated,
     // e.g. changing from tabbed to non-tabbed display.
 
     $sel.selectpicker();
@@ -1830,7 +1834,11 @@
     var fs = data[0].phenFlowerStart;
     var fe = data[0].phenFlowerEnd;
     var ls = data[0].phenLeafStart;
-    var le = data[0].phenLeafEnd;
+    var le = data[0].phenLeafEnd; // Flower end and leaf end can be blank, in which
+    // case the should be set to the same value as start
+
+    fe = fe ? fe : fs;
+    le = le ? le : ls;
     var flowerStart = m2d[Number(fs) - 1];
     var flowerEnd = m2d[Number(fe)];
     var leafStart = m2d[Number(ls) - 1];
@@ -1993,10 +2001,10 @@
   }
   function apparencyByLat(chart, data) {
     // Map text to numeric values and add taxon
-    var dataType = $$7('#atlas-lat-phen-data-type').val(); //console.log('dataType', dataType)
-
+    //const dataType = $('#atlas-lat-phen-data-type').val()
+    console.log('apparencyByLatScaling', apparencyByLatScaling);
     var numeric = data.filter(function (d) {
-      return d.type === dataType;
+      return d.type === apparencyByLatScaling;
     }).map(function (d) {
       var nd = {
         taxon: 'taxon'
@@ -3032,13 +3040,11 @@
     $td.css('text-align', 'center');
     $td = $$5('<td>').appendTo($tr).append(genLink('https://www.biodiversitywales.org.uk/Section-7'));
     var $refs = $$5('<div style="font-size: 0.8em; margin: 0.5em 0 1em 0">').appendTo($sect);
-    $$5('<span style="vertical-align: super">').text('1').appendTo($refs); //$('<span>').text(' Rare - species recorded in 15 or fewer hectads in GB 2000-2019; scarce - species recorded in 16-100 hectads in GB 2000-2019; not rare or scarce - species recorded in more than 100 hectads in GB 2000-2019.').appendTo($refs)
-
-    $$5('<span>').text(' Rare - species recorded in 15 or fewer hectads in GB 2000-2019; scarce - species recorded in 16-100 hectads in GB 2000-2019.').appendTo($refs);
+    $$5('<span style="vertical-align: super">').text('1').appendTo($refs);
+    $$5('<span>').text(' Rare - species recorded in 15 or fewer native hectads in GB 2000-2019; scarce - species recorded in 16-100 native hectads in GB 2000-2019.').appendTo($refs);
     $refs.append($$5('<br/>'));
-    $$5('<span style="vertical-align: super">').text('2').appendTo($refs); //$('<span>').text(' Rare - species recorded in 10 or fewer hectads in Ireland 2000-2019; scarce - species recorded in 11-25 hectads in Ireland 2000-2019; not rare or scarce - species recorded in more than 25 hectads in Ireland 2000-2019.').appendTo($refs)
-
-    $$5('<span>').text(' Rare - species recorded in 10 or fewer hectads in Ireland 2000-2019; scarce - species recorded in 11-25 hectads in Ireland 2000-2019.').appendTo($refs);
+    $$5('<span style="vertical-align: super">').text('2').appendTo($refs);
+    $$5('<span>').text(' Rare - species recorded in 10 or fewer native hectads in Ireland 2000-2019; scarce - species recorded in 11-25 native hectads in Ireland 2000-2019.').appendTo($refs);
     $refs.append($$5('<br/>'));
     $$5('<span style="vertical-align: super">').text('3').appendTo($refs);
     $$5('<span>').text(' EX – extinct; EW – extinct in the wild; RE – regionally extinct; CR – critically endangered; EN – endangered; VU – vulnerable; NT – near threatened; LC – least concern; WL – waiting list; PL – parking list.').appendTo($refs); // const $p1 = $('<p>').appendTo($sect)
@@ -5807,16 +5813,17 @@
     }
 
     function taxonSelectors() {
-      var selectorIds = [];
+      // const selectorIds = []
       var taxonPickers = [];
       var taxaListRef = [];
       var defaultDdbid = null;
-      taxonSelectors = [];
+      taxonSelectors = []; // $('.bsbi-atlas-taxon-selector').each(function() {
+      //   selectorIds.push($(this).parent().attr('data-sel-id'))
+      // })
+
       $('.bsbi-atlas-taxon-selector').each(function () {
-        selectorIds.push($(this).parent().attr('data-sel-id'));
-      });
-      $('.bsbi-atlas-taxon-selector').each(function () {
-        var idString = $(this).parent().attr('data-sel-id');
+        //const idString = $(this).parent().attr('data-sel-id')
+        var idString = Math.floor(Math.random() * 100000);
         var $selFlexParent = $('<div>').appendTo($(this));
         $selFlexParent.addClass('bsbi-atlas-taxon-selector-flex-parent');
         var $container = $('<div>').appendTo($selFlexParent);

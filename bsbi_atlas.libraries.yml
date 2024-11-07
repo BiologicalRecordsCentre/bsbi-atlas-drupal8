@@ -1,12 +1,17 @@
 bsbiatlas:
-  version: 1.1
+  version: 1.1.1
   css:
     layout:
       css/bsbi-atlas.css: {}
       css/bootstrap-select.min.css: {}
       css/lightgallery-bundle.min.css: {}
       css/picker.css: {}
+      css/brcatlas.umd.css: {}
+      css/brccharts.umd.css: {}
+      css/leaflet.css: {}
   js:
+    js/d3.v5.min.js: {}
+    js/leaflet.js: {}
     js/taxonpicker.min.umd.js: {}
     js/bootstrap-select.min.js: {}
     js/bsbi-atlas-min.umd.js: {}
@@ -14,14 +19,14 @@ bsbiatlas:
     js/lightgallery.umd.js: {}
     js/lg-thumbnail.umd.js: {}
     js/lg-zoom.umd.js: {}
+    js/brcatlas.min.umd.js: {}
+    js/brccharts.min.umd.js: {}
+    
 
   dependencies:
     - core/jquery
     - core/drupal
     - core/drupalSettings
-    - brc_vis/brcvis_core_common
-    - brc_vis/brcvis_core_atlas
-    - brc_vis/brcvis_core_charts
 
 bsbiatlasgen:
   version: 1.1
@@ -32,7 +37,7 @@ bsbiatlasgen:
     js/bsbi-atlas-gen-min.umd.js: {}
 
 bsbiatlastaxsel:
-  version: 1.1
+  version: 1.1.1
   css:
     layout:
       css/bsbi-atlas.css: {}

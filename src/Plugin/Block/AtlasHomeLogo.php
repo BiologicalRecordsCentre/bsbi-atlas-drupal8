@@ -20,10 +20,11 @@ class AtlasHomeLogo extends BlockBase {
    */
   public function build() {
 
-    $logo = drupal_get_path('module', 'bsbi_atlas') . '/images/BSBI-logo.gif';
+    $logo = '/' . \Drupal::service('extension.list.module')->getPath('bsbi_atlas')  . '/images/BSBI-logo.gif';
+
     $html = '<p><a href="home"><img src="' . $logo . '" /><a></p>';
     $html .= '<p>&nbsp;</p>';
-    
+
     return [
       '#markup' => $html,
     ];

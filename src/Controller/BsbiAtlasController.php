@@ -38,6 +38,7 @@ class BsbiAtlasController extends ControllerBase {
           'bsbi_atlas' => array(
             'useTabs' => $guiTabs,
             'dataRoot' => $config->get('data.root'),
+            'dataMaps' => $config->get('data.maps'),
             'dataBsbidb' => $config->get('data.bsbidb'),
             'dataImagesurl' => $config->get('data.imagesurl'),
             'identifier' => $identifier,

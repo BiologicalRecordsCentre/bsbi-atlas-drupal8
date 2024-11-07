@@ -190,7 +190,7 @@ taxon {
 }
 
 .legendDiv {
-  font-size: 14px;
+  font-size: 14px !important;
 }
 
 .dropdown-menu {

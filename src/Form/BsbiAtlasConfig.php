@@ -24,13 +24,13 @@ class BsbiAtlasConfig extends ConfigFormBase {
     $config = $this->config('bsbi_atlas.settings');
 
     // GUI Tabs
-    $form['atlas_gui_tabs'] = [
-      '#type' => 'radios',
-      '#title' => $this->t('Use tabs in GUI:'),
-      '#default_value' => $config->get('gui.tabs'),
-      '#description' => $this->t('Indicate whether or not to use tabs to display different atlas sections.'),
-      '#options' => array(t('Use tabs'), t('No tabs')),
-    ];
+    // $form['atlas_gui_tabs'] = [
+    //   '#type' => 'radios',
+    //   '#title' => $this->t('Use tabs in GUI:'),
+    //   '#default_value' => $config->get('gui.tabs'),
+    //   '#description' => $this->t('Indicate whether or not to use tabs to display different atlas sections.'),
+    //   '#options' => array(t('Use tabs'), t('No tabs')),
+    // ];
 
     $form['atlas_data_root'] = [
       '#type' => 'textfield',
@@ -39,19 +39,26 @@ class BsbiAtlasConfig extends ConfigFormBase {
       '#description' => $this->t('Indicates the location of the root folder for BSBI data.'),
     ];
 
-    $form['atlas_image_url'] = [
-      '#type' => 'textfield',
-      '#title' => $this->t('Base URL for images:'),
-      '#default_value' => $config->get('data.imagesurl'),
-      '#description' => $this->t('Indicates the base URL for the Atlas images.'),
+    $form['atlas_leaflet_maps'] = [
+      '#type' => 'textarea',
+      '#title' => $this->t('Zoomable map definitions:'),
+      '#default_value' => $config->get('data.maps'),
+      '#description' => $this->t('Defines the basemaps and overlay maps that appear in the zoomable map.'),
     ];
 
-    $form['bsbi_db_url'] = [
-      '#type' => 'textfield',
-      '#title' => $this->t('Base URL for BSBI db:'),
-      '#default_value' => $config->get('data.bsbidb'),
-      '#description' => $this->t('Indicates the base URL for the BSBI db.'),
-    ];
+    // $form['atlas_image_url'] = [
+    //   '#type' => 'textfield',
+    //   '#title' => $this->t('Base URL for images:'),
+    //   '#default_value' => $config->get('data.imagesurl'),
+    //   '#description' => $this->t('Indicates the base URL for the Atlas images.'),
+    // ];
+
+    // $form['bsbi_db_url'] = [
+    //   '#type' => 'textfield',
+    //   '#title' => $this->t('Base URL for BSBI db:'),
+    //   '#default_value' => $config->get('data.bsbidb'),
+    //   '#description' => $this->t('Indicates the base URL for the BSBI db.'),
+    // ];
 
     return $form;
   }
@@ -70,6 +77,7 @@ class BsbiAtlasConfig extends ConfigFormBase {
     $config = $this->config('bsbi_atlas.settings');
     $config->set('gui.tabs', $form_state->getValue('atlas_gui_tabs'));
     $config->set('data.root', $form_state->getValue('atlas_data_root'));
+    $config->set('data.maps', $form_state->getValue('atlas_leaflet_maps'));
     $config->set('data.imagesurl', $form_state->getValue('atlas_image_url'));
     $config->set('data.bsbidb', $form_state->getValue('bsbi_db_url'));
     $config->save();

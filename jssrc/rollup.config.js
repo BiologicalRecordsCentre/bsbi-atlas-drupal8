@@ -1,61 +1,45 @@
 // Based on example: https://github.com/rollup/rollup-starter-lib
 //import { eslint } from "rollup-plugin-eslint";
-import resolve from '@rollup/plugin-node-resolve'
+import nodeResolve  from '@rollup/plugin-node-resolve'
 import commonjs from '@rollup/plugin-commonjs'
-import babel from '@rollup/plugin-babel'
+import { babel } from '@rollup/plugin-babel'
 import json from '@rollup/plugin-json'
-import { terser } from "rollup-plugin-terser"
-import pkg from './package.json'
+import terser from "@rollup/plugin-terser"
 import css from 'rollup-plugin-css-only'
 
 export default [
-  // Get rollup to make a single CSS file 
   {
+    // Get rollup to make a single CSS file 
+    // Can't find a way to do this without generating
+    // and emtpy js file which we delete afterwards.
     input: './js/css.js',
-		plugins: [
-      css({ output: pkg.browser_css })
-		]
+    output: {
+      file: '../css/rollup-dummy.js', // Deleted afterwards by cleanup.js script
+      format: 'es',
+      assetFileNames: 'bsbi-atlas.css'
+    },
+    plugins: [css()]
   },
-  // Browser-friendly UMD build
-  {
-    external: ['d3', 'brcatlas', 'brccharts', 'lightgallery'],
-		input: 'index.js',
-		output: {
-      globals: {
-        'd3': 'd3',
-        'brcatlas': 'brcatlas',
-        'brccharts': 'brccharts',
-        'lightgallery': 'lightgallery'
-      },
-			name: 'bsbi-atlas',
-			file: pkg.browser,
-			format: 'umd'
-		},
-		plugins: [
-			resolve(), // so Rollup can find node libs
-      commonjs(), // so Rollup can convert CommonJS modules to an ES modules
-      json(), // required to import package into index.js
-      babel({ babelHelpers: 'bundled', presets: ['@babel/preset-env'] }),
-		]
-  },
+
   // Minified browser-friendly UMD build
   {
-    external: ['d3', 'brcatlas', 'brccharts', 'lightgallery'],
+    external: ['d3', 'brcatlas', 'brccharts', 'lightgallery', 'taxonpicker'],
 		input: 'index.js',
 		output: {
       globals: {
         'd3': 'd3',
         'brcatlas': 'brcatlas',
         'brccharts': 'brccharts',
-        'lightgallery': 'lightgallery'
+        'lightgallery': 'lightgallery',
+        'taxonpicker': 'taxonpicker'
       },
 			name: 'bsbi-atlas',
-			file: pkg.browser_min,
+			file: "../js/bsbi-atlas-min.umd.js",
 			format: 'umd',
       sourcemap: true
 		},
 		plugins: [
-			resolve(), // so Rollup can find node libs
+			nodeResolve (), // so Rollup can find node libs
       commonjs(), // so Rollup can convert CommonJS modules to an ES modules
       json(), // required to import package into index.js
       babel({ babelHelpers: 'bundled', presets: ['@babel/preset-env'] }),
@@ -64,17 +48,20 @@ export default [
   },
   // Minified browser-friendly UMD build for standaloneTaxon selector
   {
+    external: ['taxonpicker'],
 		input: 'index2.js',
 		output: {
+      globals: {
+        'taxonpicker': 'taxonpicker'
+      },
 			name: 'bsbi-atlas-taxsel',
-			file: pkg.browser_min_taxsel,
+			file: "../js/bsbi-atlas-taxsel-min.umd.js",
 			format: 'umd',
       sourcemap: true
 		},
 		plugins: [
-			resolve(), // so Rollup can find node libs
+			nodeResolve (), // so Rollup can find node libs
       commonjs(), // so Rollup can convert CommonJS modules to an ES modules
-      json(), // required to import package into index2.js
       babel({ babelHelpers: 'bundled', presets: ['@babel/preset-env'] }),
       terser()
 		]
@@ -84,14 +71,13 @@ export default [
 		input: 'index3.js',
 		output: {
 			name: 'bsbi-atlas-gen',
-			file: pkg.browser_min_gen,
+			file: "../js/bsbi-atlas-gen-min.umd.js",
 			format: 'umd',
       sourcemap: true
 		},
 		plugins: [
-			resolve(), // so Rollup can find node libs
+			nodeResolve (), // so Rollup can find node libs
       commonjs(), // so Rollup can convert CommonJS modules to an ES modules
-      json(), // required to import package into index3.js
       babel({ babelHelpers: 'bundled', presets: ['@babel/preset-env'] }),
       terser()
 		]

@@ -2,7 +2,7 @@ import * as d3 from 'd3-fetch'
 import { pcache } from './utils'
 import { getCookie } from './utils'
 import { TaxonPickerField, Taxon } from 'taxonpicker'
-import taxa from './atlasnames.json'
+import taxa from './atlasnames'
 
 const $ = jQuery // eslint-disable-line no-undef
 const ds = drupalSettings // eslint-disable-line no-undef
@@ -15,7 +15,8 @@ export function main() {
 
       const defaultDdbid = null
 
-      const idString = $(this).parent().attr('data-sel-id')
+      //const idString = $(this).parent().attr('data-sel-id')
+      const idString = Math.floor(Math.random() * 100000)
       const $container = $('<div>').appendTo($(this))
       $container.addClass('atlas-taxon-selector-div')
       $container.attr('id', `atlas-taxon-selector-div-${idString}`)
